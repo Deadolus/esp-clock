@@ -1,0 +1,102 @@
+menu "E-Display GPIOs"
+
+config BLINK_GPIO
+    int "Blink GPIO number"
+	range 0 34
+	default 4
+	help
+		GPIO number (IOxx) to blink on and off.
+
+		Some GPIOs are used for other purposes (flash connections, etc.) and cannot be used to blink.
+
+		GPIOs 35-39 are input-only so cannot be used as outputs.
+
+
+config CS_GPIO
+    int "CS GPIO number"
+	range 0 34
+	default 13
+	help
+		GPIO number (IOxx) for CS pin.
+
+		Some GPIOs are used for other purposes (flash connections, etc.) and cannot be used to blink.
+
+		GPIOs 35-39 are input-only so cannot be used as outputs.
+
+config CLK_GPIO
+    int "CLK GPIO number"
+	range 0 34
+	default 12
+	help
+		GPIO number (IOxx) for BUSY pin.
+
+		Some GPIOs are used for other purposes (flash connections, etc.) and cannot be used to blink.
+
+		GPIOs 35-39 are input-only so cannot be used as outputs.
+config MISO_GPIO
+    int "MISO GPIO number"
+	range 0 34
+	default 15
+	help
+		GPIO number (IOxx) for BUSY pin.
+
+		Some GPIOs are used for other purposes (flash connections, etc.) and cannot be used to blink.
+
+		GPIOs 35-39 are input-only so cannot be used as outputs.
+config MOSI_GPIO
+    int "MOSI GPIO number"
+	range 0 34
+	default 27
+	help
+		GPIO number (IOxx) for BUSY pin.
+
+		Some GPIOs are used for other purposes (flash connections, etc.) and cannot be used to blink.
+
+		GPIOs 35-39 are input-only so cannot be used as outputs.
+config BUSY_GPIO
+    int "BUSY GPIO number"
+	range 0 34
+	default 26
+	help
+		GPIO number (IOxx) for BUSY pin.
+
+		Some GPIOs are used for other purposes (flash connections, etc.) and cannot be used to blink.
+
+		GPIOs 35-39 are input-only so cannot be used as outputs.
+config RST_GPIO
+    int "RST GPIO number"
+	range 0 34
+	default 25
+	help
+		GPIO number (IOxx) for RST pin.
+
+		Some GPIOs are used for other purposes (flash connections, etc.) and cannot be used to blink.
+
+		GPIOs 35-39 are input-only so cannot be used as outputs.
+
+config DC_GPIO
+    int "DC GPIO number"
+	range 0 34
+	default 14
+	help
+		GPIO number (IOxx) for DC pin.
+
+		Some GPIOs are used for other purposes (flash connections, etc.) and cannot be used to blink.
+
+		GPIOs 35-39 are input-only so cannot be used as outputs.
+
+config WIFI_SSID
+    string "WiFi SSID"
+	default "Wiilan"
+	help
+		SSID (network name) for the example to connect to.
+
+config WIFI_PASSWORD
+    string "WiFi Password"
+	default "EvelinSimon8645"
+	help
+		WiFi password (WPA or WPA2) for the example to use.
+
+		Can be left blank if the network has no security set.
+
+endmenu
