@@ -148,6 +148,7 @@ extern "C" void app_main()
     //xTaskCreate(&blink_task, "display_test", configMINIMAL_STACK_SIZE, NULL, 5, NULL);
     //xTaskCreate(&display_test, "display_test", configMINIMAL_STACK_SIZE, NULL, 5, NULL);
     xTaskCreate(&display_test, "display_test", 8000, NULL, 5, NULL);
+    example_tg0_timer_init(TIMER_0, TEST_WITHOUT_RELOAD, TIMER_INTERVAL0_SEC);
 esp_deep_sleep(1000000LL * deep_sleep_sec);
 }
 
