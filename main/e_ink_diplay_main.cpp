@@ -75,7 +75,7 @@ static EventGroupHandle_t wifi_event_group;
 const int CONNECTED_BIT = BIT0;
 
  struct alarms_t {
-    int time;
+    uint64_t time;
 };
 static std::queue<alarms_t> alarms;
 
@@ -482,4 +482,5 @@ void IRAM_ATTR timer_group0_isr(void *para)
 
     /* Now just send the event data back to the main program task */
     /* xQueueSendFromISR(timer_queue, &evt, NULL); */
+    alarms.push({timer_counter_value});
 }
