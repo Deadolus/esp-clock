@@ -76,6 +76,7 @@ const int CONNECTED_BIT = BIT0;
 
  struct alarms_t {
     uint64_t time;
+    timer_idx_t timer;
 };
 static std::queue<alarms_t> alarms;
 
@@ -444,7 +445,8 @@ static void example_tg0_timer_init(timer_idx_t timer_idx,
  */
 void IRAM_ATTR timer_group0_isr(void *para)
 {
-    int timer_idx = (int) para;
+    //timer_idx_t timer_idx = (int) para;
+    timer_idx_t timer_idx = static_cast<timer_idx_t>((int)para);
 
     /* Retrieve the interrupt status and the counter value
        from the timer that reported the interrupt */
@@ -482,5 +484,5 @@ void IRAM_ATTR timer_group0_isr(void *para)
 
     /* Now just send the event data back to the main program task */
     /* xQueueSendFromISR(timer_queue, &evt, NULL); */
-    alarms.push({timer_counter_value});
+    alarms.push({timer_counter_value, timer_idx});
 }
