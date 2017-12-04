@@ -95,6 +95,7 @@ void IRAM_ATTR timer_group0_isr(void *para);
 void blink_task(void *pvParameter);
 void display_test(void *pvParameter);
 void einkinit();
+static void init_time(void);
 
 /**
   * Due to RAM not enough in Arduino UNO, a frame buffer is not allowed.
@@ -111,9 +112,19 @@ unsigned long time_now_s;
 
 extern "C" void app_main()
 {
+    //xTaskCreate(&blink_task, "display_test", configMINIMAL_STACK_SIZE, NULL, 5, NULL);
+    //xTaskCreate(&display_test, "display_test", configMINIMAL_STACK_SIZE, NULL, 5, NULL);
+    einkinit();
+    init_time();
+    xTaskCreate(&display_test, "display_test", 8000, NULL, 5, NULL);
+    example_tg0_timer_init(TIMER_0, TEST_WITHOUT_RELOAD, TIMER_INTERVAL0_SEC);
+}
+
+
+static void init_time(void) 
+{
       ++boot_count;
     ESP_LOGI(TAG, "Boot count: %d", boot_count);
-    einkinit();
 
 
     time_t now;
@@ -145,14 +156,9 @@ extern "C" void app_main()
 
     const int deep_sleep_sec = 10;
     ESP_LOGI(TAG, "Entering deep sleep for %d seconds", deep_sleep_sec);
-    //xTaskCreate(&blink_task, "display_test", configMINIMAL_STACK_SIZE, NULL, 5, NULL);
-    //xTaskCreate(&display_test, "display_test", configMINIMAL_STACK_SIZE, NULL, 5, NULL);
-    xTaskCreate(&display_test, "display_test", 8000, NULL, 5, NULL);
-    example_tg0_timer_init(TIMER_0, TEST_WITHOUT_RELOAD, TIMER_INTERVAL0_SEC);
-esp_deep_sleep(1000000LL * deep_sleep_sec);
+    //esp_deep_sleep(1000000LL * deep_sleep_sec);
+
 }
-
-
 static void obtain_time(void)
 {
     ESP_ERROR_CHECK( nvs_flash_init() );
@@ -163,7 +169,7 @@ static void obtain_time(void)
 
     // wait for time to be set
     time_t now = 0;
-    struct tm timeinfo = { 0 };
+    struct tm timeinfo = {};
     int retry = 0;
     const int retry_count = 10;
     while(timeinfo.tm_year < (2016 - 1900) && ++retry < retry_count) {
