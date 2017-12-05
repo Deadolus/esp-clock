@@ -49,6 +49,8 @@
 #include "soc/timer_group_struct.h"
 #include "driver/periph_ctrl.h"
 #include "driver/timer.h"
+#include "EspAlarm.h"
+#include <thread>
 
 #define COLORED     0
 #define UNCOLORED   1
@@ -62,7 +64,7 @@
 #define EXAMPLE_WIFI_PASS CONFIG_WIFI_PASSWORD
 #define TIMER_DIVIDER         16  //  Hardware timer clock divider
 #define TIMER_SCALE           (TIMER_BASE_CLK / TIMER_DIVIDER)  // convert counter value to seconds
-#define TIMER_INTERVAL0_SEC   (3.4179) // sample test interval for the first timer
+#define TIMER_INTERVAL0_SEC   (1) // sample test interval for the first timer
 #define TIMER_INTERVAL1_SEC   (5.78)   // sample test interval for the second timer
 #define TEST_WITHOUT_RELOAD   0        // testing will be done without auto reload
 #define TEST_WITH_RELOAD 1 // testing will be done with auto reload
@@ -73,12 +75,7 @@ static EventGroupHandle_t wifi_event_group;
    but we only care about one event - are we connected
    to the AP with an IP? */
 const int CONNECTED_BIT = BIT0;
-
- struct alarms_t {
-    uint64_t time;
-    timer_idx_t timer;
-};
-static std::queue<alarms_t> alarms;
+static unsigned int timer_variable = 0;
 
 static const char *TAG = "clock";
 /* Variable holding number of times ESP32 restarted since first boot.
@@ -86,16 +83,15 @@ static const char *TAG = "clock";
  * maintains its value when ESP32 wakes from deep sleep.
  */
 RTC_DATA_ATTR static int boot_count = 0; 
-static void obtain_time(void);
+static void obtain_time();
 static void initialize_sntp(void);
-static void initialise_wifi(void);
+static void initialise_wifi();
 static esp_err_t event_handler(void *ctx, system_event_t *event);
 static void example_tg0_timer_init(timer_idx_t timer_idx, bool auto_reload, double timer_interval_sec);
 void IRAM_ATTR timer_group0_isr(void *para);
 void blink_task(void *pvParameter);
 void display_test(void *pvParameter);
 void einkinit();
-static void init_time(void);
 
 /**
   * Due to RAM not enough in Arduino UNO, a frame buffer is not allowed.
@@ -112,59 +108,29 @@ unsigned long time_now_s;
 
 extern "C" void app_main()
 {
+    ESP_ERROR_CHECK( nvs_flash_init() );
     //xTaskCreate(&blink_task, "display_test", configMINIMAL_STACK_SIZE, NULL, 5, NULL);
     //xTaskCreate(&display_test, "display_test", configMINIMAL_STACK_SIZE, NULL, 5, NULL);
+   // xTaskCreate(&initialise_wifi, "initialise_wifi", 4048, NULL, 5, NULL);
+    //init_time();
+    std::thread wifi(initialise_wifi);
+    wifi.detach();
+    std::thread obtainTime(obtain_time);
+    obtainTime.detach();
+    //xTaskCreate(&obtain_time, "obtain_time", 2048, NULL, 5, NULL);
     einkinit();
-    init_time();
-    xTaskCreate(&display_test, "display_test", 8000, NULL, 5, NULL);
+    xTaskCreate(&display_test, "display_test", 6000, NULL, 5, NULL);
     example_tg0_timer_init(TIMER_0, TEST_WITHOUT_RELOAD, TIMER_INTERVAL0_SEC);
+    /* wifi.join(); */
+    /* obtainTime.join(); */
 }
 
-
-static void init_time(void) 
+void obtain_time()
 {
-      ++boot_count;
-    ESP_LOGI(TAG, "Boot count: %d", boot_count);
-
-
-    time_t now;
-    struct tm timeinfo;
-    time(&now);
-    localtime_r(&now, &timeinfo);
-    // Is time set? If not, tm_year will be (1970 - 1900).
-    if (timeinfo.tm_year < (2016 - 1900)) {
-        ESP_LOGI(TAG, "Time is not set yet. Connecting to WiFi and getting time over NTP.");
-        obtain_time();
-        // update 'now' variable with current time
-        time(&now);
-    }
-    char strftime_buf[64];
-
-    // Set timezone to Eastern Standard Time and print local time
-    setenv("TZ", "CET-1", 1);
-    tzset();
-    localtime_r(&now, &timeinfo);
-    strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
-    ESP_LOGI(TAG, "The current date/time in Zuerich is: %s", strftime_buf);
-
-    // Set timezone to China Standard Time
-    setenv("TZ", "CST-8", 1);
-    tzset();
-    localtime_r(&now, &timeinfo);
-    strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
-    ESP_LOGI(TAG, "The current date/time in Shanghai is: %s", strftime_buf);
-
-    const int deep_sleep_sec = 10;
-    ESP_LOGI(TAG, "Entering deep sleep for %d seconds", deep_sleep_sec);
-    //esp_deep_sleep(1000000LL * deep_sleep_sec);
-
-}
-static void obtain_time(void)
-{
-    ESP_ERROR_CHECK( nvs_flash_init() );
-    initialise_wifi();
+        ESP_LOGI(TAG, "Waiting for wifi connect...\n");
     xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT,
                         false, true, portMAX_DELAY);
+    ESP_LOGI(TAG, "Wifi connected\n");
     initialize_sntp();
 
     // wait for time to be set
@@ -189,9 +155,10 @@ static void initialize_sntp(void)
     sntp_setservername(0, "pool.ntp.org");
     sntp_init();
 }
-static void initialise_wifi(void)
+static void initialise_wifi()
 {
     //esp_wifi_stop();
+    //ESP_ERROR_CHECK( nvs_flash_init() );
     tcpip_adapter_init();
     wifi_event_group = xEventGroupCreate();
     ESP_ERROR_CHECK( esp_event_loop_init(event_handler, NULL) );
@@ -201,13 +168,8 @@ static void initialise_wifi(void)
     wifi_config_t wifi_config{};
     memcpy(wifi_config.sta.ssid, EXAMPLE_WIFI_SSID, strlen(EXAMPLE_WIFI_SSID)+1);
     memcpy(wifi_config.sta.password, EXAMPLE_WIFI_PASS, strlen(EXAMPLE_WIFI_PASS)+1);
-    //wifi_config.sta.ssid = "Wiilan";
-    //wifi_config.sta.password{EXAMPLE_WIFI_PASS};
    
-    ESP_LOGI(TAG, "Setting WiFi configuration SSID \"%s\", pass \"%s\"...", wifi_config.sta.ssid, wifi_config.sta.password);
-  paint.DrawStringAt(30, 4, "Connecting...", &Font16, UNCOLORED);
-  epd.SetFrameMemory(paint.GetImage(), 0, 10, paint.GetWidth(), paint.GetHeight());
-  epd.DisplayFrame();
+    ESP_LOGI(TAG, "Setting WiFi configuration SSID \"%s\"", wifi_config.sta.ssid);
     ESP_ERROR_CHECK( esp_wifi_set_mode(WIFI_MODE_STA) );
     ESP_ERROR_CHECK( esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config) );
     ESP_ERROR_CHECK( esp_wifi_start() );
@@ -363,7 +325,7 @@ while(true) {
     // Is time set? If not, tm_year will be (1970 - 1900).
     if (timeinfo.tm_year < (2016 - 1900)) {
         ESP_LOGI(TAG, "Time is not set yet. Connecting to WiFi and getting time over NTP.");
-        obtain_time();
+        //obtain_time();
         // update 'now' variable with current time
         time(&now);
     }
@@ -380,6 +342,7 @@ char strftime_buf[64];
     ESP_LOGI(TAG, "The current date/time in Zuerich is: %s", strftime_buf);
     strftime(time_string, sizeof(time_string), "%R", &timeinfo);
     ESP_LOGI(TAG, "%s", time_string);
+    ESP_LOGI(TAG, "Timer variable: %u", timer_variable);
 
   //time_string[0] = time_now_s / 60 / 10 + '0';
   //time_string[1] = time_now_s / 60 % 10 + '0';
@@ -468,13 +431,6 @@ void IRAM_ATTR timer_group0_isr(void *para)
         ((uint64_t) TIMERG0.hw_timer[timer_idx].cnt_high) << 32
         | TIMERG0.hw_timer[timer_idx].cnt_low;
 
-    /* Prepare basic event data
-       that will be then sent back to the main program task */
-    /* timer_event_t evt; */
-    /* evt.timer_group = 0; */
-    /* evt.timer_idx = timer_idx; */
-    /* evt.timer_counter_value = timer_counter_value; */
-
     /* Clear the interrupt
        and update the alarm time for the timer with without reload */
     if ((intr_status & BIT(timer_idx)) && timer_idx == TIMER_0) {
@@ -483,6 +439,7 @@ void IRAM_ATTR timer_group0_isr(void *para)
         timer_counter_value += (uint64_t) (TIMER_INTERVAL0_SEC * TIMER_SCALE);
         TIMERG0.hw_timer[timer_idx].alarm_high = (uint32_t) (timer_counter_value >> 32);
         TIMERG0.hw_timer[timer_idx].alarm_low = (uint32_t) timer_counter_value;
+    timer_variable = timer_counter_value;
     } else if ((intr_status & BIT(timer_idx)) && timer_idx == TIMER_1) {
         /* evt.type = TEST_WITH_RELOAD; */
         TIMERG0.int_clr_timers.t1 = 1;
@@ -494,7 +451,4 @@ void IRAM_ATTR timer_group0_isr(void *para)
       we need enable it again, so it is triggered the next time */
     TIMERG0.hw_timer[timer_idx].config.alarm_en = TIMER_ALARM_EN;
 
-    /* Now just send the event data back to the main program task */
-    /* xQueueSendFromISR(timer_queue, &evt, NULL); */
-    alarms.push({timer_counter_value, timer_idx});
 }
