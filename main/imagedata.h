@@ -25,6 +25,13 @@
 
 extern const unsigned char IMAGE_DATA[];
 
+extern const unsigned char gImage_output2[];
+extern const unsigned char bluetooth[];
+extern const unsigned char bluetooth_filled[];
+extern const unsigned char wifi[];
+extern const unsigned char wifi_filled[];
+extern const unsigned char clocksign[];
+extern const unsigned char clocksign_filled[];
 /* FILE END */
 
 

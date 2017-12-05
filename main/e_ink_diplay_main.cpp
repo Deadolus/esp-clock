@@ -243,13 +243,13 @@ void display_test(void *pvParameter)
   //paint.SetHeight(24);
   //vTaskDelay(1000 / portTICK_PERIOD_MS);
 
-  vTaskDelay(100 / portTICK_PERIOD_MS);
-  //while(true) {vTaskDelay(1000 / portTICK_PERIOD_MS);}
-  paint.Clear(COLORED);
-  paint.DrawStringAt(30, 4, "Hello world!", &Font16, UNCOLORED);
-  epd.SetFrameMemory(paint.GetImage(), 0, 10, paint.GetWidth(), paint.GetHeight());
-  //epd.DisplayFrame();
-  printf("done\n");
+  /* vTaskDelay(100 / portTICK_PERIOD_MS); */
+  /* //while(true) {vTaskDelay(1000 / portTICK_PERIOD_MS);} */
+  /* paint.Clear(COLORED); */
+  /* paint.DrawStringAt(30, 4, "Hello world!", &Font16, UNCOLORED); */
+  /* epd.SetFrameMemory(paint.GetImage(), 0, 10, paint.GetWidth(), paint.GetHeight()); */
+  /* //epd.DisplayFrame(); */
+  /* printf("done\n"); */
 
   //vTaskDelay(5000 / portTICK_PERIOD_MS);
   printf("e-paper Demo\n");
@@ -299,16 +299,23 @@ void display_test(void *pvParameter)
    *  i.e. the next action of SetFrameMemory will set the other memory area
    *  therefore you have to set the frame memory and refresh the display twice.
    */
-  paint.Clear(UNCOLORED);
+  epd.ClearFrameMemory(0xFF);   // bit set = white, bit reset = black
   //paint.SetRotate(ROTATE_90); 
   /* paint.GetImage() = IMAGE_DATA; */
   /* epd.SetFrameMemory(paint.GetImage(), 120, 130, paint.GetWidth(), paint.GetHeight()); */
+  epd.SetFrameMemory(bluetooth_filled, 0, 0, 32 , 32);
+  epd.SetFrameMemory(wifi_filled, 0, 32, 32 , 32);
+  epd.SetFrameMemory(clocksign_filled, 0, 64, 32 , 32);
   //epd.SetFrameMemory(IMAGE_DATA);
-  epd.SetFrameMemory(IMAGE_DATA);
   //epd.SetFrameMemory(IMAGE_DATA, 0, 0, 50, 50);
   epd.DisplayFrame();
+  epd.ClearFrameMemory(0xFF);   // bit set = white, bit reset = black
   /* epd.SetFrameMemory(paint.GetImage(), 120, 130, paint.GetWidth(), paint.GetHeight()); */
-  epd.SetFrameMemory(IMAGE_DATA);
+  //epd.SetFrameMemory(IMAGE_DATA);
+  //epd.SetFrameMemory(IMAGE_DATA, 0, 0, 200, 200);
+  epd.SetFrameMemory(bluetooth, 0, 0, 32 , 32);
+  epd.SetFrameMemory(wifi, 32, 0, 32 , 32);
+  epd.SetFrameMemory(clocksign, 0, 64, 32 , 32);
   //epd.SetFrameMemory(IMAGE_DATA, 0, 0, 50, 50);
   epd.DisplayFrame();
 
@@ -323,9 +330,7 @@ while(true) {
     // Is time set? If not, tm_year will be (1970 - 1900).
     if (timeinfo.tm_year < (2016 - 1900)) {
         ESP_LOGI(TAG, "Time is not set yet. Connecting to WiFi and getting time over NTP.");
-        //obtain_time();
-        // update 'now' variable with current time
-        time(&now);
+        continue;
     }
 char strftime_buf[64];
   // put your main code here, to run repeatedly:
@@ -341,12 +346,6 @@ char strftime_buf[64];
     strftime(time_string, sizeof(time_string), "%R", &timeinfo);
     ESP_LOGI(TAG, "%s", time_string);
     ESP_LOGI(TAG, "Timer variable: %u", timer_variable);
-
-  //time_string[0] = time_now_s / 60 / 10 + '0';
-  //time_string[1] = time_now_s / 60 % 10 + '0';
-  //time_string[3] = time_now_s % 60 / 10 + '0';
-  //time_string[4] = time_now_s % 60 % 10 + '0';
-
   paint.SetWidth(32);
   paint.SetHeight(96);
   paint.SetRotate(ROTATE_270);
