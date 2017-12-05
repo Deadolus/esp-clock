@@ -33,6 +33,7 @@
 #define HIGH 1
 
 Epd::~Epd() {
+
 };
 
 Epd::Epd() {
@@ -43,12 +44,13 @@ Epd::Epd() {
     width = EPD_WIDTH;
     height = EPD_HEIGHT;
 };
-
-int Epd::Init(const unsigned char* lut) {
+int Epd::SpiInit() {
     /* this calls the peripheral hardware interface, see epdif */
-    if (IfInit() != 0) {
-        return -1;
-    }
+    return IfInit();
+}
+int Epd::Init(const unsigned char* lut) {
+
+
     /* EPD hardware init start */
     this->lut = lut;
     Reset();

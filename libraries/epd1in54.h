@@ -66,6 +66,7 @@ public:
 
     Epd();
     ~Epd();
+    int  SpiInit();
     int  Init(const unsigned char* lut);
     void SendCommand(unsigned char command);
     void SendData(unsigned char data);
