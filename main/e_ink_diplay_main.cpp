@@ -179,25 +179,15 @@ static esp_err_t event_handler(void *ctx, system_event_t *event)
 {
     switch(event->event_id) {
     case SYSTEM_EVENT_STA_START:
-//        paint.Clear(UNCOLORED);
-    //paint.DrawStringAt(30, 4, "Connecting STA", &Font16, UNCOLORED);
-    //epd.SetFrameMemory(paint.GetImage(), 0, 10, paint.GetWidth(), paint.GetHeight());
-    //epd.DisplayFrame();
         esp_wifi_connect();
         break;
     case SYSTEM_EVENT_STA_GOT_IP:
         xEventGroupSetBits(wifi_event_group, CONNECTED_BIT);
     ESP_LOGI(TAG, "Connected");
-    paint.DrawStringAt(30, 4, "Connected!", &Font16, UNCOLORED);
-    epd.SetFrameMemory(paint.GetImage(), 0, 30, paint.GetWidth(), paint.GetHeight());
-    epd.DisplayFrame();
         break;
     case SYSTEM_EVENT_STA_DISCONNECTED:
         /* This is a workaround as ESP32 WiFi libs don't currently
            auto-reassociate. */
-    paint.DrawStringAt(30, 4, "Disconnected!", &Font16, UNCOLORED);
-    epd.SetFrameMemory(paint.GetImage(), 0, 50, paint.GetWidth(), paint.GetHeight());
-    epd.DisplayFrame();
         esp_wifi_connect();
         xEventGroupClearBits(wifi_event_group, CONNECTED_BIT);
         break;
@@ -264,38 +254,38 @@ void display_test(void *pvParameter)
   //vTaskDelay(5000 / portTICK_PERIOD_MS);
   printf("e-paper Demo\n");
   //while(true) {vTaskDelay(1000 / portTICK_PERIOD_MS);}
-  paint.Clear(UNCOLORED);
-  paint.DrawStringAt(30, 4, "Hoi Evelin", &Font16, COLORED);
-  epd.SetFrameMemory(paint.GetImage(), 0, 30, paint.GetWidth(), paint.GetHeight());
-  printf("done\n");
-  //vTaskDelay(5000 / portTICK_PERIOD_MS);
-  //epd.DisplayFrame();
+  /* paint.Clear(UNCOLORED); */
+  /* paint.DrawStringAt(30, 4, "Hoi Evelin", &Font16, COLORED); */
+  /* epd.SetFrameMemory(paint.GetImage(), 0, 30, paint.GetWidth(), paint.GetHeight()); */
+  /* printf("done\n"); */
+  /* //vTaskDelay(5000 / portTICK_PERIOD_MS); */
+  /* //epd.DisplayFrame(); */
 
-  paint.SetWidth(64);
-  paint.SetHeight(64);
-  vTaskDelay(100 / portTICK_PERIOD_MS);
+  /* paint.SetWidth(64); */
+  /* paint.SetHeight(64); */
+  /* vTaskDelay(100 / portTICK_PERIOD_MS); */
   //while(true) {vTaskDelay(1000 / portTICK_PERIOD_MS);}
-  paint.Clear(UNCOLORED);
-  paint.DrawRectangle(0, 0, 40, 50, COLORED);
-  paint.DrawLine(0, 0, 40, 50, COLORED);
-  paint.DrawLine(40, 0, 0, 50, COLORED);
-  epd.SetFrameMemory(paint.GetImage(), 16, 60, paint.GetWidth(), paint.GetHeight());
+  /* paint.Clear(UNCOLORED); */
+  /* paint.DrawRectangle(0, 0, 40, 50, COLORED); */
+  /* paint.DrawLine(0, 0, 40, 50, COLORED); */
+  /* paint.DrawLine(40, 0, 0, 50, COLORED); */
+  /* epd.SetFrameMemory(paint.GetImage(), 16, 60, paint.GetWidth(), paint.GetHeight()); */
 
-  paint.Clear(UNCOLORED);
-  paint.DrawCircle(32, 32, 30, COLORED);
-  epd.SetFrameMemory(paint.GetImage(), 120, 60, paint.GetWidth(), paint.GetHeight());
+  /* paint.Clear(UNCOLORED); */
+  /* paint.DrawCircle(32, 32, 30, COLORED); */
+  /* epd.SetFrameMemory(paint.GetImage(), 120, 60, paint.GetWidth(), paint.GetHeight()); */
 
-  paint.Clear(UNCOLORED);
-  paint.DrawFilledRectangle(0, 0, 40, 50, COLORED);
-  epd.SetFrameMemory(paint.GetImage(), 16, 130, paint.GetWidth(), paint.GetHeight());
+  /* paint.Clear(UNCOLORED); */
+  /* paint.DrawFilledRectangle(0, 0, 40, 50, COLORED); */
+  /* epd.SetFrameMemory(paint.GetImage(), 16, 130, paint.GetWidth(), paint.GetHeight()); */
 
-  paint.Clear(UNCOLORED);
-  paint.DrawFilledCircle(32, 32, 30, COLORED);
-  epd.SetFrameMemory(paint.GetImage(), 120, 130, paint.GetWidth(), paint.GetHeight());
-  epd.DisplayFrame();
+  /* paint.Clear(UNCOLORED); */
+  /* paint.DrawFilledCircle(32, 32, 30, COLORED); */
+  /* epd.SetFrameMemory(paint.GetImage(), 120, 130, paint.GetWidth(), paint.GetHeight()); */
+  /* epd.DisplayFrame(); */
 
-  vTaskDelay(2000 / portTICK_PERIOD_MS);
-  printf("Done...\n");
+  /* vTaskDelay(2000 / portTICK_PERIOD_MS); */
+  /* printf("Done...\n"); */
   //while(true) {vTaskDelay(1000 / portTICK_PERIOD_MS);}
 
   if (epd.Init(lut_partial_update) != 0) {
@@ -309,9 +299,17 @@ void display_test(void *pvParameter)
    *  i.e. the next action of SetFrameMemory will set the other memory area
    *  therefore you have to set the frame memory and refresh the display twice.
    */
+  paint.Clear(UNCOLORED);
+  //paint.SetRotate(ROTATE_90); 
+  /* paint.GetImage() = IMAGE_DATA; */
+  /* epd.SetFrameMemory(paint.GetImage(), 120, 130, paint.GetWidth(), paint.GetHeight()); */
+  //epd.SetFrameMemory(IMAGE_DATA);
   epd.SetFrameMemory(IMAGE_DATA);
+  //epd.SetFrameMemory(IMAGE_DATA, 0, 0, 50, 50);
   epd.DisplayFrame();
+  /* epd.SetFrameMemory(paint.GetImage(), 120, 130, paint.GetWidth(), paint.GetHeight()); */
   epd.SetFrameMemory(IMAGE_DATA);
+  //epd.SetFrameMemory(IMAGE_DATA, 0, 0, 50, 50);
   epd.DisplayFrame();
 
   //time_start_ms = millis();
