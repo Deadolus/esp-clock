@@ -192,26 +192,20 @@ static void initialize_sntp(void)
 
 static void initialise_wifi(void)
 {
-    esp_wifi_stop();
+    //esp_wifi_stop();
     tcpip_adapter_init();
     wifi_event_group = xEventGroupCreate();
     ESP_ERROR_CHECK( esp_event_loop_init(event_handler, NULL) );
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK( esp_wifi_init(&cfg) );
     ESP_ERROR_CHECK( esp_wifi_set_storage(WIFI_STORAGE_RAM) );
-    wifi_config_t wifi_config;
-    //wifi_config.sta.ssid = static_cast<uint8_t*>(std::string(EXAMPLE_WIFI_SSID).c_str());
-    //wifi_config.sta.ssid = dynamic_cast<uint8_t[32]>(EXAMPLE_WIFI_SSID);
-//    wifi_config.sta.ssid = dynamic_cast<uint8_t[32]>(EXAMPLE_WIFI_SSID);
-    //std::copy(std::begin(EXAMPLE_WIFI_SSID), std::end(EXAMPLE_WIFI_SSID), wifi_config.sta.ssid);
-    //std::copy(std::begin(EXAMPLE_WIFI_PASS), std::end(EXAMPLE_WIFI_PASS), wifi_config.sta.password);
-    //wifi_config.
-    //strcpy(dynamic_cast<char*>(wifi_config.sta.ssid), EXAMPLE_WIFI_PASS);
+    wifi_config_t wifi_config{};
     memcpy(wifi_config.sta.ssid, EXAMPLE_WIFI_SSID, strlen(EXAMPLE_WIFI_SSID)+1);
     memcpy(wifi_config.sta.password, EXAMPLE_WIFI_PASS, strlen(EXAMPLE_WIFI_PASS)+1);
-//    wifi_config.sta.ssid = {"Wiilan"};
+    //wifi_config.sta.ssid = "Wiilan";
     //wifi_config.sta.password{EXAMPLE_WIFI_PASS};
-    ESP_LOGI(TAG, "Setting WiFi configuration SSID %s, pass %s...", wifi_config.sta.ssid, wifi_config.sta.password);
+   
+    ESP_LOGI(TAG, "Setting WiFi configuration SSID \"%s\", pass \"%s\"...", wifi_config.sta.ssid, wifi_config.sta.password);
   paint.DrawStringAt(30, 4, "Connecting...", &Font16, UNCOLORED);
   epd.SetFrameMemory(paint.GetImage(), 0, 10, paint.GetWidth(), paint.GetHeight());
   epd.DisplayFrame();
