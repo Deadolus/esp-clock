@@ -303,9 +303,9 @@ void display_test(void *pvParameter)
   //paint.SetRotate(ROTATE_90); 
   /* paint.GetImage() = IMAGE_DATA; */
   /* epd.SetFrameMemory(paint.GetImage(), 120, 130, paint.GetWidth(), paint.GetHeight()); */
-  epd.SetFrameMemory(bluetooth_filled, 0, 0, 32 , 32);
-  epd.SetFrameMemory(wifi_filled, 0, 32, 32 , 32);
-  epd.SetFrameMemory(clocksign_filled, 0, 64, 32 , 32);
+  epd.SetFrameMemory(bluetooth_filled, 168, 0, 32 , 32);
+  epd.SetFrameMemory(wifi_filled, 168, 32, 32 , 32);
+  epd.SetFrameMemory(clocksign_filled, 168, 64, 32 , 32);
   //epd.SetFrameMemory(IMAGE_DATA);
   //epd.SetFrameMemory(IMAGE_DATA, 0, 0, 50, 50);
   epd.DisplayFrame();
@@ -313,9 +313,9 @@ void display_test(void *pvParameter)
   /* epd.SetFrameMemory(paint.GetImage(), 120, 130, paint.GetWidth(), paint.GetHeight()); */
   //epd.SetFrameMemory(IMAGE_DATA);
   //epd.SetFrameMemory(IMAGE_DATA, 0, 0, 200, 200);
-  epd.SetFrameMemory(bluetooth, 0, 0, 32 , 32);
-  epd.SetFrameMemory(wifi, 32, 0, 32 , 32);
-  epd.SetFrameMemory(clocksign, 0, 64, 32 , 32);
+  epd.SetFrameMemory(bluetooth, 168, 0, 32 , 32);
+  epd.SetFrameMemory(wifi, 168, 32, 32 , 32);
+  epd.SetFrameMemory(clocksign, 168, 64, 32 , 32);
   //epd.SetFrameMemory(IMAGE_DATA, 0, 0, 50, 50);
   epd.DisplayFrame();
 
@@ -352,7 +352,7 @@ char strftime_buf[64];
 
   paint.Clear(UNCOLORED);
   paint.DrawStringAt(0, 4, time_string, &Font24, COLORED);
-  epd.SetFrameMemory(paint.GetImage(), 80, 72, paint.GetWidth(), paint.GetHeight());
+  epd.SetFrameMemory(paint.GetImage(), 144, 0, paint.GetWidth(), paint.GetHeight());
   epd.DisplayFrame();
 
   vTaskDelay(500 / portTICK_PERIOD_MS);
