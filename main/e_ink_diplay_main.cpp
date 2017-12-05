@@ -141,11 +141,11 @@ static void init_time(void)
     char strftime_buf[64];
 
     // Set timezone to Eastern Standard Time and print local time
-    setenv("TZ", "EST5EDT,M3.2.0/2,M11.1.0", 1);
+    setenv("TZ", "CET-1", 1);
     tzset();
     localtime_r(&now, &timeinfo);
     strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
-    ESP_LOGI(TAG, "The current date/time in New York is: %s", strftime_buf);
+    ESP_LOGI(TAG, "The current date/time in Zuerich is: %s", strftime_buf);
 
     // Set timezone to China Standard Time
     setenv("TZ", "CST-8", 1);
@@ -189,7 +189,6 @@ static void initialize_sntp(void)
     sntp_setservername(0, "pool.ntp.org");
     sntp_init();
 }
-
 static void initialise_wifi(void)
 {
     //esp_wifi_stop();
@@ -269,16 +268,6 @@ void blink_task(void *pvParameter)
 
 void display_test(void *pvParameter)
  {
-  // put your setup code here, to run once:
-  //Serial.begin(9600);
-  //printf("Start\n");
-  //while(true) {vTaskDelay(1000 / portTICK_PERIOD_MS);}
-  if (epd.Init(lut_full_update) != 0) {
-      printf("e-paper init failed\n");
-      return;
-  }
-      //printf("e-paper init success\n");
-
   /** 
    *  there are 2 memory areas embedded in the e-paper display
    *  and once the display is refreshed, the memory area will be auto-toggled,
@@ -345,7 +334,7 @@ void display_test(void *pvParameter)
 
   vTaskDelay(2000 / portTICK_PERIOD_MS);
   printf("Done...\n");
-  while(true) {vTaskDelay(1000 / portTICK_PERIOD_MS);}
+  //while(true) {vTaskDelay(1000 / portTICK_PERIOD_MS);}
 
   if (epd.Init(lut_partial_update) != 0) {
       printf("e-Paper init failed");
@@ -367,14 +356,35 @@ void display_test(void *pvParameter)
 
 
 while(true) {
+    time_t now;
+    struct tm timeinfo;
+    time(&now);
+    localtime_r(&now, &timeinfo);
+    // Is time set? If not, tm_year will be (1970 - 1900).
+    if (timeinfo.tm_year < (2016 - 1900)) {
+        ESP_LOGI(TAG, "Time is not set yet. Connecting to WiFi and getting time over NTP.");
+        obtain_time();
+        // update 'now' variable with current time
+        time(&now);
+    }
+char strftime_buf[64];
   // put your main code here, to run repeatedly:
   //time_now_s = (millis() - time_start_ms) / 1000;
-    time_now_s = 500;
+    //time_now_s = 500;
+    // Set timezone to China Standard Time
   char time_string[] = {'0', '0', ':', '0', '0', '\0'};
-  time_string[0] = time_now_s / 60 / 10 + '0';
-  time_string[1] = time_now_s / 60 % 10 + '0';
-  time_string[3] = time_now_s % 60 / 10 + '0';
-  time_string[4] = time_now_s % 60 % 10 + '0';
+    setenv("TZ", "CET-1", 1);
+    tzset();
+    localtime_r(&now, &timeinfo);
+    strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
+    ESP_LOGI(TAG, "The current date/time in Zuerich is: %s", strftime_buf);
+    strftime(time_string, sizeof(time_string), "%R", &timeinfo);
+    ESP_LOGI(TAG, "%s", time_string);
+
+  //time_string[0] = time_now_s / 60 / 10 + '0';
+  //time_string[1] = time_now_s / 60 % 10 + '0';
+  //time_string[3] = time_now_s % 60 / 10 + '0';
+  //time_string[4] = time_now_s % 60 % 10 + '0';
 
   paint.SetWidth(32);
   paint.SetHeight(96);
@@ -390,6 +400,7 @@ while(true) {
 }
 
 void einkinit() {
+  epd.SpiInit();
   if (epd.Init(lut_full_update) != 0) {
       printf("e-paper init failed\n");
       return;
