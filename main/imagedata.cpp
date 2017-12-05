@@ -24,9 +24,6 @@
  */
 
 #include "imagedata.h"
-//#include <avr/pgmspace.h>
-
-//const unsigned char IMAGE_DATA[] PROGMEM = {
 const unsigned char IMAGE_DATA[] = {
 /* 0X00,0X01,0XC8,0X00,0XC8,0X00, */
 0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0X8F,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,0XFF,
