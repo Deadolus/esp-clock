@@ -217,9 +217,10 @@ void display_test(void *pvParameter)
     display.partialUpdate();
     while(true) {
         updateTime(display, espsign);
-        //esp_sleep_enable_timer_wakeup(0.5 * 1000000);
+        esp_sleep_enable_timer_wakeup(0.5 * 1000000);
+        esp_light_sleep_start();
         //esp_deep_sleep_start();
-        vTaskDelay(500 / portTICK_PERIOD_MS);
+        //vTaskDelay(500 / portTICK_PERIOD_MS);
     }
  }
 
