@@ -26,13 +26,12 @@
 
 //#include <SPI.h>
 #include <stdio.h>
+#include "EspDisplay.h"
+#include "EspSign.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "driver/gpio.h"
 #include "sdkconfig.h"
-#include <epd1in54.h>
-#include <epdpaint.h>
-#include "imagedata.h"
 #include "freertos/event_groups.h"
 #include "esp_system.h"
 #include "esp_wifi.h"
@@ -52,8 +51,6 @@
 #include "EspAlarm.h"
 #include <thread>
 
-#define COLORED     0
-#define UNCOLORED   1
 
 
 /* Can run 'make menuconfig' to choose the GPIO to blink,
@@ -91,17 +88,7 @@ static void example_tg0_timer_init(timer_idx_t timer_idx, bool auto_reload, doub
 void IRAM_ATTR timer_group0_isr(void *para);
 void blink_task(void *pvParameter);
 void display_test(void *pvParameter);
-void einkinit();
 
-/**
-  * Due to RAM not enough in Arduino UNO, a frame buffer is not allowed.
-  * In this case, a smaller image buffer is allocated and you have to 
-  * update a partial display several times.
-  * 1 byte = 8 pixels, therefore you have to set 8*N pixels at a time.
-  */
-unsigned char image[1024];
-Paint paint(image, 0, 0);    // width should be the multiple of 8 
-Epd epd;
 unsigned long time_start_ms;
 unsigned long time_now_s;
 
@@ -113,13 +100,12 @@ extern "C" void app_main()
     //xTaskCreate(&display_test, "display_test", configMINIMAL_STACK_SIZE, NULL, 5, NULL);
    // xTaskCreate(&initialise_wifi, "initialise_wifi", 4048, NULL, 5, NULL);
     //init_time();
+    xTaskCreate(&display_test, "display_test", 6000, NULL, 5, NULL);
     std::thread wifi(initialise_wifi);
     wifi.detach();
     std::thread obtainTime(obtain_time);
     obtainTime.detach();
     //xTaskCreate(&obtain_time, "obtain_time", 2048, NULL, 5, NULL);
-    einkinit();
-    xTaskCreate(&display_test, "display_test", 6000, NULL, 5, NULL);
     example_tg0_timer_init(TIMER_0, TEST_WITHOUT_RELOAD, TIMER_INTERVAL0_SEC);
     /* wifi.join(); */
     /* obtainTime.join(); */
@@ -220,119 +206,28 @@ void blink_task(void *pvParameter)
 
 void display_test(void *pvParameter)
  {
-  /** 
-   *  there are 2 memory areas embedded in the e-paper display
-   *  and once the display is refreshed, the memory area will be auto-toggled,
-   *  i.e. the next action of SetFrameMemory will set the other memory area
-   *  therefore you have to clear the frame memory twice.
-   */
-  //printf("Clear \n");
-  epd.ClearFrameMemory(0xFF);   // bit set = white, bit reset = black
-  //printf("Display \n");
-  epd.DisplayFrame();
-  vTaskDelay(100 / portTICK_PERIOD_MS);
-  //printf("Clear Frame memory\n");
-  epd.ClearFrameMemory(0xFF);   // bit set = white, bit reset = black
-  epd.DisplayFrame();
-  //while(true){vTaskDelay(1000 / portTICK_PERIOD_MS);}
-//printf("Rotating \n"); 
-  //paint.SetRotate(ROTATE_0); 
-  paint.SetRotate(ROTATE_0); 
-  paint.SetWidth(200); 
-  paint.SetHeight(24);
-  //paint.SetHeight(24);
-  //vTaskDelay(1000 / portTICK_PERIOD_MS);
-
-  /* vTaskDelay(100 / portTICK_PERIOD_MS); */
-  /* //while(true) {vTaskDelay(1000 / portTICK_PERIOD_MS);} */
-  /* paint.Clear(COLORED); */
-  /* paint.DrawStringAt(30, 4, "Hello world!", &Font16, UNCOLORED); */
-  /* epd.SetFrameMemory(paint.GetImage(), 0, 10, paint.GetWidth(), paint.GetHeight()); */
-  /* //epd.DisplayFrame(); */
-  /* printf("done\n"); */
-
-  //vTaskDelay(5000 / portTICK_PERIOD_MS);
-  printf("e-paper Demo\n");
-  //while(true) {vTaskDelay(1000 / portTICK_PERIOD_MS);}
-  /* paint.Clear(UNCOLORED); */
-  /* paint.DrawStringAt(30, 4, "Hoi Evelin", &Font16, COLORED); */
-  /* epd.SetFrameMemory(paint.GetImage(), 0, 30, paint.GetWidth(), paint.GetHeight()); */
-  /* printf("done\n"); */
-  /* //vTaskDelay(5000 / portTICK_PERIOD_MS); */
-  /* //epd.DisplayFrame(); */
-
-  /* paint.SetWidth(64); */
-  /* paint.SetHeight(64); */
-  /* vTaskDelay(100 / portTICK_PERIOD_MS); */
-  //while(true) {vTaskDelay(1000 / portTICK_PERIOD_MS);}
-  /* paint.Clear(UNCOLORED); */
-  /* paint.DrawRectangle(0, 0, 40, 50, COLORED); */
-  /* paint.DrawLine(0, 0, 40, 50, COLORED); */
-  /* paint.DrawLine(40, 0, 0, 50, COLORED); */
-  /* epd.SetFrameMemory(paint.GetImage(), 16, 60, paint.GetWidth(), paint.GetHeight()); */
-
-  /* paint.Clear(UNCOLORED); */
-  /* paint.DrawCircle(32, 32, 30, COLORED); */
-  /* epd.SetFrameMemory(paint.GetImage(), 120, 60, paint.GetWidth(), paint.GetHeight()); */
-
-  /* paint.Clear(UNCOLORED); */
-  /* paint.DrawFilledRectangle(0, 0, 40, 50, COLORED); */
-  /* epd.SetFrameMemory(paint.GetImage(), 16, 130, paint.GetWidth(), paint.GetHeight()); */
-
-  /* paint.Clear(UNCOLORED); */
-  /* paint.DrawFilledCircle(32, 32, 30, COLORED); */
-  /* epd.SetFrameMemory(paint.GetImage(), 120, 130, paint.GetWidth(), paint.GetHeight()); */
-  /* epd.DisplayFrame(); */
-
-  /* vTaskDelay(2000 / portTICK_PERIOD_MS); */
-  /* printf("Done...\n"); */
-  //while(true) {vTaskDelay(1000 / portTICK_PERIOD_MS);}
-
-  if (epd.Init(lut_partial_update) != 0) {
-      printf("e-Paper init failed");
-      return;
-  }
-
-  /** 
-   *  there are 2 memory areas embedded in the e-paper display
-   *  and once the display is refreshed, the memory area will be auto-toggled,
-   *  i.e. the next action of SetFrameMemory will set the other memory area
-   *  therefore you have to set the frame memory and refresh the display twice.
-   */
-  epd.ClearFrameMemory(0xFF);   // bit set = white, bit reset = black
-  //paint.SetRotate(ROTATE_90); 
-  /* paint.GetImage() = IMAGE_DATA; */
-  /* epd.SetFrameMemory(paint.GetImage(), 120, 130, paint.GetWidth(), paint.GetHeight()); */
-  epd.SetFrameMemory(bluetooth_filled, 168, 0, 32 , 32);
-  epd.SetFrameMemory(wifi_filled, 168, 32, 32 , 32);
-  epd.SetFrameMemory(clocksign_filled, 168, 64, 32 , 32);
-  //epd.SetFrameMemory(IMAGE_DATA);
-  //epd.SetFrameMemory(IMAGE_DATA, 0, 0, 50, 50);
-  epd.DisplayFrame();
-  epd.ClearFrameMemory(0xFF);   // bit set = white, bit reset = black
-  /* epd.SetFrameMemory(paint.GetImage(), 120, 130, paint.GetWidth(), paint.GetHeight()); */
-  //epd.SetFrameMemory(IMAGE_DATA);
-  //epd.SetFrameMemory(IMAGE_DATA, 0, 0, 200, 200);
-  epd.SetFrameMemory(bluetooth, 168, 0, 32 , 32);
-  epd.SetFrameMemory(wifi, 168, 32, 32 , 32);
-  epd.SetFrameMemory(clocksign, 168, 64, 32 , 32);
-  //epd.SetFrameMemory(IMAGE_DATA, 0, 0, 50, 50);
-  epd.DisplayFrame();
-
-  //time_start_ms = millis();
-
-
-while(true) {
-    time_t now;
-    struct tm timeinfo;
-    time(&now);
-    localtime_r(&now, &timeinfo);
-    // Is time set? If not, tm_year will be (1970 - 1900).
-    if (timeinfo.tm_year < (2016 - 1900)) {
-        ESP_LOGI(TAG, "Time is not set yet. Connecting to WiFi and getting time over NTP.");
-        continue;
-    }
-char strftime_buf[64];
+    ESP_LOGI(TAG, "Display");
+     EspDisplay display;
+    ESP_LOGI(TAG, "sign");
+     //display.init();
+     EspSign espsign(display);
+     display.partialUpdate();
+    ESP_LOGI(TAG, "Bluetooth sign");
+     espsign.setBluetooth(true);
+     while(true) {
+     espsign.setBluetooth(false);
+     espsign.setWifi(true);
+     espsign.setClock(true);
+         time_t now;
+         struct tm timeinfo;
+         time(&now);
+         localtime_r(&now, &timeinfo);
+         // Is time set? If not, tm_year will be (1970 - 1900).
+         if (timeinfo.tm_year < (2016 - 1900)) {
+             ESP_LOGI(TAG, "Time is not set yet. Connecting to WiFi and getting time over NTP.");
+             continue;
+         }
+         char strftime_buf[64];
   // put your main code here, to run repeatedly:
   //time_now_s = (millis() - time_start_ms) / 1000;
     //time_now_s = 500;
@@ -346,33 +241,12 @@ char strftime_buf[64];
     strftime(time_string, sizeof(time_string), "%R", &timeinfo);
     ESP_LOGI(TAG, "%s", time_string);
     ESP_LOGI(TAG, "Timer variable: %u", timer_variable);
-  paint.SetWidth(32);
-  paint.SetHeight(96);
-  paint.SetRotate(ROTATE_270);
 
-  paint.Clear(UNCOLORED);
-  paint.DrawStringAt(0, 4, time_string, &Font24, COLORED);
-  epd.SetFrameMemory(paint.GetImage(), 144, 0, paint.GetWidth(), paint.GetHeight());
-  epd.DisplayFrame();
+  display.write(std::string(time_string), 32, 96, Font::Font8);
+//  display.send();
 
   vTaskDelay(500 / portTICK_PERIOD_MS);
 }
-}
-
-void einkinit() {
-  epd.SpiInit();
-  if (epd.Init(lut_full_update) != 0) {
-      printf("e-paper init failed\n");
-      return;
-  }
-  epd.ClearFrameMemory(0xFF);   // bit set = white, bit reset = black
-  epd.DisplayFrame();
-  epd.ClearFrameMemory(0xFF);   // bit set = white, bit reset = black
-  epd.DisplayFrame();
-  paint.SetRotate(ROTATE_0); 
-  paint.SetWidth(200); 
-  paint.SetHeight(24);
-
 }
 
 /*
