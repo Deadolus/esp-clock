@@ -6,6 +6,20 @@
 static const uint8_t COLORED = 0;
 static const uint8_t UNCOLORED = 1;
 static bool display_initialized{false};
+namespace {
+    sFONT getFont(Font font) {
+        switch(font) 
+        {
+            case Font::Font8:
+                return Font8;
+            case Font::Font16:
+                return Font16;
+            case Font::Font24:
+                return Font24;
+        }
+        return Font8;
+    }
+}
 
 EspDisplay::EspDisplay() : paint_(image_, 0, 0)
 {
@@ -51,17 +65,18 @@ void EspDisplay::fullUpdate(){
   }
 }
 
-void EspDisplay::write(const std::string& text, unsigned int x, unsigned int y, Font font) {
+void EspDisplay::write(const std::string& text, unsigned int x, unsigned int y, Font _font) {
 
-  paint_.Clear(UNCOLORED);
-  paint_.SetWidth(32);
-  paint_.SetHeight(96);
-  paint_.SetRotate(ROTATE_270);
-  paint_.DrawStringAt(0, 4, text.c_str(), &Font24, COLORED);
-  epd_.SetFrameMemory(paint_.GetImage(), 130, 0, paint_.GetWidth(), paint_.GetHeight());
-  epd_.DisplayFrame();
-  epd_.SetFrameMemory(paint_.GetImage(), 130, 0, paint_.GetWidth(), paint_.GetHeight());
-  epd_.DisplayFrame();
+    sFONT font = getFont(_font);
+    paint_.Clear(UNCOLORED);
+    paint_.SetWidth(font.Height);
+    paint_.SetHeight(text.length()*font.Width);
+    paint_.SetRotate(ROTATE_270);
+    paint_.DrawStringAt(0, font.Height/8, text.c_str(), &font, COLORED);
+    epd_.SetFrameMemory(paint_.GetImage(), x-font.Height, y, paint_.GetWidth(), paint_.GetHeight());
+    epd_.DisplayFrame();
+    epd_.SetFrameMemory(paint_.GetImage(), x-font.Height, y, paint_.GetWidth(), paint_.GetHeight());
+    epd_.DisplayFrame();
 }
 
 void EspDisplay::send() {

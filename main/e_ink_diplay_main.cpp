@@ -242,7 +242,9 @@ void display_test(void *pvParameter)
     ESP_LOGI(TAG, "%s", time_string);
     ESP_LOGI(TAG, "Timer variable: %u", timer_variable);
 
-  display.write(std::string(time_string), 32, 96, Font::Font8);
+  display.write(std::string(time_string), 200, 0, Font::Font24);
+  display.write("hello", 24, 100, Font::Font16);
+  display.write("world", 100, 0, Font::Font8);
 //  display.send();
 
   vTaskDelay(500 / portTICK_PERIOD_MS);
