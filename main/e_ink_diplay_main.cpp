@@ -216,6 +216,8 @@ void display_test(void *pvParameter)
     EspSign espsign(display);
     display.partialUpdate();
     while(true) {
+        //all of the framebuffer is updated on every updateTime
+        //thus no need to call it twice
         updateTime(display, espsign);
         esp_sleep_enable_timer_wakeup(0.5 * 1000000);
         esp_light_sleep_start();
@@ -247,7 +249,7 @@ void updateTime(EspDisplay& display, EspSign& espsign) {
          //strftime(time_string, sizeof(time_string), "%R", &timeinfo);
          strftime(strftime_buf, sizeof(strftime_buf), "%r", &timeinfo);
          display.write(std::string(strftime_buf), 200-32, 0, Font::Font24);
-         //display.send();
+         display.send();
 
 }
 
