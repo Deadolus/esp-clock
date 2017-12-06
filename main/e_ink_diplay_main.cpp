@@ -88,6 +88,7 @@ static void example_tg0_timer_init(timer_idx_t timer_idx, bool auto_reload, doub
 void IRAM_ATTR timer_group0_isr(void *para);
 void blink_task(void *pvParameter);
 void display_test(void *pvParameter);
+void updateTime(EspDisplay& display, EspSign& espsign);
 
 unsigned long time_start_ms;
 unsigned long time_now_s;
@@ -95,6 +96,8 @@ unsigned long time_now_s;
 
 extern "C" void app_main()
 {
+    if(esp_sleep_get_wakeup_cause() != ESP_SLEEP_WAKEUP_TIMER)
+    {
     ESP_ERROR_CHECK( nvs_flash_init() );
     //xTaskCreate(&blink_task, "display_test", configMINIMAL_STACK_SIZE, NULL, 5, NULL);
     //xTaskCreate(&display_test, "display_test", configMINIMAL_STACK_SIZE, NULL, 5, NULL);
@@ -109,11 +112,12 @@ extern "C" void app_main()
     example_tg0_timer_init(TIMER_0, TEST_WITHOUT_RELOAD, TIMER_INTERVAL0_SEC);
     /* wifi.join(); */
     /* obtainTime.join(); */
+    }
 }
 
 void obtain_time()
 {
-        ESP_LOGI(TAG, "Waiting for wifi connect...\n");
+    ESP_LOGI(TAG, "Waiting for CONNECTED_BIT\n");
     xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT,
                         false, true, portMAX_DELAY);
     ESP_LOGI(TAG, "Wifi connected\n");
@@ -130,6 +134,8 @@ void obtain_time()
         time(&now);
         localtime_r(&now, &timeinfo);
     }
+        ESP_LOGI(TAG, "Stopping WIFI");
+        vTaskDelay(2000 / portTICK_PERIOD_MS);
 
     ESP_ERROR_CHECK( esp_wifi_stop() );
 }
@@ -174,7 +180,7 @@ static esp_err_t event_handler(void *ctx, system_event_t *event)
     case SYSTEM_EVENT_STA_DISCONNECTED:
         /* This is a workaround as ESP32 WiFi libs don't currently
            auto-reassociate. */
-        esp_wifi_connect();
+        //esp_wifi_connect();
         xEventGroupClearBits(wifi_event_group, CONNECTED_BIT);
         break;
     default:
@@ -206,18 +212,19 @@ void blink_task(void *pvParameter)
 
 void display_test(void *pvParameter)
  {
-    ESP_LOGI(TAG, "Display");
-     EspDisplay display;
-    ESP_LOGI(TAG, "sign");
-     //display.init();
-     EspSign espsign(display);
-     display.partialUpdate();
-    ESP_LOGI(TAG, "Bluetooth sign");
-     espsign.setBluetooth(true);
-     while(true) {
-     espsign.setBluetooth(false);
-     espsign.setWifi(true);
-     espsign.setClock(true);
+    EspDisplay display;
+    EspSign espsign(display);
+    display.partialUpdate();
+    while(true) {
+        updateTime(display, espsign);
+        //esp_sleep_enable_timer_wakeup(0.5 * 1000000);
+        //esp_deep_sleep_start();
+        vTaskDelay(500 / portTICK_PERIOD_MS);
+    }
+ }
+
+void updateTime(EspDisplay& display, EspSign& espsign) {
+    espsign.setWifi((xEventGroupGetBits(wifi_event_group)&CONNECTED_BIT)==CONNECTED_BIT);
          time_t now;
          struct tm timeinfo;
          time(&now);
@@ -225,30 +232,22 @@ void display_test(void *pvParameter)
          // Is time set? If not, tm_year will be (1970 - 1900).
          if (timeinfo.tm_year < (2016 - 1900)) {
              ESP_LOGI(TAG, "Time is not set yet. Connecting to WiFi and getting time over NTP.");
-             continue;
+             espsign.setClock(false);
+         }
+         else {
+             espsign.setClock(true);
          }
          char strftime_buf[64];
-  // put your main code here, to run repeatedly:
-  //time_now_s = (millis() - time_start_ms) / 1000;
-    //time_now_s = 500;
-    // Set timezone to China Standard Time
-  char time_string[] = {'0', '0', ':', '0', '0', '\0'};
-    setenv("TZ", "CET-1", 1);
-    tzset();
-    localtime_r(&now, &timeinfo);
-    strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
-    ESP_LOGI(TAG, "The current date/time in Zuerich is: %s", strftime_buf);
-    strftime(time_string, sizeof(time_string), "%R", &timeinfo);
-    ESP_LOGI(TAG, "%s", time_string);
-    ESP_LOGI(TAG, "Timer variable: %u", timer_variable);
+         setenv("TZ", "CET-1", 1);
+         tzset();
+         localtime_r(&now, &timeinfo);
+         strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
+         ESP_LOGI(TAG, "The current date/time in Zuerich is: %s", strftime_buf);
+         //strftime(time_string, sizeof(time_string), "%R", &timeinfo);
+         strftime(strftime_buf, sizeof(strftime_buf), "%r", &timeinfo);
+         display.write(std::string(strftime_buf), 200-32, 0, Font::Font24);
+         //display.send();
 
-  display.write(std::string(time_string), 200, 0, Font::Font24);
-  display.write("hello", 24, 100, Font::Font16);
-  display.write("world", 100, 0, Font::Font8);
-//  display.send();
-
-  vTaskDelay(500 / portTICK_PERIOD_MS);
-}
 }
 
 /*

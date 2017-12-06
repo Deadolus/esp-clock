@@ -27,6 +27,7 @@ EspDisplay::EspDisplay() : paint_(image_, 0, 0)
 }
 
 void EspDisplay::setImage(const unsigned char* image, unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
+    //paint_.SetFrameMemory(image, x, y, width, height);
     epd_.SetFrameMemory(image, x, y, width, height);
     epd_.DisplayFrame();
     epd_.SetFrameMemory(image, x, y, width, height);
@@ -79,7 +80,12 @@ void EspDisplay::write(const std::string& text, unsigned int x, unsigned int y, 
     epd_.DisplayFrame();
 }
 
+/** sends whole paint_ image to display */
 void EspDisplay::send() {
+    paint_.SetWidth(200);
+    paint_.SetHeight(200);
+    epd_.SetFrameMemory(paint_.GetImage(), 0, 0, paint_.GetWidth(), paint_.GetHeight());
   epd_.DisplayFrame();
+    epd_.SetFrameMemory(paint_.GetImage(), 0, 0, paint_.GetWidth(), paint_.GetHeight());
   epd_.DisplayFrame();
 }
