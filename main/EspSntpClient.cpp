@@ -1,19 +1,18 @@
 #include "EspSntpClient.h"
 #include "apps/sntp/sntp.h"
 #include "esp_log.h"
-#include "esp_wifi.h"
+#include "EspWifi.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
 
 static char* NTP_SERVER = "pool.ntp.org";
 static const char* TAG = "sntp";
 
-EspSntpClient::EspSntpClient(unsigned int connected_bit, EventGroupHandle_t& eventgroup) : connected_bit_(connected_bit),eventgroup_(eventgroup)  {}
+EspSntpClient::EspSntpClient(Wifi& wifi) : wifi_(wifi) {}
 
 void EspSntpClient::getTime(bool turnOffWifiAfterwards) {
-    ESP_LOGI(TAG, "Waiting for CONNECTED_BIT\n");
-    xEventGroupWaitBits(eventgroup_, connected_bit_,
-            false, true, portMAX_DELAY);
+    ESP_LOGI(TAG, "Waiting for connection...\n");
+    wifi_.waitForConnection();
 
     sntp_setoperatingmode(SNTP_OPMODE_POLL);
     sntp_setservername(0, NTP_SERVER);
@@ -32,6 +31,6 @@ void EspSntpClient::getTime(bool turnOffWifiAfterwards) {
     }
     if(turnOffWifiAfterwards) {
         ESP_LOGI(TAG, "Stopping WIFI");
-        ESP_ERROR_CHECK( esp_wifi_stop() );
+        wifi_.stopWifi();
     }
 }

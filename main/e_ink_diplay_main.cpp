@@ -29,6 +29,7 @@
 #include "EspDisplay.h"
 #include "EspSign.h"
 #include "EspSntpClient.h"
+#include "EspWifi.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "driver/gpio.h"
@@ -65,13 +66,6 @@
 #define TIMER_INTERVAL1_SEC   (5.78)   // sample test interval for the second timer
 #define TEST_WITHOUT_RELOAD   0        // testing will be done without auto reload
 #define TEST_WITH_RELOAD 1 // testing will be done with auto reload
-/* FreeRTOS event group to signal when we are connected & ready to make a request */
-EventGroupHandle_t wifi_event_group;
-/* The event group allows multiple bits for each event,
-
-   but we only care about one event - are we connected
-   to the AP with an IP? */
-const int CONNECTED_BIT = BIT0;
 static unsigned int timer_variable = 0;
 
 static const char *TAG = "clock";
@@ -116,52 +110,18 @@ extern "C" void app_main()
 
 void obtain_time()
 {
-    EspSntpClient sntpClient{ CONNECTED_BIT, wifi_event_group };
+    EspWifi wifi{};
+    EspSntpClient sntpClient{ wifi };
     sntpClient.getTime(true);
 
 }
 
 static void initialise_wifi()
 {
-    //esp_wifi_stop();
-    //ESP_ERROR_CHECK( nvs_flash_init() );
-    tcpip_adapter_init();
-    wifi_event_group = xEventGroupCreate();
-    ESP_ERROR_CHECK( esp_event_loop_init(event_handler, NULL) );
-    wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
-    ESP_ERROR_CHECK( esp_wifi_init(&cfg) );
-    ESP_ERROR_CHECK( esp_wifi_set_storage(WIFI_STORAGE_RAM) );
-    wifi_config_t wifi_config{};
-    memcpy(wifi_config.sta.ssid, EXAMPLE_WIFI_SSID, strlen(EXAMPLE_WIFI_SSID)+1);
-    memcpy(wifi_config.sta.password, EXAMPLE_WIFI_PASS, strlen(EXAMPLE_WIFI_PASS)+1);
-   
-    ESP_LOGI(TAG, "Setting WiFi configuration SSID \"%s\"", wifi_config.sta.ssid);
-    ESP_ERROR_CHECK( esp_wifi_set_mode(WIFI_MODE_STA) );
-    ESP_ERROR_CHECK( esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config) );
-    ESP_ERROR_CHECK( esp_wifi_start() );
+    EspWifi wifi{};
+    wifi.startWifi();
 }
 
-static esp_err_t event_handler(void *ctx, system_event_t *event)
-{
-    switch(event->event_id) {
-    case SYSTEM_EVENT_STA_START:
-        esp_wifi_connect();
-        break;
-    case SYSTEM_EVENT_STA_GOT_IP:
-        xEventGroupSetBits(wifi_event_group, CONNECTED_BIT);
-    ESP_LOGI(TAG, "Connected");
-        break;
-    case SYSTEM_EVENT_STA_DISCONNECTED:
-        /* This is a workaround as ESP32 WiFi libs don't currently
-           auto-reassociate. */
-        //esp_wifi_connect();
-        xEventGroupClearBits(wifi_event_group, CONNECTED_BIT);
-        break;
-    default:
-        break;
-    }
-    return ESP_OK;
-}
 
 void blink_task(void *pvParameter)
 {
@@ -201,7 +161,8 @@ void display_test(void *pvParameter)
  }
 
 void updateTime(EspDisplay& display, EspSign& espsign) {
-    espsign.setWifi((xEventGroupGetBits(wifi_event_group)&CONNECTED_BIT)==CONNECTED_BIT);
+    EspWifi wifi;
+    espsign.setWifi(wifi.isConnected());
          time_t now;
          struct tm timeinfo;
          time(&now);
@@ -224,7 +185,6 @@ void updateTime(EspDisplay& display, EspSign& espsign) {
          strftime(strftime_buf, sizeof(strftime_buf), "%r", &timeinfo);
          display.write(std::string(strftime_buf), 200-32, 0, Font::Font24);
          display.send();
-
 }
 
 /*
