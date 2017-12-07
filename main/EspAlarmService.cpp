@@ -3,22 +3,26 @@
 #include <vector>
 #include <iterator>
 #include <list>
-using namespace std;
+#include "esp_log.h"
 
 EspAlarmService::EspAlarmService(Alarm& alarm) : alarms_(alarm) {}
+static const char* TAG = "AlarmService";
 
 /** Checks for alarm, returns true if one is ringing */
 bool EspAlarmService::checkForAlarm() {
+    ESP_LOGI(TAG, "Checking for alarm");
     time_t now = 0;
     struct tm timeinfo = {};
     time(&now);
     bool ringing{false};
-    for(auto alarm: alarms_.getAlarms())
+    for(alarm: alarms_.getAlarms())
     {
-        if(now == alarm.time)
+    ESP_LOGI(TAG, "Now = %lu, alarm time: %lu", now, alarm.time);
+        if( (now == alarm.time) || (alarm.status == AlarmStatus::Ringing) )
         {
             alarm.status = AlarmStatus::Ringing;
             ringing = true;
+            ESP_LOGI(TAG, "Alarm ringing");
         }
     }
     return ringing;

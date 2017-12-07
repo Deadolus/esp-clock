@@ -6,6 +6,7 @@
 #include <functional>
 
 enum class AlarmStatus {
+    Disabled,
     Pacified, 
     Ringing, 
     Snoozed
