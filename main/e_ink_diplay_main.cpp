@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include "EspDisplay.h"
 #include "EspSign.h"
+#include "EspSntpClient.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "driver/gpio.h"
@@ -41,7 +42,6 @@
 #include "esp_sleep.h"
 #include "nvs_flash.h"
 #include "lwip/err.h"
-#include "apps/sntp/sntp.h"
 #include <queue>
 #include <string>
 #include <cstring>
@@ -66,7 +66,7 @@
 #define TEST_WITHOUT_RELOAD   0        // testing will be done without auto reload
 #define TEST_WITH_RELOAD 1 // testing will be done with auto reload
 /* FreeRTOS event group to signal when we are connected & ready to make a request */
-static EventGroupHandle_t wifi_event_group;
+EventGroupHandle_t wifi_event_group;
 /* The event group allows multiple bits for each event,
 
    but we only care about one event - are we connected
@@ -81,7 +81,6 @@ static const char *TAG = "clock";
  */
 RTC_DATA_ATTR static int boot_count = 0; 
 static void obtain_time();
-static void initialize_sntp(void);
 static void initialise_wifi();
 static esp_err_t event_handler(void *ctx, system_event_t *event);
 static void example_tg0_timer_init(timer_idx_t timer_idx, bool auto_reload, double timer_interval_sec);
@@ -117,36 +116,11 @@ extern "C" void app_main()
 
 void obtain_time()
 {
-    ESP_LOGI(TAG, "Waiting for CONNECTED_BIT\n");
-    xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT,
-                        false, true, portMAX_DELAY);
-    ESP_LOGI(TAG, "Wifi connected\n");
-    initialize_sntp();
+    EspSntpClient sntpClient{ CONNECTED_BIT, wifi_event_group };
+    sntpClient.getTime(true);
 
-    // wait for time to be set
-    time_t now = 0;
-    struct tm timeinfo = {};
-    int retry = 0;
-    const int retry_count = 10;
-    while(timeinfo.tm_year < (2016 - 1900) && ++retry < retry_count) {
-        ESP_LOGI(TAG, "Waiting for system time to be set... (%d/%d)", retry, retry_count);
-        vTaskDelay(2000 / portTICK_PERIOD_MS);
-        time(&now);
-        localtime_r(&now, &timeinfo);
-    }
-        ESP_LOGI(TAG, "Stopping WIFI");
-        vTaskDelay(2000 / portTICK_PERIOD_MS);
-
-    ESP_ERROR_CHECK( esp_wifi_stop() );
 }
 
-static void initialize_sntp(void)
-{
-    ESP_LOGI(TAG, "Initializing SNTP");
-    sntp_setoperatingmode(SNTP_OPMODE_POLL);
-    sntp_setservername(0, "pool.ntp.org");
-    sntp_init();
-}
 static void initialise_wifi()
 {
     //esp_wifi_stop();
