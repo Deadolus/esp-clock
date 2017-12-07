@@ -30,6 +30,7 @@
 #include "EspSign.h"
 #include "EspSntpClient.h"
 #include "EspWifi.h"
+#include "EspAlarmService.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "driver/gpio.h"
@@ -43,9 +44,12 @@
 #include "esp_sleep.h"
 #include "nvs_flash.h"
 #include "lwip/err.h"
+#include "ctime"
 #include <queue>
 #include <string>
 #include <cstring>
+#include <stdlib.h>
+#include <cstdlib>
 #include "soc/timer_group_struct.h"
 #include "driver/periph_ctrl.h"
 #include "driver/timer.h"
@@ -53,6 +57,8 @@
 #include <thread>
 
 
+extern "C" {
+}
 
 /* Can run 'make menuconfig' to choose the GPIO to blink,
    or you can edit the following line and set a number here.
@@ -73,7 +79,7 @@ static const char *TAG = "clock";
  * It is placed into RTC memory using RTC_DATA_ATTR and
  * maintains its value when ESP32 wakes from deep sleep.
  */
-RTC_DATA_ATTR static int boot_count = 0; 
+//RTC_DATA_ATTR static int boot_count = 0; 
 static void obtain_time();
 static void initialise_wifi();
 static esp_err_t event_handler(void *ctx, system_event_t *event);
@@ -113,35 +119,17 @@ void obtain_time()
     EspWifi wifi{};
     EspSntpClient sntpClient{ wifi };
     sntpClient.getTime(true);
-
+    EspAlarm alarm;
+    time_t now;
+    time(&now);
+    alarms_t soon{now+10, static_cast<timer_idx_t>(0), [](alarms_t){}, AlarmStatus::Pacified};
+    alarm.setAlarm(soon);
 }
 
 static void initialise_wifi()
 {
     EspWifi wifi{};
     wifi.startWifi();
-}
-
-
-void blink_task(void *pvParameter)
-{
-    /* Configure the IOMUX register for pad BLINK_GPIO (some pads are
-       muxed to GPIO on reset already, but some default to other
-       functions and need to be switched to GPIO. Consult the
-       Technical Reference for a list of pads and their default
-       functions.)
-    */
-    gpio_pad_select_gpio(static_cast<gpio_num_t>(BLINK_GPIO));
-    /* Set the GPIO as a push/pull output */
-    gpio_set_direction(static_cast<gpio_num_t>(BLINK_GPIO), GPIO_MODE_OUTPUT);
-    while(1) {
-        /* Blink off (output low) */
-        gpio_set_level(static_cast<gpio_num_t>(BLINK_GPIO), 0);
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-        /* Blink on (output high) */
-        gpio_set_level(static_cast<gpio_num_t>(BLINK_GPIO), 1);
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-    }
 }
 
 void display_test(void *pvParameter)
@@ -162,29 +150,31 @@ void display_test(void *pvParameter)
 
 void updateTime(EspDisplay& display, EspSign& espsign) {
     EspWifi wifi;
+    EspSntpClient sntp{wifi};
+    EspAlarm alarm{};
+    EspAlarmService alarms{alarm};
     espsign.setWifi(wifi.isConnected());
-         time_t now;
-         struct tm timeinfo;
-         time(&now);
-         localtime_r(&now, &timeinfo);
-         // Is time set? If not, tm_year will be (1970 - 1900).
-         if (timeinfo.tm_year < (2016 - 1900)) {
-             ESP_LOGI(TAG, "Time is not set yet. Connecting to WiFi and getting time over NTP.");
-             espsign.setClock(false);
-         }
-         else {
-             espsign.setClock(true);
-         }
-         char strftime_buf[64];
-         setenv("TZ", "CET-1", 1);
-         tzset();
-         localtime_r(&now, &timeinfo);
-         strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
-         ESP_LOGI(TAG, "The current date/time in Zuerich is: %s", strftime_buf);
-         //strftime(time_string, sizeof(time_string), "%R", &timeinfo);
-         strftime(strftime_buf, sizeof(strftime_buf), "%r", &timeinfo);
-         display.write(std::string(strftime_buf), 200-32, 0, Font::Font24);
-         display.send();
+    time_t now;
+    struct tm timeinfo;
+    time(&now);
+    localtime_r(&now, &timeinfo);
+    espsign.setClock(sntp.timeSet());
+    char strftime_buf[64];
+    setenv("TZ", "CET-1", 1);
+    tzset();
+    localtime_r(&now, &timeinfo);
+    strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
+    ESP_LOGI(TAG, "The current date/time in Zuerich is: %s", strftime_buf);
+    if(sntp.timeSet())
+        strftime(strftime_buf, sizeof(strftime_buf), "%R", &timeinfo);
+    else
+        sprintf(strftime_buf, "--:--");
+    if(alarms.checkForAlarm())
+        display.write("Alarm!", 100, 100, Font::Font24);
+
+    //strftime(strftime_buf, sizeof(strftime_buf), "%r", &timeinfo);
+    display.write(std::string(strftime_buf), 200, 0, Font::Font24);
+    display.send();
 }
 
 /*

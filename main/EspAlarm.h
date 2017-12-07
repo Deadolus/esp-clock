@@ -7,8 +7,8 @@ class EspAlarm :
     public Alarm
 {
     public: 
-        virtual void setAlarm(alarms_t time);
-        virtual std::list<alarms_t> getAlarms() const;
+        virtual void setAlarm(alarms_t& time);
+        virtual std::list<alarms_t>& getAlarms() const;
     private:
-        std::list<alarms_t> m_alarms;
+        static std::list<alarms_t> m_alarms;
 };

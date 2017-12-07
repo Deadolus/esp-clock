@@ -11,6 +11,7 @@ class EspSntpClient :
             EspSntpClient() = delete;
             EspSntpClient(Wifi& wifi);
             virtual void getTime(bool turnOffWifiAfterwards) override;
+            virtual bool timeSet() override;
         private:
             Wifi& wifi_;
     };

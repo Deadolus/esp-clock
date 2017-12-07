@@ -6,6 +6,7 @@
 PROJECT_NAME := e_ink_display
 
 EXTRA_COMPONENT_DIRS := libraries
+#CXXFLAGS += "-std=c++1z"
 
 include $(IDF_PATH)/make/project.mk
 
