@@ -14,6 +14,7 @@ enum class AlarmStatus {
 
 struct alarms_t {
     time_t time;
+    time_t snoozeTime;
     timer_idx_t timer;
     std::function<void(alarms_t&)> callback;
     AlarmStatus status;

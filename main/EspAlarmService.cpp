@@ -4,21 +4,42 @@
 #include <iterator>
 #include <list>
 #include "esp_log.h"
+#include <chrono>
 
-EspAlarmService::EspAlarmService(Alarm& alarm) : alarms_(alarm) {}
+namespace {
+
+    time_t getCurrentTime() {
+       std::chrono::system_clock::now();
+        time_t now{0};
+        time(&now);
+        return now;
+    }
+
+    bool alarmShouldRing(alarms_t& alarm, time_t& now, std::chrono::minutes snoozeTime) {
+        //std::chrono::system_clock snoozePoint = std::chrono::system_clock(now)+snoozeTime;
+        std::chrono::system_clock::time_point snoozePoint = std::chrono::system_clock::from_time_t(alarm.snoozeTime)+snoozeTime;
+        if( (now == alarm.time)
+                || (std::chrono::system_clock::now() == snoozePoint)
+                || (alarm.status == AlarmStatus::Ringing)
+          )
+        {
+            return true;
+        }
+    return false;
+    }
+}
+EspAlarmService::EspAlarmService(Alarm& alarm, std::chrono::minutes snoozeTime) : alarms_(alarm), snoozeTime_(snoozeTime) {}
 static const char* TAG = "AlarmService";
 
 /** Checks for alarm, returns true if one is ringing */
 bool EspAlarmService::checkForAlarm() {
     ESP_LOGI(TAG, "Checking for alarm");
-    time_t now = 0;
-    struct tm timeinfo = {};
-    time(&now);
     bool ringing{false};
     for(alarm: alarms_.getAlarms())
     {
-    ESP_LOGI(TAG, "Now = %lu, alarm time: %lu", now, alarm.time);
-        if( (now == alarm.time) || (alarm.status == AlarmStatus::Ringing) )
+    ESP_LOGI(TAG, "Now = %lu, alarm time: %lu", getCurrentTime(), alarm.time);
+    time_t now = getCurrentTime();
+        if(alarmShouldRing(alarm, now, snoozeTime_))
         {
             alarm.status = AlarmStatus::Ringing;
             ringing = true;
@@ -45,6 +66,7 @@ bool EspAlarmService::snooze() {
         if(alarm.status == AlarmStatus::Ringing)
         {
             alarm.status = AlarmStatus::Snoozed;
+            alarm.snoozeTime = getCurrentTime();
         }
     }
     return true;

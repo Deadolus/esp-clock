@@ -122,7 +122,7 @@ void obtain_time()
     EspAlarm alarm;
     time_t now;
     time(&now);
-    alarms_t soon{now+10, static_cast<timer_idx_t>(0), [](alarms_t){}, AlarmStatus::Pacified};
+    alarms_t soon{now+10,0, static_cast<timer_idx_t>(0), [](alarms_t){}, AlarmStatus::Pacified};
     alarm.setAlarm(soon);
 }
 
@@ -152,7 +152,7 @@ void updateTime(EspDisplay& display, EspSign& espsign) {
     EspWifi wifi;
     EspSntpClient sntp{wifi};
     EspAlarm alarm{};
-    EspAlarmService alarms{alarm};
+    EspAlarmService alarms{alarm, std::chrono::minutes(10)};
     espsign.setWifi(wifi.isConnected());
     time_t now;
     struct tm timeinfo;
