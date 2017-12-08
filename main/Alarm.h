@@ -17,8 +17,8 @@ struct alarms_t {
     std::chrono::system_clock::time_point time;
     std::chrono::system_clock::time_point snoozeTime;
     timer_idx_t timer;
-    std::function<void(alarms_t&)> callback;
     AlarmStatus status;
+    std::function<void(alarms_t&)> callback;
 };
 
 class Alarm 

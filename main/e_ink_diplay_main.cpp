@@ -52,6 +52,7 @@
 #include <chrono>
 #include <cstring>
 #include <thread>
+#include <iomanip>
 
 
 extern "C" {
@@ -61,8 +62,6 @@ extern "C" {
    or you can edit the following line and set a number here.
 */
 #define BLINK_GPIO CONFIG_BLINK_GPIO
-#define EXAMPLE_WIFI_SSID CONFIG_WIFI_SSID
-#define EXAMPLE_WIFI_PASS CONFIG_WIFI_PASSWORD
 #define TIMER_DIVIDER         16  //  Hardware timer clock divider
 #define TIMER_SCALE           (TIMER_BASE_CLK / TIMER_DIVIDER)  // convert counter value to seconds
 #define TIMER_INTERVAL0_SEC   (1) // sample test interval for the first timer
@@ -79,7 +78,6 @@ static const char *TAG = "clock";
 //RTC_DATA_ATTR static int boot_count = 0; 
 static void obtain_time();
 static void initialise_wifi();
-static esp_err_t event_handler(void *ctx, system_event_t *event);
 static void example_tg0_timer_init(timer_idx_t timer_idx, bool auto_reload, double timer_interval_sec);
 void IRAM_ATTR timer_group0_isr(void *para);
 void blink_task(void *pvParameter);
@@ -117,9 +115,9 @@ void obtain_time()
     EspSntpClient sntpClient{ wifi };
     sntpClient.getTime(true);
     EspAlarm alarm;
-    time_t now;
-    time(&now);
-    alarms_t soon{std::chrono::system_clock::now()+std::chrono::seconds(10),std::chrono::system_clock::from_time_t(0), static_cast<timer_idx_t>(0), [](alarms_t){}, AlarmStatus::Pacified};
+    //test alarm
+    alarms_t soon{std::chrono::system_clock::now()+std::chrono::seconds(10),std::chrono::system_clock::from_time_t(0), static_cast<timer_idx_t>(0), AlarmStatus::Pacified, [](alarms_t){} };
+
     alarm.setAlarm(soon);
 }
 
@@ -151,16 +149,16 @@ void updateTime(EspDisplay& display, EspSign& espsign) {
     EspAlarm alarm{};
     EspAlarmService alarms{alarm, std::chrono::minutes(10)};
     espsign.setWifi(wifi.isConnected());
-    time_t now;
-    struct tm timeinfo;
+    time_t now{};
+    struct tm timeinfo{};
     time(&now);
     localtime_r(&now, &timeinfo);
     espsign.setClock(sntp.timeSet());
     char strftime_buf[64];
     setenv("TZ", "CET-1", 1);
     tzset();
-    localtime_r(&now, &timeinfo);
-    strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
+    std::strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
+    //std::put_time(std::localtime(&now), "The current date/time in Zuerich is: %s");
     ESP_LOGI(TAG, "The current date/time in Zuerich is: %s", strftime_buf);
     if(sntp.timeSet())
         strftime(strftime_buf, sizeof(strftime_buf), "%R", &timeinfo);
