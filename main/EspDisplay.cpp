@@ -83,4 +83,8 @@ void EspDisplay::write(const std::string& text, unsigned int x, unsigned int y, 
 /** sends whole paint_ image to display */
 void EspDisplay::send() {
   epd_.DisplayFrame();
+
+}
+void EspDisplay::sleep() {
+    epd_.Sleep();
 }

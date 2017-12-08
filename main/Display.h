@@ -16,4 +16,5 @@ class Display
         virtual void fullUpdate() = 0;
         virtual void write(const std::string& text, unsigned int x, unsigned int y, Font font) = 0;
         virtual void send() = 0;
+        virtual void sleep() = 0;
 };

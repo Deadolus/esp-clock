@@ -131,11 +131,12 @@ void display_test(void *pvParameter)
  {
     EspDisplay display;
     EspSign espsign(display);
-    display.partialUpdate();
     while(true) {
+        display.partialUpdate();
         //all of the framebuffer is updated on every updateTime
         //thus no need to call it twice
         updateTime(display, espsign);
+        display.sleep();
         esp_sleep_enable_timer_wakeup(0.2 * 1000000);
         esp_light_sleep_start();
         //esp_deep_sleep_start();
@@ -148,13 +149,14 @@ void updateTime(EspDisplay& display, EspSign& espsign) {
     EspSntpClient sntp{wifi};
     EspAlarm alarm{};
     EspAlarmService alarms{alarm, std::chrono::minutes(10)};
-    espsign.setWifi(wifi.isConnected());
     time_t now{};
     struct tm timeinfo{};
+    char strftime_buf[64];
+
+    espsign.setWifi(wifi.isConnected());
     time(&now);
     localtime_r(&now, &timeinfo);
     espsign.setClock(sntp.timeSet());
-    char strftime_buf[64];
     setenv("TZ", "CET-1", 1);
     tzset();
     std::strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);

@@ -15,6 +15,7 @@ class EspDisplay :
         virtual void fullUpdate() override;
         virtual void write(const std::string& text, unsigned int x, unsigned int y, Font font) override;
         virtual void send() override;
+        virtual void sleep() override;
     private:
         unsigned char image_[1024];
         Paint paint_{image_, 0, 0};    // width should be the multiple of 8 
