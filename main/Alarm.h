@@ -2,7 +2,8 @@
 #include "driver/timer.h"
 #include <cstdint>
 #include <list>
-#include <ctime>
+//#include <ctime>
+#include <chrono>
 #include <functional>
 
 enum class AlarmStatus {
@@ -13,8 +14,8 @@ enum class AlarmStatus {
 };
 
 struct alarms_t {
-    time_t time;
-    time_t snoozeTime;
+    std::chrono::system_clock::time_point time;
+    std::chrono::system_clock::time_point snoozeTime;
     timer_idx_t timer;
     std::function<void(alarms_t&)> callback;
     AlarmStatus status;

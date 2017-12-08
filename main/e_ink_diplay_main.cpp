@@ -25,12 +25,13 @@
  */
 
 //#include <SPI.h>
-#include <stdio.h>
 #include "EspDisplay.h"
 #include "EspSign.h"
 #include "EspSntpClient.h"
 #include "EspWifi.h"
 #include "EspAlarmService.h"
+#include "EspAlarm.h"
+
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "driver/gpio.h"
@@ -44,16 +45,12 @@
 #include "esp_sleep.h"
 #include "nvs_flash.h"
 #include "lwip/err.h"
-#include "ctime"
-#include <queue>
-#include <string>
-#include <cstring>
-#include <stdlib.h>
-#include <cstdlib>
 #include "soc/timer_group_struct.h"
 #include "driver/periph_ctrl.h"
 #include "driver/timer.h"
-#include "EspAlarm.h"
+
+#include <chrono>
+#include <cstring>
 #include <thread>
 
 
@@ -122,7 +119,7 @@ void obtain_time()
     EspAlarm alarm;
     time_t now;
     time(&now);
-    alarms_t soon{now+10,0, static_cast<timer_idx_t>(0), [](alarms_t){}, AlarmStatus::Pacified};
+    alarms_t soon{std::chrono::system_clock::now()+std::chrono::seconds(10),std::chrono::system_clock::from_time_t(0), static_cast<timer_idx_t>(0), [](alarms_t){}, AlarmStatus::Pacified};
     alarm.setAlarm(soon);
 }
 
