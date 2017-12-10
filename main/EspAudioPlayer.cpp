@@ -138,6 +138,7 @@ void example_disp_buf(uint8_t* buf, int length)
     int tot_size = sizeof(audio_table);
     int i2s_read_len = EXAMPLE_I2S_READ_LEN;
     uint8_t* i2s_write_buff = (uint8_t*) calloc(i2s_read_len, sizeof(char));
+    example_i2s_init();
     example_set_file_play_mode();
 ESP_LOGI(TAG, "Audio, tot size: %d", tot_size);
     while (PLAY_AUDIO) {
@@ -168,8 +169,8 @@ EspAudioPlayer::EspAudioPlayer() {
     static bool player_initialized{false};
     if(!player_initialized) {
     ESP_LOGI(TAG, "Initializing Audio player");
-    example_i2s_init();
-    example_set_file_play_mode();
+    //example_i2s_init();
+    //example_set_file_play_mode();
     player_initialized = true;
     }
 }
