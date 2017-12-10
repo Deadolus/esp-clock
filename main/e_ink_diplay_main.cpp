@@ -119,8 +119,9 @@ void obtain_time()
     //test alarm
     EspAlarm alarm;
     alarms_t soon{};
-    soon.time = std::chrono::system_clock::now();
-    soon.weekRepeat = 0b1101100;
+    soon.time = std::chrono::system_clock::now()+std::chrono::seconds(4);
+    soon.weekRepeat = 0b0110111; // Mo, tue, thu, fr
+    soon.name = "Soon Alarm";
     //alarms_t soon{std::chrono::system_clock::now()+std::chrono::seconds(4),std::chrono::system_clock::from_time_t(0), static_cast<timer_idx_t>(0), AlarmStatus::Pacified, [](alarms_t){} };
 
     alarm.setAlarm(soon);

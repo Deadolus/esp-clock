@@ -19,6 +19,7 @@ struct alarms_t {
     timer_idx_t timer{};
     AlarmStatus status{AlarmStatus::Disabled};
     std::string name{};
+    //!days of week, bit 0 is sunday, bit 6 saturday
     std::bitset<7> weekRepeat{};
     std::function<void(alarms_t&)> callback{};
 };
