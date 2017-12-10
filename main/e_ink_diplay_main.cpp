@@ -107,8 +107,6 @@ extern "C" void app_main()
     //example_tg0_timer_init(TIMER_0, TEST_WITHOUT_RELOAD, TIMER_INTERVAL0_SEC);
     /* wifi.join(); */
     /* obtainTime.join(); */
-    EspAudioPlayer player;
-    player.startAudio();
     }
 }
 
@@ -151,7 +149,7 @@ void updateTime(EspDisplay& display, EspSign& espsign) {
     EspSntpClient sntp{wifi};
     EspAlarm alarm{};
     EspAlarmService alarms{alarm, std::chrono::minutes(10)};
-    //EspAudioPlayer audioplayer;
+    EspAudioPlayer audioplayer;
     espsign.setWifi(wifi.isConnected());
     time_t now{};
     struct tm timeinfo{};
@@ -170,7 +168,7 @@ void updateTime(EspDisplay& display, EspSign& espsign) {
         sprintf(strftime_buf, "--:--");
     if(alarms.checkForAlarm()) {
         display.write("Alarm!", 100, 100, Font::Font24);
-        //audioplayer.startAudio();
+        audioplayer.startAudio();
     }
 
     //strftime(strftime_buf, sizeof(strftime_buf), "%r", &timeinfo);
