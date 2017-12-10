@@ -176,6 +176,11 @@ void updateTime(EspDisplay& display, EspSign& espsign) {
             alarms.pacify();
         }
     }
+    else
+    {
+        //erasing "Alarm!"
+        display.write("      ", 100, 100, Font::Font24);
+    }
 
     //strftime(strftime_buf, sizeof(strftime_buf), "%r", &timeinfo);
     display.write(std::string(strftime_buf), 200, 0, Font::Font24);

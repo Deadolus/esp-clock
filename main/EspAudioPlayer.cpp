@@ -47,7 +47,7 @@ static std::mutex AUDIO_PLAYER_MUTEX{};
         //init DAC pad
         i2s_set_dac_mode(I2S_DAC_CHANNEL_BOTH_EN);
         //init ADC pad
-        i2s_set_adc_mode(ADC_UNIT_1, ADC1_CHANNEL_0);
+        //i2s_set_adc_mode(ADC_UNIT_1, ADC1_CHANNEL_0);
     }
     /**
      * @brief Reset i2s clock and mode
@@ -149,7 +149,7 @@ ESP_LOGI(TAG, "Audio, tot size: %d", tot_size);
     }
     ESP_LOGI(TAG, "Finished playing audio");
     //vTaskDelay(100 / portTICK_PERIOD_MS);
-    //    example_reset_play_mode();
+    example_reset_play_mode();
     //free(flash_read_buff);
     free(i2s_write_buff);
     AUDIO_PLAYER_MUTEX.unlock();
