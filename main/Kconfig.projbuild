@@ -66,7 +66,7 @@ config BUSY_GPIO
 config RST_GPIO
     int "RST GPIO number"
 	range 0 34
-	default 25
+	default 33
 	help
 		GPIO number (IOxx) for RST pin.
 

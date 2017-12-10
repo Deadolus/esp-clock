@@ -15,17 +15,18 @@ namespace {
         return now;
     }
 
-    bool alarmShouldRing(alarms_t& alarm, time_t& now, std::chrono::minutes snoozeTime) {
+    bool alarmShouldRing(alarms_t& alarm, std::chrono::minutes snoozeTime) {
         //std::chrono::system_clock snoozePoint = std::chrono::system_clock(now)+snoozeTime;
         std::chrono::system_clock::time_point snoozePoint = alarm.snoozeTime+snoozeTime;
-        if( (std::chrono::system_clock::now() == alarm.time)
+        if( 
+                (std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()) == std::chrono::time_point_cast<std::chrono::seconds>(alarm.time)) 
                 || (std::chrono::system_clock::now() == snoozePoint)
                 || (alarm.status == AlarmStatus::Ringing)
           )
         {
             return true;
         }
-    return false;
+        return false;
     }
 }
 EspAlarmService::EspAlarmService(Alarm& alarm, std::chrono::minutes snoozeTime) : alarms_(alarm), snoozeTime_(snoozeTime) {}
@@ -37,9 +38,8 @@ bool EspAlarmService::checkForAlarm() {
     bool ringing{false};
     for(alarm: alarms_.getAlarms())
     {
-    ESP_LOGI(TAG, "Now = %lu, alarm time: %lu", getCurrentTime(), std::chrono::system_clock::to_time_t(alarm.time));
-    time_t now = getCurrentTime();
-        if(alarmShouldRing(alarm, now, snoozeTime_))
+        ESP_LOGI(TAG, "Now = %lu, alarm time: %lu", std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()), std::chrono::system_clock::to_time_t(alarm.time));
+        if(alarmShouldRing(alarm, snoozeTime_))
         {
             alarm.status = AlarmStatus::Ringing;
             ringing = true;
