@@ -36,9 +36,9 @@ static const char* TAG = "AlarmService";
 bool EspAlarmService::checkForAlarm() {
     ESP_LOGI(TAG, "Checking for alarm");
     bool ringing{false};
-    for(alarm: alarms_.getAlarms())
+    for(auto& alarm: alarms_.getAlarms())
     {
-        ESP_LOGI(TAG, "Now = %lu, alarm time: %lu", std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()), std::chrono::system_clock::to_time_t(alarm.time));
+        ESP_LOGI(TAG, "Now = %lu, alarm time: %lu, Status: %u", std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()), std::chrono::system_clock::to_time_t(alarm.time), static_cast<unsigned int>(alarm.status));
         if(alarmShouldRing(alarm, snoozeTime_))
         {
             alarm.status = AlarmStatus::Ringing;
@@ -50,7 +50,7 @@ bool EspAlarmService::checkForAlarm() {
 }
 
 bool EspAlarmService::alarmRinging() {
-    for(auto alarm: alarms_.getAlarms())
+    for(auto& alarm: alarms_.getAlarms())
     {
         if(alarm.status == AlarmStatus::Ringing)
         {
@@ -61,7 +61,7 @@ bool EspAlarmService::alarmRinging() {
 }
 
 bool EspAlarmService::snooze() {
-    for(auto alarm: alarms_.getAlarms())
+    for(auto& alarm: alarms_.getAlarms())
     {
         if(alarm.status == AlarmStatus::Ringing)
         {
@@ -73,10 +73,11 @@ bool EspAlarmService::snooze() {
 }
 
 bool EspAlarmService::pacify() {
-    for(auto alarm: alarms_.getAlarms())
+    for(auto& alarm: alarms_.getAlarms())
     {
         if(alarm.status >= AlarmStatus::Ringing)
         {
+            ESP_LOGI(TAG, "Pacifying alarm");
             alarm.status = AlarmStatus::Pacified;
         }
     }

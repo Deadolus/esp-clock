@@ -32,6 +32,7 @@
 #include "EspAlarmService.h"
 #include "EspAlarm.h"
 #include "EspAudioPlayer.h"
+#include "EspButton.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -150,6 +151,7 @@ void updateTime(EspDisplay& display, EspSign& espsign) {
     EspAlarm alarm{};
     EspAlarmService alarms{alarm, std::chrono::minutes(10)};
     EspAudioPlayer audioplayer;
+    static EspButton button{0, true};
     espsign.setWifi(wifi.isConnected());
     time_t now{};
     struct tm timeinfo{};
@@ -169,6 +171,10 @@ void updateTime(EspDisplay& display, EspSign& espsign) {
     if(alarms.checkForAlarm()) {
         display.write("Alarm!", 100, 100, Font::Font24);
         audioplayer.startAudio();
+        if(button.pressed()) {
+            ESP_LOGI(TAG, "Button pressed!");
+            alarms.pacify();
+        }
     }
 
     //strftime(strftime_buf, sizeof(strftime_buf), "%r", &timeinfo);

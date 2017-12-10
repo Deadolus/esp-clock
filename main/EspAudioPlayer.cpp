@@ -172,10 +172,10 @@ void EspAudioPlayer::startAudio() {
     //esp_play_audio();
     bool result = AUDIO_PLAYER_MUTEX.try_lock();
     if(result) {
-    //std::thread play_audio(esp_play_audio);
-    //play_audio.detach();
+    std::thread play_audio(esp_play_audio);
+    play_audio.detach();
     //AUDIO_PLAYER_MUTEX.unlock();
-    esp_play_audio();
+    //esp_play_audio();
     }
 
 }
