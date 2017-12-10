@@ -118,7 +118,10 @@ void obtain_time()
     sntpClient.getTime(true);
     //test alarm
     EspAlarm alarm;
-    alarms_t soon{std::chrono::system_clock::now()+std::chrono::seconds(4),std::chrono::system_clock::from_time_t(0), static_cast<timer_idx_t>(0), AlarmStatus::Pacified, [](alarms_t){} };
+    alarms_t soon{};
+    soon.time = std::chrono::system_clock::now();
+    soon.weekRepeat = 0b1101100;
+    //alarms_t soon{std::chrono::system_clock::now()+std::chrono::seconds(4),std::chrono::system_clock::from_time_t(0), static_cast<timer_idx_t>(0), AlarmStatus::Pacified, [](alarms_t){} };
 
     alarm.setAlarm(soon);
 }
@@ -174,6 +177,7 @@ void updateTime(EspDisplay& display, EspSign& espsign) {
         if(button.pressed()) {
             ESP_LOGI(TAG, "Button pressed!");
             alarms.pacify();
+            audioplayer.stopAudio();
         }
     }
     else

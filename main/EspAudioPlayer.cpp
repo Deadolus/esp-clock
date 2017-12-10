@@ -26,6 +26,7 @@ static const i2s_channel_t EXAMPLE_I2S_CHANNEL_NUM{static_cast<i2s_channel_t>(2)
 
 namespace {
 static std::mutex AUDIO_PLAYER_MUTEX{};
+static bool PLAY_AUDIO{false};
     /**
      * @brief I2S ADC/DAC mode init.
      */
@@ -139,7 +140,8 @@ void example_disp_buf(uint8_t* buf, int length)
     uint8_t* i2s_write_buff = (uint8_t*) calloc(i2s_read_len, sizeof(char));
     example_set_file_play_mode();
 ESP_LOGI(TAG, "Audio, tot size: %d", tot_size);
-    while (offset < tot_size) {
+    while (PLAY_AUDIO) {
+    while ((offset < tot_size) && PLAY_AUDIO) {
         int play_len = ((tot_size - offset) > (4 * 1024)) ? (4 * 1024) : (tot_size - offset);
 
         int i2s_wr_len = example_i2s_dac_data_scale(i2s_write_buff, (uint8_t*)(audio_table + offset), play_len);
@@ -147,12 +149,16 @@ ESP_LOGI(TAG, "Audio, tot size: %d", tot_size);
         offset += play_len;
         //example_disp_buf((uint8_t*) i2s_write_buff, 32);
     }
+    }
+    example_reset_play_mode();
     ESP_LOGI(TAG, "Finished playing audio");
     //vTaskDelay(100 / portTICK_PERIOD_MS);
     example_reset_play_mode();
     //free(flash_read_buff);
     free(i2s_write_buff);
     AUDIO_PLAYER_MUTEX.unlock();
+    i2s_port_t i2s_num = EXAMPLE_I2S_NUM;
+    i2s_driver_uninstall(i2s_num);
     }
 }
 
@@ -172,14 +178,15 @@ void EspAudioPlayer::startAudio() {
     //esp_play_audio();
     bool result = AUDIO_PLAYER_MUTEX.try_lock();
     if(result) {
-    std::thread play_audio(esp_play_audio);
-    play_audio.detach();
-    //AUDIO_PLAYER_MUTEX.unlock();
-    //esp_play_audio();
+        PLAY_AUDIO = true;
+        std::thread play_audio(esp_play_audio);
+        play_audio.detach();
+        //AUDIO_PLAYER_MUTEX.unlock();
+        //esp_play_audio();
     }
 
 }
 
 void EspAudioPlayer::stopAudio() {
-
+    PLAY_AUDIO = false;
 }
