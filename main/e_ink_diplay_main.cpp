@@ -179,13 +179,13 @@ void updateTime(EspDisplay& display, EspSign& espsign) {
         sprintf(strftime_buf, "--:--");
     if(alarms.checkForAlarm()) {
         auto ringingAlarms = alarms.getRingingAlarms();
-        display.write(ringingAlarms.front().name.c_str(), 100, 100, Font::Font24);
-        //audioplayer.startAudio();
+        display.write(ringingAlarms.front().name.c_str(), 50, 00, Font::Font24);
+        audioplayer.startAudio();
         if(button.pressed()) {
             static int counter{0};
             counter++;
             ESP_LOGI(TAG, "Button pressed!");
-            //alarms.pacify();
+            alarms.pacify();
             audioplayer.stopAudio();
             if(counter == 5)
             {
@@ -203,7 +203,7 @@ void updateTime(EspDisplay& display, EspSign& espsign) {
     else
     {
         //erasing "Alarm!"
-        display.write("      ", 100, 100, Font::Font24);
+        //display.write("      ", 100, 100, Font::Font24);
     }
 
     //strftime(strftime_buf, sizeof(strftime_buf), "%r", &timeinfo);
