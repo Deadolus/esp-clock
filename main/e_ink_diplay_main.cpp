@@ -31,6 +31,8 @@
 #include "EspWifi.h"
 #include "EspAlarmService.h"
 #include "EspAlarm.h"
+#include "EspAudioPlayer.h"
+#include "EspButton.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -97,13 +99,13 @@ extern "C" void app_main()
     //xTaskCreate(&display_test, "display_test", configMINIMAL_STACK_SIZE, NULL, 5, NULL);
    // xTaskCreate(&initialise_wifi, "initialise_wifi", 4048, NULL, 5, NULL);
     //init_time();
-    xTaskCreate(&display_test, "display_test", 6000, NULL, 5, NULL);
+    xTaskCreate(&display_test, "display_test", 12000, NULL, 5, NULL);
     std::thread wifi(initialise_wifi);
     wifi.detach();
     std::thread obtainTime(obtain_time);
     obtainTime.detach();
     //xTaskCreate(&obtain_time, "obtain_time", 2048, NULL, 5, NULL);
-    example_tg0_timer_init(TIMER_0, TEST_WITHOUT_RELOAD, TIMER_INTERVAL0_SEC);
+    //example_tg0_timer_init(TIMER_0, TEST_WITHOUT_RELOAD, TIMER_INTERVAL0_SEC);
     /* wifi.join(); */
     /* obtainTime.join(); */
     }
@@ -114,9 +116,13 @@ void obtain_time()
     EspWifi wifi{};
     EspSntpClient sntpClient{ wifi };
     sntpClient.getTime(true);
-    EspAlarm alarm;
     //test alarm
-    alarms_t soon{std::chrono::system_clock::now()+std::chrono::seconds(10),std::chrono::system_clock::from_time_t(0), static_cast<timer_idx_t>(0), AlarmStatus::Pacified, [](alarms_t){} };
+    EspAlarm alarm;
+    alarms_t soon{};
+    soon.time = std::chrono::system_clock::now()+std::chrono::seconds(4);
+    soon.weekRepeat = 0b0110111; // Mo, tue, thu, fr
+    soon.name = "Soon Alarm";
+    //alarms_t soon{std::chrono::system_clock::now()+std::chrono::seconds(4),std::chrono::system_clock::from_time_t(0), static_cast<timer_idx_t>(0), AlarmStatus::Pacified, [](alarms_t){} };
 
     alarm.setAlarm(soon);
 }
@@ -137,10 +143,10 @@ void display_test(void *pvParameter)
         //thus no need to call it twice
         updateTime(display, espsign);
         display.sleep();
-        esp_sleep_enable_timer_wakeup(0.2 * 1000000);
-        esp_light_sleep_start();
+        //esp_sleep_enable_timer_wakeup(0.2 * 1000000);
+        //esp_light_sleep_start();
         //esp_deep_sleep_start();
-        //vTaskDelay(500 / portTICK_PERIOD_MS);
+        vTaskDelay(200 / portTICK_PERIOD_MS);
     }
  }
 
@@ -149,6 +155,9 @@ void updateTime(EspDisplay& display, EspSign& espsign) {
     EspSntpClient sntp{wifi};
     EspAlarm alarm{};
     EspAlarmService alarms{alarm, std::chrono::minutes(10)};
+    EspAudioPlayer audioplayer;
+    static EspButton button{0, true};
+    espsign.setWifi(wifi.isConnected());
     time_t now{};
     struct tm timeinfo{};
     char strftime_buf[64];
@@ -166,8 +175,20 @@ void updateTime(EspDisplay& display, EspSign& espsign) {
         strftime(strftime_buf, sizeof(strftime_buf), "%R", &timeinfo);
     else
         sprintf(strftime_buf, "--:--");
-    if(alarms.checkForAlarm())
+    if(alarms.checkForAlarm()) {
         display.write("Alarm!", 100, 100, Font::Font24);
+        audioplayer.startAudio();
+        if(button.pressed()) {
+            ESP_LOGI(TAG, "Button pressed!");
+            alarms.pacify();
+            audioplayer.stopAudio();
+        }
+    }
+    else
+    {
+        //erasing "Alarm!"
+        display.write("      ", 100, 100, Font::Font24);
+    }
 
     //strftime(strftime_buf, sizeof(strftime_buf), "%r", &timeinfo);
     display.write(std::string(strftime_buf), 200, 0, Font::Font24);

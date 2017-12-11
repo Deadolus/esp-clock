@@ -1,4 +1,9 @@
-# Hello World Example
+# Alarm clock 
 
-Starts a FreeRTOS task to print "Hello World" on E-ink display
+Starts alarm clock on Esp32 with E-ink display attached
+
+
+
+
+Audio file must be 16kHz, mono, (32-bit float)
 
