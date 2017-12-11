@@ -109,8 +109,6 @@ extern "C" void app_main()
     //example_tg0_timer_init(TIMER_0, TEST_WITHOUT_RELOAD, TIMER_INTERVAL0_SEC);
     /* wifi.join(); */
     /* obtainTime.join(); */
-    //EspPwmLed pwmLed{CONFIG_LED_GPIO};
-    //pwmLed.setIntensity(50);
     }
 }
 
@@ -159,7 +157,7 @@ void updateTime(EspDisplay& display, EspSign& espsign) {
     EspAlarm alarm{};
     EspAlarmService alarms{alarm, std::chrono::minutes(10)};
     EspAudioPlayer audioplayer;
-    EspPwmLed pwmLed{CONFIG_LED_GPIO};
+    static EspPwmLed pwmLed{CONFIG_LED_GPIO};
     static EspButton button{0, true};
     espsign.setWifi(wifi.isConnected());
     time_t now{};
@@ -183,7 +181,6 @@ void updateTime(EspDisplay& display, EspSign& espsign) {
         auto ringingAlarms = alarms.getRingingAlarms();
         display.write(ringingAlarms.front().name.c_str(), 100, 100, Font::Font24);
         //audioplayer.startAudio();
-        pwmLed.setIntensity(100);
         if(button.pressed()) {
             static int counter{0};
             counter++;
@@ -194,9 +191,13 @@ void updateTime(EspDisplay& display, EspSign& espsign) {
             {
                 ESP_LOGI(TAG, "Turning on LED");
                 //turn on led on long press
-                pwmLed.setIntensity(50);
+                pwmLed.setIntensity(20);
                 counter = 0;
             }
+        }
+        else
+        {
+            pwmLed.setIntensity(100);
         }
     }
     else
