@@ -43,3 +43,18 @@ TEST_F(EspAlarmServiceTest, can_pacify_snoozed_alarm) {
     testee.pacify();
     EXPECT_EQ(AlarmStatus::Pacified, alarms.getAlarms().front().status);
 }
+
+TEST_F(EspAlarmServiceTest, no_alarm_is_ringing_when_empty) {
+    EXPECT_FALSE(testee.checkForAlarm());
+    EXPECT_FALSE(testee.alarmRinging());
+}
+
+TEST_F(EspAlarmServiceTest, alarm_is_ringing_when_time_correct) {
+    alarms_t alarm;
+    alarm.time = std::chrono::system_clock::now();
+    alarm.weekRepeat = 0xff;
+    alarms.setAlarm(alarm);
+    //should execute still in same second, thus yield true
+    EXPECT_TRUE(testee.checkForAlarm());
+    EXPECT_TRUE(testee.alarmRinging());
+}
