@@ -25,13 +25,16 @@ bool correctDayOfWeek(std::bitset<7>& days) {
     return days.test(now_tm.tm_wday);
 
 }
+bool correctTime(std::chrono::system_clock::time_point alarmTime) {
+        return (std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()) == std::chrono::time_point_cast<std::chrono::seconds>(alarmTime));
+}
+
     bool alarmShouldRing(alarms_t& alarm, std::chrono::minutes snoozeTime) {
         //std::chrono::system_clock snoozePoint = std::chrono::system_clock(now)+snoozeTime;
         std::chrono::system_clock::time_point snoozePoint = alarm.snoozeTime+snoozeTime;
-        bool correctTime = (std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()) == std::chrono::time_point_cast<std::chrono::seconds>(alarm.time));
         if( 
                 correctDayOfWeek(alarm.weekRepeat) &&  (
-                correctTime
+                correctTime(alarm.time)
                 || (std::chrono::system_clock::now() == snoozePoint)
                 || (alarm.status == AlarmStatus::Ringing)
           ))
