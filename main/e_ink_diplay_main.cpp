@@ -33,6 +33,7 @@
 #include "EspAlarm.h"
 #include "EspAudioPlayer.h"
 #include "EspButton.h"
+#include "EspPwmLed.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -108,6 +109,8 @@ extern "C" void app_main()
     //example_tg0_timer_init(TIMER_0, TEST_WITHOUT_RELOAD, TIMER_INTERVAL0_SEC);
     /* wifi.join(); */
     /* obtainTime.join(); */
+    //EspPwmLed pwmLed{CONFIG_LED_GPIO};
+    //pwmLed.setIntensity(50);
     }
 }
 
@@ -156,6 +159,7 @@ void updateTime(EspDisplay& display, EspSign& espsign) {
     EspAlarm alarm{};
     EspAlarmService alarms{alarm, std::chrono::minutes(10)};
     EspAudioPlayer audioplayer;
+    EspPwmLed pwmLed{CONFIG_LED_GPIO};
     static EspButton button{0, true};
     espsign.setWifi(wifi.isConnected());
     time_t now{};
@@ -178,16 +182,20 @@ void updateTime(EspDisplay& display, EspSign& espsign) {
     if(alarms.checkForAlarm()) {
         auto ringingAlarms = alarms.getRingingAlarms();
         display.write(ringingAlarms.front().name.c_str(), 100, 100, Font::Font24);
-        audioplayer.startAudio();
+        //audioplayer.startAudio();
+        pwmLed.setIntensity(100);
         if(button.pressed()) {
             static int counter{0};
             counter++;
             ESP_LOGI(TAG, "Button pressed!");
-            alarms.pacify();
+            //alarms.pacify();
             audioplayer.stopAudio();
             if(counter == 5)
             {
+                ESP_LOGI(TAG, "Turning on LED");
                 //turn on led on long press
+                pwmLed.setIntensity(50);
+                counter = 0;
             }
         }
     }
