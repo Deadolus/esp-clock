@@ -21,16 +21,19 @@ bool correctDayOfWeek(std::bitset<7>& days) {
     //tm_wday is days since sundays
     tm now_tm = *localtime(&now);
 
-    ESP_LOGI(TAG, "Now is %u, comparison: %d, t%d f%d, %s", now_tm.tm_wday, days.test(now_tm.tm_wday), true, false, days.to_string().c_str());
+    //ESP_LOGI(TAG, "Now is %u, comparison: %d, t%d f%d, %s", now_tm.tm_wday, days.test(now_tm.tm_wday), true, false, days.to_string().c_str());
     return days.test(now_tm.tm_wday);
 
 }
 bool correctTime(std::chrono::system_clock::time_point alarmTime) {
-        return (std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now()) == std::chrono::time_point_cast<std::chrono::seconds>(alarmTime));
+    time_t alarm_time = std::chrono::system_clock::to_time_t(alarmTime);
+    tm alarm_tm = *localtime(&alarm_time);
+    time_t now = getCurrentTime();
+    tm now_tm = *localtime(&now);
+    return (now_tm.tm_hour == alarm_tm.tm_hour) && (now_tm.tm_min == alarm_tm.tm_min) && (now_tm.tm_sec == alarm_tm.tm_sec);
 }
 
     bool alarmShouldRing(alarms_t& alarm, std::chrono::minutes snoozeTime) {
-        //std::chrono::system_clock snoozePoint = std::chrono::system_clock(now)+snoozeTime;
         std::chrono::system_clock::time_point snoozePoint = alarm.snoozeTime+snoozeTime;
         if( 
                 correctDayOfWeek(alarm.weekRepeat) &&  (
