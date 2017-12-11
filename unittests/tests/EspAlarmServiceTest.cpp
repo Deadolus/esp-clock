@@ -16,9 +16,11 @@ class EspAlarmServiceTest : public ::testing::Test {
 };
 
 TEST_F(EspAlarmServiceTest, can_snooze_alarm) {
+    alarms_t alarm;
+    alarm.status = AlarmStatus::Ringing;
+    alarms.setAlarm(alarm);
+    ASSERT_EQ(AlarmStatus::Ringing, alarms.getAlarms().front().status);
     testee.pacify();
+    EXPECT_EQ(AlarmStatus::Pacified, alarms.getAlarms().front().status);
 
-}
-TEST(simple, simple) {
-    EXPECT_TRUE(true);
 }
