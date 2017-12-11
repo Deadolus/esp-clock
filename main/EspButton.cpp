@@ -14,3 +14,14 @@ bool EspButton::pressed() {
     return gpio_get_level(static_cast<gpio_num_t>(gpio_)) ^ inverse_;
 
 }
+bool EspButton::longPress() {
+    return true;
+}
+
+void EspButton::setPressCb(std::function<void()> function) {
+    pressCb_ = function;
+}
+void EspButton::setLongPressCb(std::function<void()> function) {
+    longPressCb_ = function;
+
+}
