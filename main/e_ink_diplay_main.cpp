@@ -176,12 +176,19 @@ void updateTime(EspDisplay& display, EspSign& espsign) {
     else
         sprintf(strftime_buf, "--:--");
     if(alarms.checkForAlarm()) {
-        display.write("Alarm!", 100, 100, Font::Font24);
+        auto ringingAlarms = alarms.getRingingAlarms();
+        display.write(ringingAlarms.front().name.c_str(), 100, 100, Font::Font24);
         audioplayer.startAudio();
         if(button.pressed()) {
+            static int counter{0};
+            counter++;
             ESP_LOGI(TAG, "Button pressed!");
             alarms.pacify();
             audioplayer.stopAudio();
+            if(counter == 5)
+            {
+                //turn on led on long press
+            }
         }
     }
     else

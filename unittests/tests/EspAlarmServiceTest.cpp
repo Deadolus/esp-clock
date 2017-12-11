@@ -58,3 +58,15 @@ TEST_F(EspAlarmServiceTest, alarm_is_ringing_when_time_correct) {
     EXPECT_TRUE(testee.checkForAlarm());
     EXPECT_TRUE(testee.alarmRinging());
 }
+
+TEST_F(EspAlarmServiceTest, ringing_alarms_list_is_correct) {
+    alarms_t alarm;
+    alarm.time = std::chrono::system_clock::now();
+    alarm.weekRepeat = 0xff;
+    alarm.name = "Test";
+    alarms.setAlarm(alarm);
+    EXPECT_TRUE(testee.checkForAlarm());
+    auto list = testee.getRingingAlarms();
+    EXPECT_EQ(1, list.size());
+    EXPECT_STREQ(std::string("Test").c_str(), list.front().name.c_str());
+}

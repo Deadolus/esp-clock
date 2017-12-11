@@ -100,3 +100,14 @@ bool EspAlarmService::pacify() {
     }
     return true;
 }
+std::list<alarms_t> EspAlarmService::getRingingAlarms() {
+    std::list<alarms_t> ringingAlarms;
+    for(auto& alarm: alarms_.getAlarms())
+    {
+        if(alarm.status == AlarmStatus::Ringing)
+        {
+            ringingAlarms.push_back(alarm);
+        }
+    }
+    return ringingAlarms;
+}
