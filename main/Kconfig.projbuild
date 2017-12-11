@@ -1,11 +1,11 @@
 menu "E-Display GPIOs"
 
-config BLINK_GPIO
+config LED_GPIO
     int "Blink GPIO number"
 	range 0 34
-	default 4
+	default 2
 	help
-		GPIO number (IOxx) to blink on and off.
+		GPIO number where "light" gpio is attached to.
 
 		Some GPIOs are used for other purposes (flash connections, etc.) and cannot be used to blink.
 
