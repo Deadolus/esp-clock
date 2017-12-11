@@ -34,6 +34,7 @@
 #include "EspAudioPlayer.h"
 #include "EspButton.h"
 #include "EspPwmLed.h"
+#include "EspHttpServer.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -93,6 +94,8 @@ unsigned long time_now_s;
 
 extern "C" void app_main()
 {
+    static EspHttpServer httpserver;
+    httpserver.start();
     if(esp_sleep_get_wakeup_cause() != ESP_SLEEP_WAKEUP_TIMER)
     {
     ESP_ERROR_CHECK( nvs_flash_init() );
