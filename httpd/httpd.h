@@ -44,17 +44,17 @@
 
 /** Set this to 1 to support CGI */
 #ifndef LWIP_HTTPD_CGI
-#define LWIP_HTTPD_CGI            0
+#define LWIP_HTTPD_CGI            1
 #endif
 
 /** Set this to 1 to support SSI (Server-Side-Includes) */
 #ifndef LWIP_HTTPD_SSI
-#define LWIP_HTTPD_SSI            0
+#define LWIP_HTTPD_SSI            1
 #endif
 
 /** Set this to 1 to support HTTP POST */
 #ifndef LWIP_HTTPD_SUPPORT_POST
-#define LWIP_HTTPD_SUPPORT_POST   0
+#define LWIP_HTTPD_SUPPORT_POST   1
 #endif
 
 #if LWIP_HTTPD_CGI
