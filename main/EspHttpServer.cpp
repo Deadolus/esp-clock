@@ -22,6 +22,8 @@ enum {
 
 int32_t ssi_handler(int32_t iIndex, char *pcInsert, int32_t iInsertLen)
 {
+//client send iIndex from pcConfigSSITags in to here - 
+//we populate pcInsert and return it to client
     switch (iIndex) {
         case SSI_UPTIME:
             snprintf(pcInsert, iInsertLen, "%d",
@@ -31,10 +33,11 @@ int32_t ssi_handler(int32_t iIndex, char *pcInsert, int32_t iInsertLen)
             snprintf(pcInsert, iInsertLen, "%d", (int) xPortGetFreeHeapSize());
             break;
         case SSI_LED_STATE:
+            snprintf(pcInsert, iInsertLen, "I don't know");
             //snprintf(pcInsert, iInsertLen, (GPIO.OUT & BIT(LED_PIN)) ? "Off" : "On");
             break;
         default:
-            //snprintf(pcInsert, iInsertLen, "N/A");
+            snprintf(pcInsert, iInsertLen, "N/A");
             break;
     }
 
@@ -44,7 +47,7 @@ int32_t ssi_handler(int32_t iIndex, char *pcInsert, int32_t iInsertLen)
 
 char *newAlarm_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
-
+//url handler e.g. /newAalarm?time=xxx&days=xxxx
     alarms_t alarm;
     for (int i = 0; i < iNumParams; i++) {
         if(strcmp(pcParam[i], "time")) {
