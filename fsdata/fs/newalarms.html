@@ -49,24 +49,31 @@
 </div>
 <div class="col-md-8">
 
-<form >
+<form>
 <div class="input-group">
   <span class="input-group-addon" id="basic-addon1">Time</span>
-  <input type="text" class="form-control" placeholder="Time HH:MM" aria-describedby="basic-addon1">
+  <input type="text" class="form-control" placeholder="Time HH:MM" aria-describedby="basic-addon1" id="time">
 </div>
 <br>
 <div class="input-group">
   <span class="input-group-addon" id="basic-addon1">Name</span>
-  <input type="text" class="form-control" placeholder="Alarm name" aria-describedby="basic-addon1">
+  <input type="text" class="form-control" placeholder="Alarm name" aria-describedby="basic-addon1" id="name">
 </div>
 <br>
 <div class="input-group">
   <span class="input-group-addon" id="basic-addon1">Snooze Time</span>
-  <input type="text" class="form-control" placeholder="Snooze time" aria-describedby="basic-addon1">
+  <input type="text" class="form-control" placeholder="Snooze time" aria-describedby="basic-addon1" id="snoozeTime">
 <span class="input-group-addon">min</span>
 </div>
 <br>
 <div class="btn-group" data-toggle="buttons">
+  <label class="btn btn-primary" id="buttonRepeatingAlarm">
+    <input type="checkbox" autocomplete="off" id="repeatingAlarm"> <span>Single shot</span></label>
+
+</div>
+<br>
+<br>
+<div class="btn-group hidden" data-toggle="buttons" id="weekDays" >
   <label class="btn btn-primary">
     <input type="checkbox" autocomplete="off" id="monday">Monday</label>
   <label class="btn btn-primary" >
@@ -90,9 +97,42 @@
 <br>
 </form>
 <script>
+  $('#buttonRepeatingAlarm').on('click', function () {
+    //$('#tuesday').button('toggle') // button text will be "finished!"
+    if(!$('#repeatingAlarm')[0].checked) {
+    $('#weekDays').removeClass('hidden');
+    $('#buttonRepeatingAlarm').find('span').html("Repeating alarm");
+    }
+    else{
+    $('#weekDays').addClass('hidden')
+    $('#buttonRepeatingAlarm').find('span').html("Single shot");
+    }
+    console.log("Checkbox is " + $('#repeatingAlarm')[0].checked);
+
+  })
   $('#newAlarm').on('click', function () {
     //$('#tuesday').button('toggle') // button text will be "finished!"
     console.log("Monday is " + $('#monday')[0].checked);
+    //window.location.assign("https://www.w3schools.com");
+var newUrl = 
+'newAlarm?time='
++$('#time').val()
++"&name="+$('#name').val()
++"&snoozeTime="+$('#snoozeTime').val()
++"&repeatingAlarm="
++$('#repeatingAlarm')[0].checked
++"&days="
++Number($('#sunday')[0].checked)
++Number($('#monday')[0].checked)
++Number($('#tuesday')[0].checked)
++Number($('#wednesday')[0].checked)
++Number($('#thursday')[0].checked)
++Number($('#friday')[0].checked)
++Number($('#saturday')[0].checked)
+;
+   console.log(newUrl);
+window.location.href = newUrl
+
   })
 </script>
 
