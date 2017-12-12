@@ -43,7 +43,7 @@
 HTTP Server is up and running.</div>
 
 			<p>This is an ESP32 alarm clock. Next alarm will be at: 
-<span class="badge bage-info"><!-- nextAlarm --></span>
+<span class="badge bage-info"><!--#nextAlarm--></span>
 </p>
 
 			<div class="cover" align="center">
@@ -72,14 +72,6 @@ HTTP Server is up and running.</div>
 				</tr>
 			</table>
 
-			<h1>How it works</h1>
-			<p> Each time the server detects a tag of the form <code>&lt;!--#name--&gt;</code> in a .shtml, .ssi or .shtm file
-				where <code>name</code> appears as one of the tags supplied to <code>http_set_ssi_handler</code> in the <code>pcConfigSSITags</code> array,
-				an insert string is appended after the tag string in file and sent back to the client.</p>
-			<p>A CGI handler function is called each time the server is asked for a file
-				whose name was previously registered as a CGI function using a call to <code>http_set_cgi_handler</code>.
-				This function allows you to access the parameters provided along with the URI.</p>
-		</div>
 
 		<script>
 			window.onload = function () {
