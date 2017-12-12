@@ -36,6 +36,10 @@
 #ifndef __HTTPD_H__
 #define __HTTPD_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "lwip/opt.h"
 #include "lwip/err.h"
 #include "lwip/pbuf.h"
@@ -270,4 +274,8 @@ void httpd_init(void);
     void httpd_stop(void);
 #endif
 
+
+#ifdef __cplusplus
+}
+#endif
 #endif /* __HTTPD_H__ */

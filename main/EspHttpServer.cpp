@@ -177,5 +177,6 @@ void httpd_task(void *pvParameters)
 }
 
 void EspHttpServer::startServer() {
-
+    /* initialize tasks */
+    xTaskCreate(&httpd_task, "HTTP Daemon", 128, NULL, 2, NULL);
 }
