@@ -52,7 +52,7 @@
 <form>
 <div class="input-group">
   <span class="input-group-addon" id="basic-addon1">Time</span>
-  <input type="text" class="form-control" placeholder="Time HH:MM" aria-describedby="basic-addon1" id="time">
+  <input type="time" class="form-control" placeholder="Time HH:MM" aria-describedby="basic-addon1" id="time">
 </div>
 <br>
 <div class="input-group">
@@ -62,8 +62,13 @@
 <br>
 <div class="input-group">
   <span class="input-group-addon" id="basic-addon1">Snooze Time</span>
-  <input type="text" class="form-control" placeholder="Snooze time" aria-describedby="basic-addon1" id="snoozeTime">
+  <input type="number" class="form-control" placeholder="Snooze time" aria-describedby="basic-addon1" id="snoozeTime">
 <span class="input-group-addon">min</span>
+</div>
+<br>
+<div class="input-group">
+  <span class="input-group-addon" id="basic-addon1">Loudness</span>
+  <input type="range" min="1" max="100" class="form-control" placeholder="Snooze time" aria-describedby="basic-addon1" id="snoozeTime">
 </div>
 <br>
 <div class="btn-group" data-toggle="buttons">
