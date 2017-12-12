@@ -111,4 +111,5 @@ for($i = 0; $i < @fvars; $i++) {
 }
 
 print(OUTPUT "#define FS_ROOT file$fvars[$i - 1]\n\n");
+print(OUTPUT "struct fsdata_file* g_fs_root = FS_ROOT;\n");
 print(OUTPUT "#define FS_NUMFILES $i\n");
