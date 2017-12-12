@@ -17,7 +17,7 @@ EspPwmLed::EspPwmLed(unsigned int gpio) {
     gpio_pad_select_gpio(CONFIG_LED_GPIO);
     gpio_set_direction(static_cast<gpio_num_t>(CONFIG_LED_GPIO), GPIO_MODE_OUTPUT);
     //ledc_timer.duty_resolution = LEDC_TIMER_13_BIT; // resolution of PWM duty
-    ledc_timer.bit_num = LEDC_TIMER_10_BIT;
+    ledc_timer.duty_resolution = LEDC_TIMER_10_BIT;
         ledc_timer.freq_hz = 5000;                      // frequency of PWM signal
         ledc_timer.speed_mode = LEDC_MODE;           // timer mode
         ledc_timer.timer_num = LEDC_TIMER;            // timer index
