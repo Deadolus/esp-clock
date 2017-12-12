@@ -134,7 +134,6 @@ void example_disp_buf(uint8_t* buf, int length)
 
     void esp_play_audio() {
     ESP_LOGI(TAG, "Playing audio");
-    int offset = 0;
     int tot_size = sizeof(audio_table);
     int i2s_read_len = EXAMPLE_I2S_READ_LEN;
     uint8_t* i2s_write_buff = (uint8_t*) calloc(i2s_read_len, sizeof(char));
@@ -142,6 +141,7 @@ void example_disp_buf(uint8_t* buf, int length)
     example_set_file_play_mode();
 ESP_LOGI(TAG, "Audio, tot size: %d", tot_size);
     while (PLAY_AUDIO) {
+        int offset = 0;
     while ((offset < tot_size) && PLAY_AUDIO) {
         int play_len = ((tot_size - offset) > (4 * 1024)) ? (4 * 1024) : (tot_size - offset);
 
@@ -149,6 +149,7 @@ ESP_LOGI(TAG, "Audio, tot size: %d", tot_size);
         i2s_write_bytes(EXAMPLE_I2S_NUM, (const char*) i2s_write_buff, i2s_wr_len, portMAX_DELAY);
         offset += play_len;
         //example_disp_buf((uint8_t*) i2s_write_buff, 32);
+        //ESP_LOGI(TAG, "Now at offset %d/%d", offset, tot_size);
     }
     }
     example_reset_play_mode();
