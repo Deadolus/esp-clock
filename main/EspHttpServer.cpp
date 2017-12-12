@@ -1,6 +1,7 @@
 #include "EspHttpServer.h"
 #include "Alarm.h"
 #include "EspAlarm.h"
+#include "esp_log.h"
 //#include <espressif/esp_common.h>
 //#include <esp_common.h>
 //#include <esp8266.h>
@@ -14,6 +15,8 @@
 
 #define LED_PIN 2
 
+static const char* TAG = "HttpServer";
+
 enum {
     SSI_UPTIME,
     SSI_FREE_HEAP,
@@ -24,8 +27,9 @@ enum {
 int32_t ssi_handler(int32_t iIndex, char *pcInsert, int32_t iInsertLen)
 {
     //EspAlarmService alarmService{alarms_, std::chrono::minutes(10)};
-//client send iIndex from pcConfigSSITags in to here - 
-//we populate pcInsert and return it to client
+    //client send iIndex from pcConfigSSITags in to here - 
+    //we populate pcInsert and return it to client
+    ESP_LOGI(TAG, "Got request for %i", iIndex);
     switch (iIndex) {
         case SSI_UPTIME:
             snprintf(pcInsert, iInsertLen, "%d",
@@ -48,13 +52,15 @@ int32_t ssi_handler(int32_t iIndex, char *pcInsert, int32_t iInsertLen)
             break;
     }
 
+    ESP_LOGI(TAG, "Replying to index with %s", pcInsert);
     /* Tell the server how many characters to insert */
     return (strlen(pcInsert));
 }
 
 char *newAlarm_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
-//url handler e.g. /newAalarm?time=xxx&days=xxxx
+    ESP_LOGI(TAG, "Got request for newAlarm, params: %i", iNumParams);
+    //url handler e.g. /newAalarm?time=xxx&days=xxxx
     alarms_t alarm;
     for (int i = 0; i < iNumParams; i++) {
         if(strcmp(pcParam[i], "time")) {
@@ -71,7 +77,8 @@ char *newAlarm_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pc
 
 char *gpio_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
-//url handler, e.g. gpio?off=2
+    ESP_LOGI(TAG, "Got request for gpio");
+    //url handler, e.g. gpio?off=2
     for (int i = 0; i < iNumParams; i++) {
         if (strcmp(pcParam[i], "on") == 0) {
             uint8_t gpio_num = atoi(pcValue[i]);
@@ -92,16 +99,19 @@ char *gpio_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValu
 
 char *about_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
+    ESP_LOGI(TAG, "Got request for about");
     return "/about.html";
 }
 
 char *websocket_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
+    ESP_LOGI(TAG, "Got request for websocket");
     return "/websockets.html";
 }
 
 void websocket_task(void *pvParameter)
 {
+    ESP_LOGI(TAG, "In websocket task");
     struct tcp_pcb *pcb = (struct tcp_pcb *) pvParameter;
 
     for (;;) {
@@ -137,7 +147,8 @@ void websocket_task(void *pvParameter)
  */
 void websocket_cb(struct tcp_pcb *pcb, uint8_t *data, u16_t data_len, uint8_t mode)
 {
-    printf("[websocket_callback]:\n%.*s\n", (int) data_len, (char*) data);
+    ESP_LOGI(TAG, "In websocket task, len: %u, data: %s", data_len, data);
+    //printf("[websocket_callback]:\n%.*s\n", (int) data_len, (char*) data);
 
     uint8_t response[2];
     uint16_t val;
@@ -145,7 +156,7 @@ void websocket_cb(struct tcp_pcb *pcb, uint8_t *data, u16_t data_len, uint8_t mo
     switch (data[0]) {
         case 'A': // ADC
             /* This should be done on a separate thread in 'real' applications */
-		val=0;
+            val=0;
             //val = sdk_system_adc_read();
             break;
         case 'D': // Disable LED
@@ -176,7 +187,7 @@ void websocket_open_cb(struct tcp_pcb *pcb, const char *uri)
 {
     printf("WS URI: %s\n", uri);
     if (!strcmp(uri, "/stream")) {
-        printf("request for streaming\n");
+        ESP_LOGI(TAG, "request for streaming");
         xTaskCreate(&websocket_task, "websocket_task", 256, (void *) pcb, 2, NULL);
     }
 }
@@ -221,6 +232,7 @@ void httpd_task(void *pvParameters)
 }
 
 void EspHttpServer::startServer() {
+    ESP_LOGI(TAG, "Starting webserver");
     /* initialize tasks */
     xTaskCreate(&httpd_task, "HTTP Daemon", 128, NULL, 2, NULL);
 }
