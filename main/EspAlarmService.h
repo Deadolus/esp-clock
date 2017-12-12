@@ -13,7 +13,6 @@ class EspAlarmService :
         virtual std::list<alarms_t> getRingingAlarms() override;
         virtual bool snooze() override;
         virtual bool pacify() override;
-        virtual alarms_t getNextAlarm() override;
     private:
         Alarm& alarms_;
         std::chrono::minutes snoozeTime_;

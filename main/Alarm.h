@@ -29,4 +29,5 @@ class Alarm
     public: 
         virtual void setAlarm(alarms_t& alarm) = 0;
         virtual std::list<alarms_t>& getAlarms() const = 0;
+        virtual alarms_t getNextAlarm() = 0;
 };

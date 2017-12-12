@@ -55,7 +55,7 @@ bool EspAlarmService::checkForAlarm() {
     bool ringing{false};
     for(auto& alarm: alarms_.getAlarms())
     {
-        ESP_LOGI(TAG, "Now = %lu, alarm time: %lu, Status: %u", std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()), std::chrono::system_clock::to_time_t(alarm.time), static_cast<unsigned int>(alarm.status));
+        //ESP_LOGI(TAG, "Now = %lu, alarm time: %lu, Status: %u", std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()), std::chrono::system_clock::to_time_t(alarm.time), static_cast<unsigned int>(alarm.status));
         if(alarmShouldRing(alarm, snoozeTime_))
         {
             alarm.status = AlarmStatus::Ringing;
@@ -112,13 +112,3 @@ std::list<alarms_t> EspAlarmService::getRingingAlarms() {
     return ringingAlarms;
 }
 
-alarms_t EspAlarmService::getNextAlarm() {
-    //std::chrono::system_clock::time_point next{std::chrono::system_clock::time_point::max()};
-    alarms_t nextAlarm = alarms_.getAlarms().front();
-    for(auto& alarm: alarms_.getAlarms())
-    {
-        if(alarm.time < nextAlarm.time)
-            nextAlarm = alarm;
-    }
-    return nextAlarm;
-}

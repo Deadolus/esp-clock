@@ -26,7 +26,7 @@ enum {
 
 int32_t ssi_handler(int32_t iIndex, char *pcInsert, int32_t iInsertLen)
 {
-    //EspAlarmService alarmService{alarms_, std::chrono::minutes(10)};
+    EspAlarm alarms;
     //client send iIndex from pcConfigSSITags in to here - 
     //we populate pcInsert and return it to client
     ESP_LOGI(TAG, "Got request for %i", iIndex);
@@ -43,8 +43,8 @@ int32_t ssi_handler(int32_t iIndex, char *pcInsert, int32_t iInsertLen)
             //snprintf(pcInsert, iInsertLen, (GPIO.OUT & BIT(LED_PIN)) ? "Off" : "On");
             break;
         case SSI_NEXT_ALARM:
-            snprintf(pcInsert, iInsertLen, "Soon!");
-            //snprintf(pcInsert, iInsertLen, alarmService.getNextAlarm().name.c_str());
+            //snprintf(pcInsert, iInsertLen, "Soon!");
+            snprintf(pcInsert, iInsertLen, alarms.getNextAlarm().name.c_str());
             //snprintf(pcInsert, iInsertLen, (GPIO.OUT & BIT(LED_PIN)) ? "Off" : "On");
             break;
         default:
@@ -198,14 +198,15 @@ void httpd_task(void *pvParameters)
         {"/gpio", (tCGIHandler) gpio_cgi_handler},
         {"/about", (tCGIHandler) about_cgi_handler},
         {"/websockets", (tCGIHandler) websocket_cgi_handler},
-        {"/newAlarm", (tCGIHandler) newAlarm_cgi_handler},
+        {"/newalarm", (tCGIHandler) newAlarm_cgi_handler},
     };
 
+    //limited to 8chars
     const char *pcConfigSSITags[] = {
         "uptime", // SSI_UPTIME
         "heap",   // SSI_FREE_HEAP
         "led",     // SSI_LED_STATE
-        "nextAlarm",
+        "nalarm",
         "time",
         "name",
         "snoozeTime",
@@ -228,11 +229,14 @@ void httpd_task(void *pvParameters)
             (tWsHandler) websocket_cb);
     httpd_init();
 
-    for (;;);
+    for (;;) {
+        vTaskDelay(1 / portTICK_PERIOD_MS);
+    }
 }
 
+//EspHttpServer::EspHttpServer(Alarm& alarms) : alarms_(alarms) {}
 void EspHttpServer::startServer() {
     ESP_LOGI(TAG, "Starting webserver");
     /* initialize tasks */
-    xTaskCreate(&httpd_task, "HTTP Daemon", 128, NULL, 2, NULL);
+    xTaskCreate(&httpd_task, "HTTP Daemon", 4000, NULL, 2, NULL);
 }

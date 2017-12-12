@@ -95,7 +95,6 @@ unsigned long time_now_s;
 extern "C" void app_main()
 {
     static EspHttpServer httpserver;
-    httpserver.startServer();
     if(esp_sleep_get_wakeup_cause() != ESP_SLEEP_WAKEUP_TIMER)
     {
     ESP_ERROR_CHECK( nvs_flash_init() );
@@ -112,14 +111,16 @@ extern "C" void app_main()
     //example_tg0_timer_init(TIMER_0, TEST_WITHOUT_RELOAD, TIMER_INTERVAL0_SEC);
     /* wifi.join(); */
     /* obtainTime.join(); */
+    httpserver.startServer();
     }
+    ESP_LOGI(TAG, "Everything started...");
 }
 
 void obtain_time()
 {
     EspWifi wifi{};
     EspSntpClient sntpClient{ wifi };
-    sntpClient.getTime(true);
+    sntpClient.getTime(false);
     //test alarm
     EspAlarm alarm;
     alarms_t soon{};
