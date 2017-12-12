@@ -59,14 +59,26 @@ int32_t ssi_handler(int32_t iIndex, char *pcInsert, int32_t iInsertLen)
 
 char *newAlarm_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
-    ESP_LOGI(TAG, "Got request for newAlarm, params: %i", iNumParams);
+    ESP_LOGI(TAG, "Got request for newAlarm, params: %i, index: %i", iNumParams, iIndex);
     //url handler e.g. /newAalarm?time=xxx&days=xxxx
     alarms_t alarm;
+
     for (int i = 0; i < iNumParams; i++) {
-        if(strcmp(pcParam[i], "time")) {
+        if(strcmp(pcParam[i], "time")==0) {
+            ESP_LOGI(TAG, "time: %s", pcValue[i]);
             //alarm.time = 0;
         }
-        if(strcmp(pcParam[i], "days")) {
+        if(strcmp(pcParam[i], "name")==0) {
+            ESP_LOGI(TAG, "name: %s", pcValue[i]);
+        }
+        if(strcmp(pcParam[i], "snoozeTime")==0) {
+            ESP_LOGI(TAG, "snoozeTime: %s", pcValue[i]);
+        }
+        if(strcmp(pcParam[i], "repeatingAlarm")==0) {
+            ESP_LOGI(TAG, "repeatingAlarm: %s", pcValue[i]);
+        }
+        if(strcmp(pcParam[i], "days")==0) {
+            ESP_LOGI(TAG, "days: %s", pcValue[i]);
             //alarm.days = 
             //alarm.time = 0;
         }
@@ -238,5 +250,5 @@ void httpd_task(void *pvParameters)
 void EspHttpServer::startServer() {
     ESP_LOGI(TAG, "Starting webserver");
     /* initialize tasks */
-    xTaskCreate(&httpd_task, "HTTP Daemon", 4000, NULL, 2, NULL);
+    xTaskCreate(&httpd_task, "HTTP Daemon", 8000, NULL, 2, NULL);
 }
