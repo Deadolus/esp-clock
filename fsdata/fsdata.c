@@ -3236,5 +3236,6 @@ sizeof(data_websockets_html) - 17,
 }};
 
 #define FS_ROOT file_websockets_html
+struct fsdata_file* g_fs_root = FS_ROOT;
 
 #define FS_NUMFILES 8
