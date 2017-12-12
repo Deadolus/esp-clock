@@ -95,7 +95,7 @@ unsigned long time_now_s;
 extern "C" void app_main()
 {
     static EspHttpServer httpserver;
-    httpserver.start();
+    httpserver.startServer();
     if(esp_sleep_get_wakeup_cause() != ESP_SLEEP_WAKEUP_TIMER)
     {
     ESP_ERROR_CHECK( nvs_flash_init() );

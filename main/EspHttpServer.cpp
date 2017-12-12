@@ -45,16 +45,16 @@ char *gpio_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValu
     for (int i = 0; i < iNumParams; i++) {
         if (strcmp(pcParam[i], "on") == 0) {
             uint8_t gpio_num = atoi(pcValue[i]);
-            gpio_enable(gpio_num, GPIO_OUTPUT);
-            gpio_write(gpio_num, true);
+            ////gpio_enable(gpio_num, GPIO_OUTPUT);
+            //gpio_set_level(gpio_num, true);
         } else if (strcmp(pcParam[i], "off") == 0) {
             uint8_t gpio_num = atoi(pcValue[i]);
-            gpio_enable(gpio_num, GPIO_OUTPUT);
-            gpio_write(gpio_num, false);
+            //gpio_enable(gpio_num, GPIO_OUTPUT);
+            //gpio_set_level(gpio_num, false);
         } else if (strcmp(pcParam[i], "toggle") == 0) {
             uint8_t gpio_num = atoi(pcValue[i]);
-            gpio_enable(gpio_num, GPIO_OUTPUT);
-            gpio_toggle(gpio_num);
+            //gpio_enable(gpio_num, GPIO_OUTPUT);
+            //gpio_toggle(gpio_num);
         }
     }
     return "/index.ssi";
@@ -82,7 +82,7 @@ void websocket_task(void *pvParameter)
 
         int uptime = xTaskGetTickCount() * portTICK_PERIOD_MS / 1000;
         int heap = (int) xPortGetFreeHeapSize();
-        int led = !gpio_read(LED_PIN);
+        int led = false;//!gpio_get_level(LED_PIN);
 
         /* Generate response in JSON format */
         char response[64];
@@ -115,14 +115,15 @@ void websocket_cb(struct tcp_pcb *pcb, uint8_t *data, u16_t data_len, uint8_t mo
     switch (data[0]) {
         case 'A': // ADC
             /* This should be done on a separate thread in 'real' applications */
-            val = sdk_system_adc_read();
+		val=0;
+            //val = sdk_system_adc_read();
             break;
         case 'D': // Disable LED
-            gpio_write(LED_PIN, true);
+            //gpio_set_level(LED_PIN, true);
             val = 0xDEAD;
             break;
         case 'E': // Enable LED
-            gpio_write(LED_PIN, false);
+            //gpio_set_level(LED_PIN, false);
             val = 0xBEEF;
             break;
         default:
