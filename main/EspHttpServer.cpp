@@ -1,4 +1,6 @@
 #include "EspHttpServer.h"
+#include "Alarm.h"
+#include "EspAlarm.h"
 //#include <espressif/esp_common.h>
 //#include <esp_common.h>
 //#include <esp8266.h>
@@ -40,8 +42,26 @@ int32_t ssi_handler(int32_t iIndex, char *pcInsert, int32_t iInsertLen)
     return (strlen(pcInsert));
 }
 
+char *newAlarm_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
+{
+
+    alarms_t alarm;
+    for (int i = 0; i < iNumParams; i++) {
+        if(strcmp(pcParam[i], "time")) {
+            //alarm.time = 0;
+        }
+        if(strcmp(pcParam[i], "days")) {
+            //alarm.days = 
+            //alarm.time = 0;
+        }
+
+    }
+    return "/newalarm.html";
+}
+
 char *gpio_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
+//url handler, e.g. gpio?off=2
     for (int i = 0; i < iNumParams; i++) {
         if (strcmp(pcParam[i], "on") == 0) {
             uint8_t gpio_num = atoi(pcValue[i]);
@@ -157,12 +177,25 @@ void httpd_task(void *pvParameters)
         {"/gpio", (tCGIHandler) gpio_cgi_handler},
         {"/about", (tCGIHandler) about_cgi_handler},
         {"/websockets", (tCGIHandler) websocket_cgi_handler},
+        {"/newAlarm", (tCGIHandler) newAlarm_cgi_handler},
     };
 
     const char *pcConfigSSITags[] = {
         "uptime", // SSI_UPTIME
         "heap",   // SSI_FREE_HEAP
-        "led"     // SSI_LED_STATE
+        "led",     // SSI_LED_STATE
+        "time",
+        "name",
+        "snoozeTime",
+        "repeating",
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday",
+        "saturday",
+        "sunday",
+
     };
 
     /* register handlers and start the server */
