@@ -17,11 +17,13 @@
 enum {
     SSI_UPTIME,
     SSI_FREE_HEAP,
-    SSI_LED_STATE
+    SSI_LED_STATE,
+    SSI_NEXT_ALARM
 };
 
 int32_t ssi_handler(int32_t iIndex, char *pcInsert, int32_t iInsertLen)
 {
+    //EspAlarmService alarmService{alarms_, std::chrono::minutes(10)};
 //client send iIndex from pcConfigSSITags in to here - 
 //we populate pcInsert and return it to client
     switch (iIndex) {
@@ -34,6 +36,11 @@ int32_t ssi_handler(int32_t iIndex, char *pcInsert, int32_t iInsertLen)
             break;
         case SSI_LED_STATE:
             snprintf(pcInsert, iInsertLen, "I don't know");
+            //snprintf(pcInsert, iInsertLen, (GPIO.OUT & BIT(LED_PIN)) ? "Off" : "On");
+            break;
+        case SSI_NEXT_ALARM:
+            snprintf(pcInsert, iInsertLen, "Soon!");
+            //snprintf(pcInsert, iInsertLen, alarmService.getNextAlarm().name.c_str());
             //snprintf(pcInsert, iInsertLen, (GPIO.OUT & BIT(LED_PIN)) ? "Off" : "On");
             break;
         default:
@@ -187,6 +194,7 @@ void httpd_task(void *pvParameters)
         "uptime", // SSI_UPTIME
         "heap",   // SSI_FREE_HEAP
         "led",     // SSI_LED_STATE
+        "nextAlarm",
         "time",
         "name",
         "snoozeTime",

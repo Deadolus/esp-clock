@@ -111,3 +111,14 @@ std::list<alarms_t> EspAlarmService::getRingingAlarms() {
     }
     return ringingAlarms;
 }
+
+alarms_t EspAlarmService::getNextAlarm() {
+    //std::chrono::system_clock::time_point next{std::chrono::system_clock::time_point::max()};
+    alarms_t nextAlarm = alarms_.getAlarms().front();
+    for(auto& alarm: alarms_.getAlarms())
+    {
+        if(alarm.time < nextAlarm.time)
+            nextAlarm = alarm;
+    }
+    return nextAlarm;
+}

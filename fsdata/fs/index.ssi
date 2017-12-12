@@ -43,7 +43,7 @@
 HTTP Server is up and running.</div>
 
 			<p>This is an ESP32 alarm clock. Next alarm will be at: 
-<span class="badge bage-info"><!-- nextalarm --> aaa</span>
+<span class="badge bage-info"><!-- nextAlarm --></span>
 </p>
 
 			<div class="cover" align="center">
