@@ -1,6 +1,7 @@
 #pragma once
 #include "AlarmService.h"
 #include <chrono>
+#include <mutex>
 class Alarm;
 class EspAlarmService :
     public AlarmService
@@ -16,4 +17,5 @@ class EspAlarmService :
     private:
         Alarm& alarms_;
         std::chrono::minutes snoozeTime_;
+        std::mutex alarmServiceMutex{};
 };

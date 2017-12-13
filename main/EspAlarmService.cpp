@@ -33,7 +33,7 @@ bool correctTime(std::chrono::system_clock::time_point alarmTime) {
     return (now_tm.tm_hour == alarm_tm.tm_hour) && (now_tm.tm_min == alarm_tm.tm_min) && (now_tm.tm_sec == alarm_tm.tm_sec);
 }
 
-    bool alarmShouldRing(alarms_t& alarm, std::chrono::minutes snoozeTime) {
+bool alarmShouldRing(alarms_t& alarm, std::chrono::minutes snoozeTime) {
         std::chrono::system_clock::time_point snoozePoint = alarm.snoozeTime+snoozeTime;
         if( 
                 correctDayOfWeek(alarm.weekRepeat) &&  (
@@ -51,6 +51,7 @@ EspAlarmService::EspAlarmService(Alarm& alarm, std::chrono::minutes snoozeTime) 
 
 /** Checks for alarm, returns true if one is ringing */
 bool EspAlarmService::checkForAlarm() {
+    std::lock_guard<std::mutex> guard(alarmServiceMutex);
     //ESP_LOGI(TAG, "Checking for alarm");
     bool ringing{false};
     for(auto& alarm: alarms_.getAlarms())
@@ -67,6 +68,7 @@ bool EspAlarmService::checkForAlarm() {
 }
 
 bool EspAlarmService::alarmRinging() {
+    std::lock_guard<std::mutex> guard(alarmServiceMutex);
     for(auto& alarm: alarms_.getAlarms())
     {
         if(alarm.status == AlarmStatus::Ringing)
@@ -78,6 +80,7 @@ bool EspAlarmService::alarmRinging() {
 }
 
 bool EspAlarmService::snooze() {
+    std::lock_guard<std::mutex> guard(alarmServiceMutex);
     for(auto& alarm: alarms_.getAlarms())
     {
         if(alarm.status == AlarmStatus::Ringing)
@@ -90,6 +93,7 @@ bool EspAlarmService::snooze() {
 }
 
 bool EspAlarmService::pacify() {
+    std::lock_guard<std::mutex> guard(alarmServiceMutex);
     for(auto& alarm: alarms_.getAlarms())
     {
         if(alarm.status >= AlarmStatus::Ringing)
@@ -101,6 +105,7 @@ bool EspAlarmService::pacify() {
     return true;
 }
 std::list<alarms_t> EspAlarmService::getRingingAlarms() {
+    std::lock_guard<std::mutex> guard(alarmServiceMutex);
     std::list<alarms_t> ringingAlarms;
     for(auto& alarm: alarms_.getAlarms())
     {
