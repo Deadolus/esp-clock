@@ -51,7 +51,7 @@ EspAlarmService::EspAlarmService(Alarm& alarm, std::chrono::minutes snoozeTime) 
 
 /** Checks for alarm, returns true if one is ringing */
 bool EspAlarmService::checkForAlarm() {
-    ESP_LOGI(TAG, "Checking for alarm");
+    //ESP_LOGI(TAG, "Checking for alarm");
     bool ringing{false};
     for(auto& alarm: alarms_.getAlarms())
     {
