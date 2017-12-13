@@ -80,7 +80,8 @@ static const char *TAG = "clock";
  * maintains its value when ESP32 wakes from deep sleep.
  */
 //RTC_DATA_ATTR static int boot_count = 0; 
-static void obtain_time();
+//static void obtain_time();
+static void obtain_time(void *);
 static void initialise_wifi();
 static void example_tg0_timer_init(timer_idx_t timer_idx, bool auto_reload, double timer_interval_sec);
 void IRAM_ATTR timer_group0_isr(void *para);
@@ -102,11 +103,12 @@ extern "C" void app_main()
     //xTaskCreate(&display_test, "display_test", configMINIMAL_STACK_SIZE, NULL, 5, NULL);
    // xTaskCreate(&initialise_wifi, "initialise_wifi", 4048, NULL, 5, NULL);
     //init_time();
-    xTaskCreate(&display_test, "display_test", 12000, NULL, 5, NULL);
+    xTaskCreate(&display_test, "display_test", 8000, NULL, 5, NULL);
     std::thread wifi(initialise_wifi);
     wifi.detach();
-    std::thread obtainTime(obtain_time);
-    obtainTime.detach();
+    xTaskCreate(&obtain_time, "obtain_time", 2000, NULL, 5, NULL);
+    //std::thread obtainTime(obtain_time);
+    //obtainTime.detach();
     //xTaskCreate(&obtain_time, "obtain_time", 2048, NULL, 5, NULL);
     //example_tg0_timer_init(TIMER_0, TEST_WITHOUT_RELOAD, TIMER_INTERVAL0_SEC);
     /* wifi.join(); */
@@ -116,20 +118,33 @@ extern "C" void app_main()
     ESP_LOGI(TAG, "Everything started...");
 }
 
-void obtain_time()
+//void obtain_time()
+void obtain_time(void *pvParameters)
 {
     EspWifi wifi{};
     EspSntpClient sntpClient{ wifi };
-    sntpClient.getTime(false);
+    sntpClient.getTime(true);
     //test alarm
     EspAlarm alarm;
     alarms_t soon{};
     soon.time = std::chrono::system_clock::now()+std::chrono::seconds(4);
     soon.weekRepeat = 0b0110111; // Mo, tue, thu, fr
     soon.name = "Soon Alarm";
+    alarms_t wakeup{};
+
+    time_t now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    std::tm wakeup_tm{};
+    wakeup_tm = *localtime(&now);
+    wakeup_tm.tm_mday++;
+    wakeup_tm.tm_hour = 8;
+    wakeup_tm.tm_min = 0;
+    wakeup.time = std::chrono::system_clock::from_time_t(std::mktime(&wakeup_tm));
+    wakeup.weekRepeat = 0b1111111;
+    wakeup.name = "Wakeup";
     //alarms_t soon{std::chrono::system_clock::now()+std::chrono::seconds(4),std::chrono::system_clock::from_time_t(0), static_cast<timer_idx_t>(0), AlarmStatus::Pacified, [](alarms_t){} };
 
     alarm.setAlarm(soon);
+    alarm.setAlarm(wakeup);
 }
 
 static void initialise_wifi()
@@ -143,7 +158,6 @@ void display_test(void *pvParameter)
     EspDisplay display;
     EspSign espsign(display);
     while(true) {
-        display.partialUpdate();
         //all of the framebuffer is updated on every updateTime
         //thus no need to call it twice
         updateTime(display, espsign);
@@ -176,11 +190,12 @@ void updateTime(EspDisplay& display, EspSign& espsign) {
     tzset();
     std::strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
     //std::put_time(std::localtime(&now), "The current date/time in Zuerich is: %s");
-    ESP_LOGI(TAG, "The current date/time in Zuerich is: %s", strftime_buf);
+    //ESP_LOGI(TAG, "The current date/time in Zuerich is: %s", strftime_buf);
     if(sntp.timeSet())
         strftime(strftime_buf, sizeof(strftime_buf), "%R", &timeinfo);
     else
         sprintf(strftime_buf, "--:--");
+    display.write(alarm.getNextAlarm().name.c_str(), 100, 00, Font::Font24);
     if(alarms.checkForAlarm()) {
         auto ringingAlarms = alarms.getRingingAlarms();
         display.write(ringingAlarms.front().name.c_str(), 50, 00, Font::Font24);
@@ -191,23 +206,27 @@ void updateTime(EspDisplay& display, EspSign& espsign) {
             ESP_LOGI(TAG, "Button pressed!");
             alarms.pacify();
             audioplayer.stopAudio();
+            display.fullUpdate();
+            pwmLed.setIntensity(20);
             if(counter == 5)
             {
                 ESP_LOGI(TAG, "Turning on LED");
                 //turn on led on long press
-                pwmLed.setIntensity(20);
+                //pwmLed.setIntensity(20);
                 counter = 0;
             }
         }
         else
         {
-            pwmLed.setIntensity(100);
+            //pwmLed.setIntensity(100);
         }
     }
     else
     {
+        display.partialUpdate();
         //erasing "Alarm!"
-        //display.write("      ", 100, 100, Font::Font24);
+        display.write("            ", 100, 100, Font::Font24);
+        pwmLed.setIntensity(0);
     }
 
     //strftime(strftime_buf, sizeof(strftime_buf), "%r", &timeinfo);
