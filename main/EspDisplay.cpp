@@ -19,6 +19,7 @@ namespace {
         }
         return Font8;
     }
+
 }
 
 EspDisplay::EspDisplay() : paint_(image_, 0, 0)
@@ -33,6 +34,21 @@ void EspDisplay::setImage(const unsigned char* image, unsigned int x, unsigned i
     //epd_.SetFrameMemory(image, x, y, width, height);
     //epd_.DisplayFrame();
 }
+void EspDisplay::setNextAlarmName(std::string alarm) {
+    write(std::string("N: ")+alarm.c_str(), EPD_HEIGHT-32, 0, Font::Font24);
+}
+void EspDisplay::clearNextAlarmName() {
+    clearLine(Font24, EPD_HEIGHT-32);
+}
+
+void EspDisplay::setAlarm(std::string alarm) {
+    write(alarm.c_str(), 150, 0, Font::Font24);
+}
+
+void EspDisplay::clearAlarm() {
+    clearLine(Font24, 150);
+}
+
 void EspDisplay::init() {
     if(!display_initialized) {
         epd_.SpiInit();
@@ -88,3 +104,10 @@ void EspDisplay::send() {
 void EspDisplay::sleep() {
     epd_.Sleep();
 }
+
+void EspDisplay::clearLine(sFONT font, unsigned int y) {
+    std::string temp;
+    for(size_t i{0}; i<EPD_WIDTH/font.Width; i++)
+        temp.append(" ");
+    write(temp,static_cast<unsigned int>(paint_.GetWidth()-font.Height), y, Font::Font24);
+    }
