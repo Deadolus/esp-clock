@@ -150,6 +150,7 @@ void obtain_time(void *pvParameters)
 static void initialise_wifi()
 {
     EspWifi wifi{};
+    wifi.init();
     wifi.startWifi();
 }
 
@@ -183,9 +184,11 @@ void updateTime(EspDisplay& display, EspSign& espsign) {
             audioplayer.stopAudio();
             display.fullUpdate();
             pwmLed.setIntensity(0);
+            if(!wifi.isConnected()) wifi.startWifi();
             });
     button.setLongPressCb([](){
             ESP_LOGI(TAG, "Button long pressed!");
+            if(wifi.isConnected()) wifi.stopWifi();
             });
     espsign.setWifi(wifi.isConnected());
     time_t now{};
@@ -210,6 +213,7 @@ void updateTime(EspDisplay& display, EspSign& espsign) {
         auto ringingAlarms = alarms.getRingingAlarms();
         display.setAlarm(ringingAlarms.front().name.c_str());
         audioplayer.startAudio();
+        pwmLed.setIntensity(50);
     }
     else
     {

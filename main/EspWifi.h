@@ -10,6 +10,7 @@ class EspWifi :
 {
     public:
         EspWifi();
+        virtual void init() override;
         virtual void startWifi()  override;
         virtual void stopWifi()  override;
         virtual bool isConnected() override;

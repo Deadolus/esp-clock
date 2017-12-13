@@ -6,6 +6,7 @@
 //#include <esp_common.h>
 //#include <esp8266.h>
 //#include <esp/uart.h>
+#include <string>
 #include <string.h>
 #include <stdio.h>
 #include <freertos/FreeRTOS.h>
@@ -16,6 +17,14 @@
 #define LED_PIN 2
 
 static const char* TAG = "HttpServer";
+namespace {
+    std::string replaceStr(std::string & str, const std::string & from, const std::string & to)
+{
+  while(str.find(from) != std::string::npos)
+    str.replace(str.find(from), from.length(), to);
+  return str;
+}
+}
 
 enum {
     SSI_UPTIME,
@@ -59,17 +68,27 @@ int32_t ssi_handler(int32_t iIndex, char *pcInsert, int32_t iInsertLen)
 
 char *newAlarm_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
+    EspAlarm alarms;
     ESP_LOGI(TAG, "Got request for newAlarm, params: %i, index: %i", iNumParams, iIndex);
     //url handler e.g. /newAalarm?time=xxx&days=xxxx
     alarms_t alarm;
 
     for (int i = 0; i < iNumParams; i++) {
         if(strcmp(pcParam[i], "time")==0) {
-            ESP_LOGI(TAG, "time: %s", pcValue[i]);
-            //alarm.time = 0;
+            time_t now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+            std::tm alarm_tm{};
+            alarm_tm = *localtime(&now);
+            //alarm_tm.tm_mday++;
+            alarm_tm.tm_hour = atoi(std::string(pcValue[i]).substr(0,2).c_str());
+            alarm_tm.tm_min = atoi(std::string(pcValue[i]).substr(3,4).c_str());
+            alarm.time = std::chrono::system_clock::from_time_t(std::mktime(&alarm_tm));
+            ESP_LOGI(TAG, "time: %s --> %u:%u", pcValue[i], alarm_tm.tm_hour, alarm_tm.tm_min);
         }
         if(strcmp(pcParam[i], "name")==0) {
             ESP_LOGI(TAG, "name: %s", pcValue[i]);
+            alarm.name = std::string(pcValue[i]);
+            alarm.name = replaceStr(alarm.name, "%20", " ");
+            ESP_LOGI(TAG, "name: %s --> %s", pcValue[i], alarm.name.c_str());
         }
         if(strcmp(pcParam[i], "snoozeTime")==0) {
             ESP_LOGI(TAG, "snoozeTime: %s", pcValue[i]);
@@ -79,8 +98,9 @@ char *newAlarm_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pc
         }
         if(strcmp(pcParam[i], "days")==0) {
             ESP_LOGI(TAG, "days: %s", pcValue[i]);
-            //alarm.days = 
-            //alarm.time = 0;
+            alarm.weekRepeat = std::bitset<7>(pcValue[i]);
+            //days is last entry so we can now set alarm
+            alarms.setAlarm(alarm);
         }
 
     }

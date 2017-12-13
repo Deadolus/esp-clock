@@ -34,7 +34,7 @@ EspPwmLed::EspPwmLed(unsigned int gpio) {
 
 void EspPwmLed::setIntensity(unsigned int intensity) {
     unsigned int duty = std::pow(2,10) * intensity/100.0;
-    ESP_LOGI(TAG, "Setting intensity to %u, duty: %u",intensity, duty);
+    //ESP_LOGI(TAG, "Setting intensity to %u, duty: %u",intensity, duty);
     ledc_set_duty(ledChannel_.speed_mode, ledChannel_.channel, duty);
     ledc_update_duty(ledChannel_.speed_mode, ledChannel_.channel);
 
