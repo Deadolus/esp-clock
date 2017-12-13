@@ -180,9 +180,9 @@ void updateTime(EspDisplay& display, EspSign& espsign) {
     button.setPressCb([&](){
             ESP_LOGI(TAG, "Button pressed!");
             alarms.pacify();
-            //audioplayer.stopAudio();
-            //display.fullUpdate();
-            //pwmLed.setIntensity(0);
+            audioplayer.stopAudio();
+            display.fullUpdate();
+            pwmLed.setIntensity(0);
             });
     button.setLongPressCb([](){
             ESP_LOGI(TAG, "Button long pressed!");
@@ -208,7 +208,6 @@ void updateTime(EspDisplay& display, EspSign& espsign) {
     display.setNextAlarmName(alarm.getNextAlarm().name.c_str());
     if(alarms.checkForAlarm()) {
         auto ringingAlarms = alarms.getRingingAlarms();
-        display.write(ringingAlarms.front().name.c_str(), 150, 00, Font::Font24);
         display.setAlarm(ringingAlarms.front().name.c_str());
         audioplayer.startAudio();
     }
@@ -216,7 +215,6 @@ void updateTime(EspDisplay& display, EspSign& espsign) {
     {
         display.partialUpdate();
         //erasing "Alarm!"
-        display.write("                   ", 150, 000, Font::Font24);
         display.clearAlarm();
         //pwmLed.setIntensity(0);
     }
