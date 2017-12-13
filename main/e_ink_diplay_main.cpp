@@ -106,9 +106,9 @@ extern "C" void app_main()
     xTaskCreate(&display_test, "display_test", 8000, NULL, 5, NULL);
     std::thread wifi(initialise_wifi);
     wifi.detach();
-    xTaskCreate(&obtain_time, "obtain_time", 2000, NULL, 5, NULL);
-    //std::thread obtainTime(obtain_time);
-    //obtainTime.detach();
+    //xTaskCreate(&obtain_time, "obtain_time", 2000, NULL, 5, NULL);
+    std::thread obtainTime(obtain_time, nullptr);
+    obtainTime.detach();
     //xTaskCreate(&obtain_time, "obtain_time", 2048, NULL, 5, NULL);
     //example_tg0_timer_init(TIMER_0, TEST_WITHOUT_RELOAD, TIMER_INTERVAL0_SEC);
     /* wifi.join(); */
@@ -123,12 +123,12 @@ void obtain_time(void *pvParameters)
 {
     EspWifi wifi{};
     EspSntpClient sntpClient{ wifi };
-    sntpClient.getTime(true);
+    sntpClient.getTime(false);
     //test alarm
     EspAlarm alarm;
     alarms_t soon{};
     soon.time = std::chrono::system_clock::now()+std::chrono::seconds(4);
-    soon.weekRepeat = 0b0110111; // Mo, tue, thu, fr
+    soon.weekRepeat = 0b0111111; // Mo, tue, thu, fr
     soon.name = "Soon Alarm";
     alarms_t wakeup{};
 
@@ -170,13 +170,23 @@ void display_test(void *pvParameter)
  }
 
 void updateTime(EspDisplay& display, EspSign& espsign) {
-    EspWifi wifi;
-    EspSntpClient sntp{wifi};
-    EspAlarm alarm{};
-    EspAlarmService alarms{alarm, std::chrono::minutes(10)};
-    EspAudioPlayer audioplayer;
+    static EspWifi wifi;
+    static EspSntpClient sntp{wifi};
+    static EspAlarm alarm{};
+    static EspAlarmService alarms{alarm, std::chrono::minutes(10)};
+    static EspAudioPlayer audioplayer;
     static EspPwmLed pwmLed{CONFIG_LED_GPIO};
     static EspButton button{0, true};
+    button.setPressCb([&](){
+            ESP_LOGI(TAG, "Button pressed!");
+            alarms.pacify();
+            //audioplayer.stopAudio();
+            //display.fullUpdate();
+            //pwmLed.setIntensity(0);
+            });
+    button.setLongPressCb([](){
+            ESP_LOGI(TAG, "Button long pressed!");
+            });
     espsign.setWifi(wifi.isConnected());
     time_t now{};
     struct tm timeinfo{};
@@ -195,38 +205,20 @@ void updateTime(EspDisplay& display, EspSign& espsign) {
         strftime(strftime_buf, sizeof(strftime_buf), "%R", &timeinfo);
     else
         sprintf(strftime_buf, "--:--");
-    display.write(alarm.getNextAlarm().name.c_str(), 100, 00, Font::Font24);
+    display.setNextAlarmName(alarm.getNextAlarm().name.c_str());
     if(alarms.checkForAlarm()) {
         auto ringingAlarms = alarms.getRingingAlarms();
-        display.write(ringingAlarms.front().name.c_str(), 50, 00, Font::Font24);
+        display.write(ringingAlarms.front().name.c_str(), 150, 00, Font::Font24);
+        display.setAlarm(ringingAlarms.front().name.c_str());
         audioplayer.startAudio();
-        if(button.pressed()) {
-            static int counter{0};
-            counter++;
-            ESP_LOGI(TAG, "Button pressed!");
-            alarms.pacify();
-            audioplayer.stopAudio();
-            display.fullUpdate();
-            pwmLed.setIntensity(20);
-            if(counter == 5)
-            {
-                ESP_LOGI(TAG, "Turning on LED");
-                //turn on led on long press
-                //pwmLed.setIntensity(20);
-                counter = 0;
-            }
-        }
-        else
-        {
-            //pwmLed.setIntensity(100);
-        }
     }
     else
     {
         display.partialUpdate();
         //erasing "Alarm!"
-        display.write("            ", 100, 100, Font::Font24);
-        pwmLed.setIntensity(0);
+        display.write("                   ", 150, 000, Font::Font24);
+        display.clearAlarm();
+        //pwmLed.setIntensity(0);
     }
 
     //strftime(strftime_buf, sizeof(strftime_buf), "%r", &timeinfo);
