@@ -12,12 +12,18 @@ void EspAlarm::setAlarm(alarms_t& time) {
  }
 
 alarms_t EspAlarm::getNextAlarm() {
-    //std::chrono::system_clock::time_point next{std::chrono::system_clock::time_point::max()};
-    alarms_t nextAlarm = m_alarms.front();
+    std::chrono::system_clock::time_point maxTime{std::chrono::system_clock::time_point::max()};
+    std::chrono::system_clock::time_point now{std::chrono::system_clock::now()};
+    alarms_t nextAlarm;
+    nextAlarm.name = "No alarm";
+    nextAlarm.time = maxTime;
     for(auto& alarm: m_alarms)
     {
-        if(alarm.time < nextAlarm.time)
+        if( (alarm.time < nextAlarm.time) 
+                && (alarm.time > now)
+          ) {
             nextAlarm = alarm;
+        }
     }
     return nextAlarm;
 }
