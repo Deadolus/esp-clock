@@ -6,20 +6,38 @@
 		<link rel="stylesheet" type="text/css" href="css/siimple.min.css">
 		<link rel="stylesheet" type="text/css" href="css/style.css">
 		<link rel="shortcut icon" href="img/favicon.png">
-		<title>HTTP Server</title>
+		<title>ESP32 AlarmClock</title>
 	</head>
 	<body>
-		<ul class="navbar">
-			<li><a href="/">Home</a></li>
-			<li><a href="websockets">WebSockets</a></li>
-			<li><a class="active" href="about">About</a></li>
-		</ul>
+    <nav class="navbar navbar-default">
+      <div class="container-fluid">
+        <!-- Brand and toggle get grouped for better mobile display -->
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">Alarm Clock</a>
+        </div>
+        <!-- Collect the nav links, forms, and other content for toggling -->
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="/">Home</a></li>
+            <li><a class="newalarm" href="newalarm">New Alarm</a></li>
+            <li><a href="websockets">WebSockets</a></li>
+            <li><a href="about">About</a></li>
+          </ul>
+
+        </div><!-- /.navbar-collapse -->
+      </div><!-- /.container-fluid -->
+    </nav>
 
 		<div class="grid main">
 			<h1>About</h1>
+      <p> ESP32 Alarm clock, built by Simon Egli</p>
 			<p>This server is based on httpd from LwIP.</p>
-			<p>To enable debugging compile with flags -DLWIP_DEBUG=1 -DHTTPD_DEBUG=LWIP_DBG_ON.</p>
-			<p>For more info see <a href="http://www.nongnu.org/lwip/2_0_0/group__httpd.html">HTTP Server documentation</a>.</p>
 		</div>
 	</body>
 </html>
