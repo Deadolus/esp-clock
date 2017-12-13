@@ -21,7 +21,7 @@ class EspDisplay :
         virtual void send() override;
         virtual void sleep() override;
     private:
-        void clearLine(sFONT font, unsigned int y);
+        void clearLine(sFONT font, unsigned int x);
         unsigned char image_[1024];
         Paint paint_{image_, 0, 0};    // width should be the multiple of 8 
         Epd epd_;

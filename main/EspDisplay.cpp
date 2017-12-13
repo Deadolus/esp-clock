@@ -35,13 +35,20 @@ void EspDisplay::setImage(const unsigned char* image, unsigned int x, unsigned i
     //epd_.DisplayFrame();
 }
 void EspDisplay::setNextAlarmName(std::string alarm) {
-    write(std::string("N: ")+alarm.c_str(), EPD_HEIGHT-32, 0, Font::Font24);
+    clearLine(Font24, EPD_HEIGHT-32);
+    if(alarm.size() > 10){
+    alarm = alarm.substr(10);
+    }
+    write((std::string("N:")+alarm).c_str(), EPD_HEIGHT-32, 0, Font::Font24);
 }
 void EspDisplay::clearNextAlarmName() {
     clearLine(Font24, EPD_HEIGHT-32);
 }
 
 void EspDisplay::setAlarm(std::string alarm) {
+    if(alarm.size() > 12){
+    alarm = alarm.substr(12);
+    }
     write(alarm.c_str(), 150, 0, Font::Font24);
 }
 
@@ -105,9 +112,9 @@ void EspDisplay::sleep() {
     epd_.Sleep();
 }
 
-void EspDisplay::clearLine(sFONT font, unsigned int y) {
+void EspDisplay::clearLine(sFONT font, unsigned int x) {
     std::string temp;
-    for(size_t i{0}; i<EPD_WIDTH/font.Width; i++)
+    for(size_t i{0}; i<=(EPD_WIDTH/font.Width); i++)
         temp.append(" ");
-    write(temp,static_cast<unsigned int>(paint_.GetWidth()-font.Height), y, Font::Font24);
+    write(temp, x, 0, Font::Font24);
     }
