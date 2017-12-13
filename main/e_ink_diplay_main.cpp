@@ -123,7 +123,7 @@ void obtain_time(void *pvParameters)
 {
     EspWifi wifi{};
     EspSntpClient sntpClient{ wifi };
-    sntpClient.getTime(false);
+    sntpClient.getTime(true);
     //test alarm
     EspAlarm alarm;
     alarms_t soon{};
@@ -143,7 +143,7 @@ void obtain_time(void *pvParameters)
     wakeup.name = "Wakeup";
     //alarms_t soon{std::chrono::system_clock::now()+std::chrono::seconds(4),std::chrono::system_clock::from_time_t(0), static_cast<timer_idx_t>(0), AlarmStatus::Pacified, [](alarms_t){} };
 
-    alarm.setAlarm(soon);
+    //alarm.setAlarm(soon);
     alarm.setAlarm(wakeup);
 }
 

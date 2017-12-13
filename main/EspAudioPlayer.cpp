@@ -5,6 +5,7 @@
 #include "esp_partition.h"
 #include "esp_log.h"
 #include "audio_example_file.h"
+#include "sdkconfig.h"
 #include <thread>
 #include <mutex>
 static const char* TAG = "AudioPlayer";
@@ -32,6 +33,7 @@ static bool PLAY_AUDIO{false};
      */
     void example_i2s_init()
     {
+        gpio_set_pull_mode(static_cast<gpio_num_t>(CONFIG_DAC_GPIO), GPIO_PULLDOWN_ONLY);
         i2s_port_t i2s_num = EXAMPLE_I2S_NUM;
         i2s_config_t i2s_config{};
         i2s_config.mode = static_cast<i2s_mode_t>(I2S_MODE_MASTER | I2S_MODE_RX | I2S_MODE_TX | I2S_MODE_DAC_BUILT_IN | I2S_MODE_ADC_BUILT_IN);
@@ -160,7 +162,10 @@ ESP_LOGI(TAG, "Audio, tot size: %d", tot_size);
     free(i2s_write_buff);
     AUDIO_PLAYER_MUTEX.unlock();
     i2s_port_t i2s_num = EXAMPLE_I2S_NUM;
+    i2s_stop(i2s_num);
     i2s_driver_uninstall(i2s_num);
+    gpio_set_pull_mode(static_cast<gpio_num_t>(CONFIG_DAC_GPIO), GPIO_FLOATING);
+    gpio_set_level(static_cast<gpio_num_t>(CONFIG_DAC_GPIO), 1);
     }
 }
 

@@ -8,6 +8,7 @@
 
 enum class AlarmStatus {
     Disabled = 0,
+    Set,
     Pacified,
     Ringing,
     Snoozed

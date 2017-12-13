@@ -11,6 +11,17 @@ config LED_GPIO
 
 		GPIOs 35-39 are input-only so cannot be used as outputs.
 
+config DAC_GPIO
+    int "Blink GPIO number"
+	range 0 34
+	default 25
+	help
+		GPIO number where "DAC" gpio is attached to.
+
+		Some GPIOs are used for other purposes (flash connections, etc.) and cannot be used to blink.
+
+		GPIOs 35-39 are input-only so cannot be used as outputs.
+
 
 config CS_GPIO
     int "CS GPIO number"
