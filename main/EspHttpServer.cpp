@@ -12,7 +12,7 @@
 #include <freertos/task.h>
 //#include <ssid_config.h>
 #include <httpd/httpd.h>
-
+#include <thread>
 #define LED_PIN 2
 
 static const char* TAG = "HttpServer";
@@ -250,5 +250,7 @@ void httpd_task(void *pvParameters)
 void EspHttpServer::startServer() {
     ESP_LOGI(TAG, "Starting webserver");
     /* initialize tasks */
-    xTaskCreate(&httpd_task, "HTTP Daemon", 8000, NULL, 2, NULL);
+    //xTaskCreate(&httpd_task, "HTTP Daemon", 8000, NULL, 2, NULL);
+    std::thread server(&httpd_task, nullptr);
+    server.detach();
 }
