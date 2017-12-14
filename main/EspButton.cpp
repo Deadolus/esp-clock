@@ -9,6 +9,7 @@
 static const char* TAG = "Button";
 static const unsigned int SHORT_PRESS = 5;
 static const unsigned int LONG_PRESS = 50;
+static const unsigned int EXTRA_LONG_PRESS = 200;
 
 void button_Task(void *pvParameters) {
     vTaskDelay(10 / portTICK_PERIOD_MS);
@@ -17,18 +18,20 @@ void EspButton::buttonTask(void *pvParameters) {
     EspButton* button = static_cast<EspButton*>(pvParameters);
     while(true) {
         if(gpio_get_level(static_cast<gpio_num_t>(button->gpio_)) ^ button->inverse_) {
-            //ESP_LOGI(TAG, "Button pressed in task");
             if(button->pressedTime<255) button->pressedTime++;
         } else {
+            //events should be ordered by long->short presses
+            //so that only one event gets fired
+            if(button->extraLongPress() && button->longPressCb_)
+                button->extraLongPressCb_();
+            else if(button->longPress() && button->longPressCb_)
+                button->longPressCb_();
+            else if(button->pressed() && button->pressCb_)
+                button->pressCb_();
+
+            //reset pressed Time
             button->pressedTime = 0;
         }
-
-
-        if(button->pressed() && button->pressCb_)
-            button->pressCb_();
-
-        if(button->longPress() && button->longPressCb_)
-            button->longPressCb_();
 
         vTaskDelay(10 / portTICK_PERIOD_MS);
     }
@@ -59,17 +62,26 @@ EspButton::~EspButton() {
 
 bool EspButton::pressed() {
     //return gpio_get_level(static_cast<gpio_num_t>(gpio_)) ^ inverse_;
-    return pressedTime == SHORT_PRESS;
+    return pressedTime >= SHORT_PRESS;
 
 }
+
 bool EspButton::longPress() {
-    return pressedTime == LONG_PRESS;
+    return pressedTime >= LONG_PRESS;
+}
+
+bool EspButton::extraLongPress() {
+    return pressedTime >= EXTRA_LONG_PRESS;
 }
 
 void EspButton::setPressCb(std::function<void()> function) {
     pressCb_ = function;
 }
+
 void EspButton::setLongPressCb(std::function<void()> function) {
     longPressCb_ = function;
+}
 
+void EspButton::setExtraLongPressCb(std::function<void()> function) {
+    longPressCb_ = function;
 }
