@@ -8,6 +8,8 @@
 static const uint8_t COLORED = 0;
 static const uint8_t UNCOLORED = 1;
 static bool display_initialized{false};
+static const int NEXT_ALARM_LINE = EPD_HEIGHT-32;
+static const int ALARM_LINE = 150;
 namespace {
     sFONT getFont(Font font) {
         switch(font) 
@@ -38,7 +40,7 @@ void EspDisplay::setImage(const unsigned char* image, unsigned int x, unsigned i
 }
 void EspDisplay::setNextAlarmName(std::string alarm, std::chrono::system_clock::time_point time) {
     tm alarmTime = Clock::getTm(time);
-    clearLine(Font24, EPD_HEIGHT-32);
+    clearNextAlarmName();
     if(alarm.size() > 10){
     alarm = alarm.substr(10);
     }
@@ -46,13 +48,15 @@ void EspDisplay::setNextAlarmName(std::string alarm, std::chrono::system_clock::
     sprintf(buf, "%d:%d", alarmTime.tm_hour, alarmTime.tm_min);
     alarm.insert(0, std::string(buf));
     //std::to_string is not found somehow
-    write((std::string("N:")+alarm).c_str(), EPD_HEIGHT-32, 0, Font::Font24);
+    write((std::string("N:")+alarm).c_str(), NEXT_ALARM_LINE, 0, Font::Font24);
 }
+
 void EspDisplay::clearNextAlarmName() {
     clearLine(Font24, EPD_HEIGHT-32);
 }
 
 void EspDisplay::setAlarm(std::string alarm) {
+    clearAlarm();
     if(alarm.size() > 12){
     alarm = alarm.substr(12);
     }
