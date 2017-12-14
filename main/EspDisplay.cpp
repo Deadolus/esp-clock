@@ -46,8 +46,9 @@ void EspDisplay::setNextAlarmName(std::string alarm, std::chrono::system_clock::
     }
     char buf[10];
     sprintf(buf, "%d:%d", alarmTime.tm_hour, alarmTime.tm_min);
-    alarm.insert(0, std::string(buf));
+    //alarm.insert(0, std::string(buf));
     //std::to_string is not found somehow
+    write(std::string(buf), NEXT_ALARM_LINE-Font24.Height, 0, Font::Font24);
     write((std::string("N:")+alarm).c_str(), NEXT_ALARM_LINE, 0, Font::Font24);
 }
 
