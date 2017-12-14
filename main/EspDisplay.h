@@ -1,5 +1,6 @@
 #pragma once
 #include "Display.h"
+#include "Alarm.h"
 
 #include <epd1in54.h>
 #include <epdpaint.h>
@@ -15,6 +16,7 @@ class EspDisplay :
         virtual void clearNextAlarmName() override;
         virtual void setAlarm(std::string alarm) override;
         virtual void clearAlarm() override;
+        virtual void showNextAlarmInfo(alarms_t alarm) override;
         virtual void partialUpdate() override;
         virtual void fullUpdate() override;
         virtual void write(const std::string& text, unsigned int x, unsigned int y, Font font) override;

@@ -1,6 +1,7 @@
 #include <string>
 #include "EspDisplay.h"
 #include "Clock.h"
+#include "Alarm.h"
 #include <epd1in54.h>
 #include <epdpaint.h>
 #include <chrono>
@@ -68,6 +69,13 @@ void EspDisplay::clearAlarm() {
     clearLine(Font24, 150);
 }
 
+void EspDisplay::showNextAlarmInfo(alarms_t alarm) {
+    char buf[10];
+    tm alarmTime = Clock::getTm(alarm.time);
+    sprintf(buf, "%d:%d", alarmTime.tm_hour, alarmTime.tm_min);
+    write(std::string(buf), NEXT_ALARM_LINE-2*Font24.Height, 0, Font::Font24);
+
+}
 void EspDisplay::init() {
     if(!display_initialized) {
         epd_.SpiInit();
