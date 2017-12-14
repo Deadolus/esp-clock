@@ -1,7 +1,8 @@
 #include "EspDisplay.h"
-#include <string>
 #include <epd1in54.h>
 #include <epdpaint.h>
+#include <chrono>
+#include <string>
 
 static const uint8_t COLORED = 0;
 static const uint8_t UNCOLORED = 1;
@@ -34,7 +35,7 @@ void EspDisplay::setImage(const unsigned char* image, unsigned int x, unsigned i
     //epd_.SetFrameMemory(image, x, y, width, height);
     //epd_.DisplayFrame();
 }
-void EspDisplay::setNextAlarmName(std::string alarm) {
+void EspDisplay::setNextAlarmName(std::string alarm, std::chrono::system_clock::time_point time) {
     clearLine(Font24, EPD_HEIGHT-32);
     if(alarm.size() > 10){
     alarm = alarm.substr(10);

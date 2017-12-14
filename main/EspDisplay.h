@@ -11,7 +11,7 @@ class EspDisplay :
         EspDisplay();
         virtual void init() override;
         virtual void setImage(const unsigned char* image, unsigned int x, unsigned int y, unsigned int width, unsigned int height) override;
-        virtual void setNextAlarmName(std::string alarm) override;
+        virtual void setNextAlarmName(std::string alarm, std::chrono::system_clock::time_point time) override;
         virtual void clearNextAlarmName() override;
         virtual void setAlarm(std::string alarm) override;
         virtual void clearAlarm() override;

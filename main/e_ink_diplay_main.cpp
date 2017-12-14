@@ -35,6 +35,7 @@
 #include "EspButton.h"
 #include "EspPwmLed.h"
 #include "EspHttpServer.h"
+#include "Clock.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -127,18 +128,18 @@ void obtain_time(void *pvParameters)
     //test alarm
     EspAlarm alarm;
     alarms_t soon{};
-    soon.time = std::chrono::system_clock::now()+std::chrono::seconds(4);
+    soon.time = Clock::getCurrentTimeAsTimePoint()+std::chrono::seconds(4);
     soon.weekRepeat = 0b0111111; // Mo, tue, thu, fr
     soon.name = "Soon Alarm";
     alarms_t wakeup{};
 
-    time_t now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+    time_t now = Clock::getCurrentTimeAsTimet();
     std::tm wakeup_tm{};
     wakeup_tm = *localtime(&now);
     wakeup_tm.tm_mday++;
     wakeup_tm.tm_hour = 8;
     wakeup_tm.tm_min = 0;
-    wakeup.time = std::chrono::system_clock::from_time_t(std::mktime(&wakeup_tm));
+    wakeup.time = Clock::convertToTimePoint(wakeup_tm);
     wakeup.weekRepeat = 0b1111111;
     wakeup.name = "Wakeup";
     //alarms_t soon{std::chrono::system_clock::now()+std::chrono::seconds(4),std::chrono::system_clock::from_time_t(0), static_cast<timer_idx_t>(0), AlarmStatus::Pacified, [](alarms_t){} };
@@ -208,7 +209,7 @@ void updateTime(EspDisplay& display, EspSign& espsign) {
         strftime(strftime_buf, sizeof(strftime_buf), "%R", &timeinfo);
     else
         sprintf(strftime_buf, "--:--");
-    display.setNextAlarmName(alarm.getNextAlarm().name.c_str());
+    display.setNextAlarmName(alarm.getNextAlarm().name.c_str(), alarm.getNextAlarm().time);
     if(alarms.checkForAlarm()) {
         auto ringingAlarms = alarms.getRingingAlarms();
         display.setAlarm(ringingAlarms.front().name.c_str());

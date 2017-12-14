@@ -1,23 +1,18 @@
 #include "EspAlarmService.h"
 #include "EspAlarm.h"
+#include "Clock.h"
+#include "esp_log.h"
 #include <vector>
 #include <iterator>
 #include <list>
-#include "esp_log.h"
 #include <chrono>
 
 namespace {
 static const char* TAG = "AlarmService";
 
-    time_t getCurrentTime() {
-       std::chrono::system_clock::now();
-        time_t now{0};
-        time(&now);
-        return now;
-    }
 
 bool correctDayOfWeek(std::bitset<7>& days) {
-    time_t now = getCurrentTime();
+    time_t now = Clock::getCurrentTimeAsTimet();
     //tm_wday is days since sundays
     tm now_tm = *localtime(&now);
 
@@ -26,10 +21,8 @@ bool correctDayOfWeek(std::bitset<7>& days) {
 
 }
 bool correctTime(std::chrono::system_clock::time_point alarmTime) {
-    time_t alarm_time = std::chrono::system_clock::to_time_t(alarmTime);
-    tm alarm_tm = *localtime(&alarm_time);
-    time_t now = getCurrentTime();
-    tm now_tm = *localtime(&now);
+    tm alarm_tm = Clock::getTm(alarmTime);
+    tm now_tm = Clock::getCurrentTimeAsTm();
     return (now_tm.tm_hour == alarm_tm.tm_hour) && (now_tm.tm_min == alarm_tm.tm_min) && (now_tm.tm_sec == alarm_tm.tm_sec);
 }
 
@@ -38,7 +31,7 @@ bool alarmShouldRing(alarms_t& alarm, std::chrono::minutes snoozeTime) {
         if( 
                 correctDayOfWeek(alarm.weekRepeat) &&  (
                 correctTime(alarm.time)
-                || (std::chrono::system_clock::now() == snoozePoint)
+                || (Clock::getCurrentTimeAsTimePoint() == snoozePoint)
                 || (alarm.status == AlarmStatus::Ringing)
           ))
         {
@@ -86,7 +79,7 @@ bool EspAlarmService::snooze() {
         if(alarm.status == AlarmStatus::Ringing)
         {
             alarm.status = AlarmStatus::Snoozed;
-            alarm.snoozeTime = std::chrono::system_clock::now();
+            alarm.snoozeTime = Clock::getCurrentTimeAsTimePoint();
         }
     }
     return true;
