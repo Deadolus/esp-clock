@@ -29,3 +29,10 @@ alarms_t EspAlarm::getNextAlarm() {
     }
     return nextAlarm;
 }
+
+void EspAlarm::deleteAlarm(alarms_t& alarm) {
+    auto equalToRemovingAlarm =
+        [alarm](const alarms_t& value)->bool { return value == alarm;};
+    m_alarms.remove_if(equalToRemovingAlarm);
+
+}
