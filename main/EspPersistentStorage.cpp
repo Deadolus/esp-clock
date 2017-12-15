@@ -25,7 +25,9 @@ EspPersistentStorage::~EspPersistentStorage() {
 template<>
 uint32_t EspPersistentStorage::getValue<uint32_t>(std::string name) {
     uint32_t retVal{};
-    ESP_ERROR_CHECK(nvs_get_u32(storageHandle_, name.c_str(), &retVal));
+    esp_err_t error{};
+    error = nvs_get_u32(storageHandle_, name.c_str(), &retVal);
+    assert((error == ESP_OK) || (error == ESP_ERR_NOT_FOUND));
     return retVal;
 }
 
@@ -39,7 +41,9 @@ void EspPersistentStorage::setValue<uint32_t>(std::string name, uint32_t& value)
 template<>
 int32_t EspPersistentStorage::getValue<int32_t>(std::string name) {
     int32_t retVal{};
-    ESP_ERROR_CHECK(nvs_get_i32(storageHandle_, name.c_str(), &retVal));
+    esp_err_t error{};
+    error = nvs_get_i32(storageHandle_, name.c_str(), &retVal);
+    assert((error == ESP_OK) || (error == ESP_ERR_NOT_FOUND));
     return retVal;
 }
 
