@@ -4,13 +4,16 @@
 #include "Alarm.h"
 #include <epd1in54.h>
 #include <epdpaint.h>
+#include "esp_log.h"
 #include <chrono>
 
 static const uint8_t COLORED = 0;
 static const uint8_t UNCOLORED = 1;
 static bool display_initialized{false};
 static const int NEXT_ALARM_LINE = EPD_HEIGHT-32;
-static const int ALARM_LINE = 150;
+static const int ALARM_LINE = 050;
+static const char* TAG = "Display";
+
 namespace {
     sFONT getFont(Font font) {
         switch(font) 
@@ -39,18 +42,22 @@ void EspDisplay::setImage(const unsigned char* image, unsigned int x, unsigned i
     //epd_.SetFrameMemory(image, x, y, width, height);
     //epd_.DisplayFrame();
 }
-void EspDisplay::setNextAlarmName(std::string alarm, std::chrono::system_clock::time_point time) {
+void EspDisplay::setNextAlarmName(std::string name, std::chrono::system_clock::time_point time) {
     tm alarmTime = Clock::getTm(time);
     clearNextAlarmName();
-    if(alarm.size() > 10){
-    alarm = alarm.substr(10);
+    clearLine(Font24, NEXT_ALARM_LINE-Font24.Height);
+    if(name.size() > 10){
+    name = name.substr(10);
     }
-    char buf[10];
-    sprintf(buf, "%d:%d", alarmTime.tm_hour, alarmTime.tm_min);
-    //alarm.insert(0, std::string(buf));
-    //std::to_string is not found somehow
-    write(std::string(buf), NEXT_ALARM_LINE-Font24.Height, 0, Font::Font24);
-    write((std::string("N:")+alarm).c_str(), NEXT_ALARM_LINE, 0, Font::Font24);
+
+    if( time != std::chrono::system_clock::time_point::max()) {
+        char buf[16];
+        sprintf(buf, "%d:%02d", alarmTime.tm_hour, alarmTime.tm_min);
+        write(std::string(buf), NEXT_ALARM_LINE-Font24.Height, 0, Font::Font24);
+        //ESP_LOGI(TAG, "%s", buf);
+    }
+
+    write((std::string("N:")+name), NEXT_ALARM_LINE, 0, Font::Font24);
 }
 
 void EspDisplay::clearNextAlarmName() {
@@ -62,18 +69,24 @@ void EspDisplay::setAlarm(std::string alarm) {
     if(alarm.size() > 12){
     alarm = alarm.substr(12);
     }
-    write(alarm.c_str(), 150, 0, Font::Font24);
+    write(alarm.c_str(), ALARM_LINE, 0, Font::Font24);
 }
 
 void EspDisplay::clearAlarm() {
-    clearLine(Font24, 150);
+    clearLine(Font24, ALARM_LINE);
 }
 
 void EspDisplay::showNextAlarmInfo(alarms_t alarm) {
+    if( alarm.time != std::chrono::system_clock::time_point::max()) {
     char buf[10];
-    tm alarmTime = Clock::getTm(alarm.time);
-    sprintf(buf, "%d:%d", alarmTime.tm_hour, alarmTime.tm_min);
+    std::chrono::system_clock::time_point now = Clock::getCurrentTimeAsTimePoint();
+    auto duration = alarm.time - now;
+    //tm alarmTime = Clock::getTm(duration);
+    long seconds = std::chrono::duration_cast<std::chrono::minutes>(duration).count();
+    sprintf(buf, "%ld:%02ld", seconds/60, seconds%60);
+    clearLine(Font24, NEXT_ALARM_LINE-2*Font24.Height);
     write(std::string(buf), NEXT_ALARM_LINE-2*Font24.Height, 0, Font::Font24);
+    }
 
 }
 void EspDisplay::init() {
