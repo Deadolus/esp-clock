@@ -35,6 +35,7 @@
 #include "EspButton.h"
 #include "EspPwmLed.h"
 #include "EspHttpServer.h"
+#include "EspPersistentStorage.h"
 #include "Clock.h"
 
 #include "freertos/FreeRTOS.h"
@@ -97,6 +98,11 @@ unsigned long time_now_s;
 extern "C" void app_main()
 {
     static EspHttpServer httpserver;
+    EspPersistentStorage storage{"storage"};
+    uint32_t test = storage.getValue<uint32_t>("test");
+    int32_t test2 = storage.getValue<int32_t>("test");
+    //std::string test3 = storage.getValue<std::string>("test");
+    //ESP_LOGI(TAG, "Test: %u %d %s", test, test2, test3.c_str());
     if(esp_sleep_get_wakeup_cause() != ESP_SLEEP_WAKEUP_TIMER)
     {
     ESP_ERROR_CHECK( nvs_flash_init() );
