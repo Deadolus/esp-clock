@@ -4,7 +4,7 @@
 #include <string>
 #include <array>
 
-EspPersistentStorage::EspPersistentStorage(std::string storageHandle) {
+EspPersistentStorage::EspPersistentStorage(std::string flashNamespace) {
     // Initialize NVS
     esp_err_t err = nvs_flash_init();
     if (err == ESP_ERR_NVS_NO_FREE_PAGES) {
@@ -14,7 +14,7 @@ EspPersistentStorage::EspPersistentStorage(std::string storageHandle) {
         err = nvs_flash_init();
     }
     ESP_ERROR_CHECK( err );
-    ESP_ERROR_CHECK(nvs_open(storageHandle.c_str(), NVS_READWRITE, &storageHandle_));
+    ESP_ERROR_CHECK(nvs_open(flashNamespace.c_str(), NVS_READWRITE, &storageHandle_));
 }
 
 EspPersistentStorage::~EspPersistentStorage() {
