@@ -12,6 +12,7 @@ class EspPersistentStorage //:
     public:
         EspPersistentStorage() = delete;
         EspPersistentStorage(std::string storageHandle);
+        virtual ~EspPersistentStorage();
         template <class T>
             T getValue(std::string name) ;
         template <class T>
