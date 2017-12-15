@@ -163,6 +163,7 @@ ESP_LOGI(TAG, "Audio, tot size: %d", tot_size);
     AUDIO_PLAYER_MUTEX.unlock();
     i2s_port_t i2s_num = EXAMPLE_I2S_NUM;
     i2s_stop(i2s_num);
+    i2s_zero_dma_buffer(i2s_num);
     i2s_driver_uninstall(i2s_num);
     gpio_set_pull_mode(static_cast<gpio_num_t>(CONFIG_DAC_GPIO), GPIO_FLOATING);
     gpio_set_level(static_cast<gpio_num_t>(CONFIG_DAC_GPIO), 1);
