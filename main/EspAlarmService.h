@@ -2,6 +2,7 @@
 #include "AlarmService.h"
 #include <chrono>
 #include <mutex>
+#include <functional>
 class Alarm;
 class EspAlarmService :
     public AlarmService
@@ -14,8 +15,10 @@ class EspAlarmService :
         virtual std::list<alarms_t> getRingingAlarms() override;
         virtual bool snooze() override;
         virtual bool pacify() override;
+        virtual void setAlarmCallback(std::function<void()> callback) override;
     private:
         Alarm& alarms_;
-        std::chrono::minutes snoozeTime_;
+        std::chrono::minutes snoozeTime_{};
         std::mutex alarmServiceMutex{};
+        std::function<void()> alarmCallback_{};
 };

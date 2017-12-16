@@ -3,7 +3,6 @@
 
 
 time_t Clock::getCurrentTimeAsTimet() {
-    std::chrono::system_clock::now();
     time_t now{0};
     time(&now);
     return now;

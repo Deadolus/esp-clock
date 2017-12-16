@@ -1,8 +1,11 @@
 #include "EspPersistentStorage.h"
 #include "nvs_flash.h"
 #include "nvs.h"
+#include "esp_log.h"
 #include <string>
 #include <array>
+
+static const char* TAG = "PersistentStorage";
 
 EspPersistentStorage::EspPersistentStorage(std::string flashNamespace) {
     // Initialize NVS
@@ -15,6 +18,7 @@ EspPersistentStorage::EspPersistentStorage(std::string flashNamespace) {
     }
     ESP_ERROR_CHECK( err );
     ESP_ERROR_CHECK(nvs_open(flashNamespace.c_str(), NVS_READWRITE, &storageHandle_));
+    ESP_LOGI(TAG, "Initialized flash");
 }
 
 EspPersistentStorage::~EspPersistentStorage() {
@@ -27,7 +31,8 @@ uint32_t EspPersistentStorage::getValue<uint32_t>(std::string name) {
     uint32_t retVal{};
     esp_err_t error{};
     error = nvs_get_u32(storageHandle_, name.c_str(), &retVal);
-    assert((error == ESP_OK) || (error == ESP_ERR_NOT_FOUND));
+    ESP_LOGI(TAG, "Error is %d, retVal %u", error, retVal);
+    assert((error == ESP_OK) || (error == ESP_ERR_NVS_NOT_FOUND));
     return retVal;
 }
 
@@ -43,7 +48,7 @@ int32_t EspPersistentStorage::getValue<int32_t>(std::string name) {
     int32_t retVal{};
     esp_err_t error{};
     error = nvs_get_i32(storageHandle_, name.c_str(), &retVal);
-    assert((error == ESP_OK) || (error == ESP_ERR_NOT_FOUND));
+    assert((error == ESP_OK) || (error == ESP_ERR_NVS_NOT_FOUND));
     return retVal;
 }
 
@@ -61,7 +66,7 @@ std::string EspPersistentStorage::getValue<std::string>(std::string name) {
     size_t requiredSize;
     esp_err_t error{};
     error = nvs_get_str(storageHandle_, name.c_str(), nullptr, &requiredSize);
-    assert((error == ESP_OK) || (error == ESP_ERR_NOT_FOUND));
+    assert((error == ESP_OK) || (error == ESP_ERR_NVS_NOT_FOUND));
     if(requiredSize<=64) {
     (nvs_get_str(storageHandle_, name.c_str(), buffer.data(), &requiredSize));
     }

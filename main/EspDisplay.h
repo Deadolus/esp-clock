@@ -5,6 +5,8 @@
 #include <epd1in54.h>
 #include <epdpaint.h>
 
+#include <mutex>
+
 class EspDisplay :
     public Display
 {
@@ -17,6 +19,7 @@ class EspDisplay :
         virtual void setAlarm(std::string alarm) override;
         virtual void clearAlarm() override;
         virtual void showNextAlarmInfo(alarms_t alarm) override;
+        virtual void setTime(EspSntpClient& sntp) override;
         virtual void partialUpdate() override;
         virtual void fullUpdate() override;
         virtual void write(const std::string& text, unsigned int x, unsigned int y, Font font) override;
@@ -27,4 +30,5 @@ class EspDisplay :
         unsigned char image_[1024];
         Paint paint_{image_, 0, 0};    // width should be the multiple of 8 
         Epd epd_;
+        std::mutex displayMutex;
 };

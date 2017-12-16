@@ -10,4 +10,5 @@ class AlarmService
         virtual std::list<alarms_t> getRingingAlarms() = 0;
         virtual bool snooze() = 0;
         virtual bool pacify() = 0;
+        virtual void setAlarmCallback(std::function<void()> callback) = 0;
 };

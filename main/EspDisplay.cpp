@@ -5,7 +5,9 @@
 #include <epd1in54.h>
 #include <epdpaint.h>
 #include "esp_log.h"
+#include "EspSntpClient.h"
 #include <chrono>
+#include <mutex>
 
 static const uint8_t COLORED = 0;
 static const uint8_t UNCOLORED = 1;
@@ -36,6 +38,7 @@ EspDisplay::EspDisplay() : paint_(image_, 0, 0)
 }
 
 void EspDisplay::setImage(const unsigned char* image, unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
+    std::lock_guard<std::mutex> lock(displayMutex);
     //paint_.SetFrameMemory(image, x, y, width, height);
     epd_.SetFrameMemory(image, x, y, width, height);
     //epd_.DisplayFrame();
@@ -90,6 +93,7 @@ void EspDisplay::showNextAlarmInfo(alarms_t alarm) {
 
 }
 void EspDisplay::init() {
+    std::lock_guard<std::mutex> lock(displayMutex);
     if(!display_initialized) {
         epd_.SpiInit();
         epd_.Init(lut_full_update);
@@ -109,6 +113,7 @@ void EspDisplay::init() {
 }
 
 void EspDisplay::partialUpdate(){
+    std::lock_guard<std::mutex> lock(displayMutex);
   if (epd_.Init(lut_partial_update) != 0) {
       printf("e-Paper init failed");
       return;
@@ -116,6 +121,7 @@ void EspDisplay::partialUpdate(){
 }
 
 void EspDisplay::fullUpdate(){
+    std::lock_guard<std::mutex> lock(displayMutex);
   if (epd_.Init(lut_full_update) != 0) {
       printf("e-Paper init failed");
       return;
@@ -123,6 +129,7 @@ void EspDisplay::fullUpdate(){
 }
 
 void EspDisplay::write(const std::string& text, unsigned int x, unsigned int y, Font _font) {
+    std::lock_guard<std::mutex> lock(displayMutex);
 
     sFONT font = getFont(_font);
     paint_.Clear(UNCOLORED);
@@ -151,3 +158,15 @@ void EspDisplay::clearLine(sFONT font, unsigned int x) {
         temp.append(" ");
     write(temp, x, 0, Font::Font24);
     }
+
+void EspDisplay::setTime(EspSntpClient& sntp) {
+    char strftime_buf[64];
+    struct tm timeinfo = Clock::getCurrentTimeAsTm();
+    //std::strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
+    if(sntp.timeSet())
+        strftime(strftime_buf, sizeof(strftime_buf), "%R", &timeinfo);
+    else
+        sprintf(strftime_buf, "--:--");
+
+    write(std::string(strftime_buf), 200, 0, Font::Font24);
+}

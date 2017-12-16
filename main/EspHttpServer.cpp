@@ -69,6 +69,8 @@ int32_t ssi_handler(int32_t iIndex, char *pcInsert, int32_t iInsertLen)
                 allAlarms << time.tm_hour;
                 allAlarms << ":";
                 allAlarms << time.tm_min;
+                allAlarms << ":";
+                allAlarms << time.tm_sec;
                 allAlarms << "<br>";
                 //allAlarms.append(alarm.name+": "+itoa(time.tm_hour)+":"+itoa(time.tm_min));
             }
@@ -103,6 +105,7 @@ char *newAlarm_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pc
             if(alarmTime.length() == 5) {
             alarm_tm.tm_hour = atoi(std::string(pcValue[i]).substr(0,2).c_str());
             alarm_tm.tm_min = atoi(std::string(pcValue[i]).substr(3,4).c_str());
+            alarm_tm.tm_sec = 0;
             alarm.time = std::chrono::system_clock::from_time_t(std::mktime(&alarm_tm));
             }
             ESP_LOGI(TAG, "time: %s --> %u:%u", pcValue[i], alarm_tm.tm_hour, alarm_tm.tm_min);
