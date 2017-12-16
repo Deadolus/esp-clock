@@ -215,7 +215,9 @@ void updateTime(EspDisplay& display, EspSign& espsign) {
         strftime(strftime_buf, sizeof(strftime_buf), "%R", &timeinfo);
     else
         sprintf(strftime_buf, "--:--");
-    display.setNextAlarmName(alarm.getNextAlarm().name.c_str(), alarm.getNextAlarm().time);
+    alarms_t nextAlarm = alarm.getNextAlarm();
+    display.setNextAlarmName(nextAlarm.name.c_str(), alarm.getNextAlarm().time);
+    display.showNextAlarmInfo(nextAlarm);
     if(alarms.checkForAlarm()) {
         auto ringingAlarms = alarms.getRingingAlarms();
         display.setAlarm(ringingAlarms.front().name.c_str());
