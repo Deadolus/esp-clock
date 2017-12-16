@@ -46,6 +46,10 @@ HTTP Server is up and running.</div>
 <span class="badge bage-info"><!--#nalarm--></span>
 </p>
 
+			<p>I have these alarms for you: <br>
+            <!--#alarms-->
+            </p>
+
 			<div class="cover" align="center">
 				<div class="onoffswitch">
 					<input type="checkbox" name="onoffswitch" class="onoffswitch-checkbox" id="led-switch" onclick="gpio();">

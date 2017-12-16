@@ -1,6 +1,7 @@
 #include "EspHttpServer.h"
 #include "Alarm.h"
 #include "EspAlarm.h"
+#include "Clock.h"
 #include "esp_log.h"
 //#include <espressif/esp_common.h>
 //#include <esp_common.h>
@@ -14,6 +15,7 @@
 //#include <ssid_config.h>
 #include <httpd/httpd.h>
 #include <thread>
+#include <sstream>
 #define LED_PIN 2
 
 static const char* TAG = "HttpServer";
@@ -30,7 +32,8 @@ enum {
     SSI_UPTIME,
     SSI_FREE_HEAP,
     SSI_LED_STATE,
-    SSI_NEXT_ALARM
+    SSI_NEXT_ALARM,
+    SSI_ALARMS
 };
 
 int32_t ssi_handler(int32_t iIndex, char *pcInsert, int32_t iInsertLen)
@@ -56,6 +59,23 @@ int32_t ssi_handler(int32_t iIndex, char *pcInsert, int32_t iInsertLen)
             snprintf(pcInsert, iInsertLen, alarms.getNextAlarm().name.c_str());
             //snprintf(pcInsert, iInsertLen, (GPIO.OUT & BIT(LED_PIN)) ? "Off" : "On");
             break;
+        case SSI_ALARMS:
+            {
+            std::stringstream allAlarms{};
+            for(auto& alarm: alarms.getAlarms()) {
+                tm time = Clock::getTm(alarm.time);
+                allAlarms << alarm.name;
+                allAlarms << ": ";
+                allAlarms << time.tm_hour;
+                allAlarms << ":";
+                allAlarms << time.tm_min;
+                allAlarms << "<br>";
+                //allAlarms.append(alarm.name+": "+itoa(time.tm_hour)+":"+itoa(time.tm_min));
+            }
+            snprintf(pcInsert, iInsertLen, allAlarms.str().c_str());
+            //snprintf(pcInsert, iInsertLen, (GPIO.OUT & BIT(LED_PIN)) ? "Off" : "On");
+            }
+            break;
         default:
             snprintf(pcInsert, iInsertLen, "N/A");
             break;
@@ -79,9 +99,12 @@ char *newAlarm_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pc
             std::tm alarm_tm{};
             alarm_tm = *localtime(&now);
             //alarm_tm.tm_mday++;
+            std::string alarmTime = std::string(pcValue[i]);
+            if(alarmTime.length() == 5) {
             alarm_tm.tm_hour = atoi(std::string(pcValue[i]).substr(0,2).c_str());
             alarm_tm.tm_min = atoi(std::string(pcValue[i]).substr(3,4).c_str());
             alarm.time = std::chrono::system_clock::from_time_t(std::mktime(&alarm_tm));
+            }
             ESP_LOGI(TAG, "time: %s --> %u:%u", pcValue[i], alarm_tm.tm_hour, alarm_tm.tm_min);
         }
         if(strcmp(pcParam[i], "name")==0) {
@@ -239,6 +262,7 @@ void httpd_task(void *pvParameters)
         "heap",   // SSI_FREE_HEAP
         "led",     // SSI_LED_STATE
         "nalarm",
+        "alarms",
         "time",
         "name",
         "snoozeT",
