@@ -12,16 +12,19 @@
 #include <thread>
 
 static const char* TAG = "DisplayService";
+void test(unsigned int delay, EspDisplay& display) {
+ESP_LOGI(TAG, "TEST");
+}
 
 EspDisplayService::EspDisplayService(EspDisplay& display, EspSign& espsign, EspAlarm& alarm, EspAlarmService& alarms, EspWifi& wifi, EspSntpClient& sntp, unsigned int delay=5000) 
 {
-    std::thread task(displayServiceTask, delay, display, espsign, alarm, alarms, wifi, sntp);
-    //task.detach();
+    std::thread task(displayServiceTask, delay, std::ref(display), std::ref(espsign), std::ref(alarm), std::ref(alarms), std::ref(wifi), std::ref(sntp));
+    task.detach();
+    ESP_LOGI(TAG, "Started display task");
 }
 
 void EspDisplayService::displayServiceTask(unsigned int delay, EspDisplay& display, EspSign& espsign, EspAlarm& alarm, EspAlarmService& alarms, EspWifi& wifi, EspSntpClient& sntp ) {
     while(true) {
-        ESP_LOGI(TAG, "Hello from display-service");
         alarms_t nextAlarm = alarm.getNextAlarm();
         display.setNextAlarmName(nextAlarm.name.c_str(), alarm.getNextAlarm().time);
         display.showNextAlarmInfo(nextAlarm);

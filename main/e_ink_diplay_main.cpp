@@ -131,7 +131,7 @@ extern "C" void app_main()
     obtainTime.detach();
     //example_tg0_timer_init(TIMER_0, TEST_WITHOUT_RELOAD, TIMER_INTERVAL0_SEC);
     httpserver.startServer();
-    //EspDisplayService displayService{display, espsign, alarm, alarms, wifi, sntp, 5000};
+    EspDisplayService displayService{display, espsign, alarm, alarms, wifi, sntp, 5000};
     ESP_LOGI(TAG, "Everything started...");
 
     while(true) {
