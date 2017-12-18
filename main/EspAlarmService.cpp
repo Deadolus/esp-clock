@@ -56,13 +56,13 @@ void EspAlarmService::alarmServiceTask(EspAlarmService& alarmService) {
         if(alarmService.checkForAlarm() && alarmService.alarmCallback_)  {
             alarmService.alarmCallback_();
         }
-        sleep(0.5);
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
 }
 
 /** Checks for alarm, returns true if one is ringing */
 bool EspAlarmService::checkForAlarm() {
-    std::lock_guard<std::mutex> guard(alarmServiceMutex);
+    std::lock_guard<std::mutex> guard(alarmServiceMutex_);
     //ESP_LOGI(TAG, "Checking for alarm");
     bool ringing{false};
 
@@ -80,7 +80,7 @@ bool EspAlarmService::checkForAlarm() {
 }
 
 bool EspAlarmService::alarmRinging() {
-    std::lock_guard<std::mutex> guard(alarmServiceMutex);
+    std::lock_guard<std::mutex> guard(alarmServiceMutex_);
     for(auto& alarm: alarms_.getAlarms())
     {
         if(alarm.status == AlarmStatus::Ringing)
@@ -92,7 +92,7 @@ bool EspAlarmService::alarmRinging() {
 }
 
 bool EspAlarmService::snooze() {
-    std::lock_guard<std::mutex> guard(alarmServiceMutex);
+    std::lock_guard<std::mutex> guard(alarmServiceMutex_);
     for(auto& alarm: alarms_.getAlarms())
     {
         if(alarm.status == AlarmStatus::Ringing)
@@ -105,7 +105,7 @@ bool EspAlarmService::snooze() {
 }
 
 bool EspAlarmService::pacify() {
-    std::lock_guard<std::mutex> guard(alarmServiceMutex);
+    std::lock_guard<std::mutex> guard(alarmServiceMutex_);
     for(auto& alarm: alarms_.getAlarms())
     {
         if(alarm.status >= AlarmStatus::Ringing)
@@ -118,7 +118,7 @@ bool EspAlarmService::pacify() {
 }
 
 std::list<alarms_t> EspAlarmService::getRingingAlarms() {
-    std::lock_guard<std::mutex> guard(alarmServiceMutex);
+    std::lock_guard<std::mutex> guard(alarmServiceMutex_);
     std::list<alarms_t> ringingAlarms;
     for(auto& alarm: alarms_.getAlarms())
     {

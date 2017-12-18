@@ -20,6 +20,6 @@ class EspAlarmService :
         static void alarmServiceTask(EspAlarmService& alarmService);
         Alarm& alarms_;
         std::chrono::minutes snoozeTime_{};
-        std::mutex alarmServiceMutex{};
+        std::mutex alarmServiceMutex_{};
         std::function<void()> alarmCallback_{};
 };
