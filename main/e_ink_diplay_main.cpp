@@ -65,6 +65,11 @@ extern "C" void app_main()
             ESP_LOGI(TAG, "Button long pressed!");
             if(wifi.isConnected()) wifi.stopWifi();
             });
+    alarms.setAlarmCallback([&](){
+            auto ringingAlarms = alarms.getRingingAlarms();
+            audioplayer.startAudio();
+            pwmLed.setIntensity(100);
+    });
     wifi.init();
     wifi.startWifi();
     setTimezone();
@@ -74,14 +79,7 @@ extern "C" void app_main()
     ESP_LOGI(TAG, "Everything started...");
 
     while(true) {
-        alarms_t nextAlarm = alarm.getNextAlarm();
-        if(alarms.checkForAlarm()) {
-            auto ringingAlarms = alarms.getRingingAlarms();
-            audioplayer.startAudio();
-            pwmLed.setIntensity(100);
-        }
-        else
-        {
+        if(!alarms.checkForAlarm()) {
             pwmLed.setIntensity(0);
         }
         vTaskDelay(500 / portTICK_PERIOD_MS);

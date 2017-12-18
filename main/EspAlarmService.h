@@ -17,6 +17,7 @@ class EspAlarmService :
         virtual bool pacify() override;
         virtual void setAlarmCallback(std::function<void()> callback) override;
     private:
+        static void alarmServiceTask(EspAlarmService& alarmService);
         Alarm& alarms_;
         std::chrono::minutes snoozeTime_{};
         std::mutex alarmServiceMutex{};

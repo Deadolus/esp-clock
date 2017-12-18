@@ -2,12 +2,14 @@
 #include "EspAlarm.h"
 #include "Clock.h"
 #include "esp_log.h"
+
 #include <vector>
 #include <iterator>
 #include <list>
 #include <chrono>
 #include <functional>
 #include <mutex>
+#include <thread>
 
 namespace {
 static const char* TAG = "AlarmService";
@@ -44,7 +46,19 @@ bool alarmShouldRing(alarms_t& alarm, std::chrono::minutes snoozeTime) {
         return false;
     }
 }
-EspAlarmService::EspAlarmService(Alarm& alarm, std::chrono::minutes snoozeTime) : alarms_(alarm), snoozeTime_(snoozeTime) {}
+EspAlarmService::EspAlarmService(Alarm& alarm, std::chrono::minutes snoozeTime) : alarms_(alarm), snoozeTime_(snoozeTime) {
+    std::thread task(alarmServiceTask, std::ref(*this));
+    task.detach();
+}
+
+void EspAlarmService::alarmServiceTask(EspAlarmService& alarmService) {
+    while(true) {
+        if(alarmService.checkForAlarm() && alarmService.alarmCallback_)  {
+            alarmService.alarmCallback_();
+        }
+        sleep(0.5);
+    }
+}
 
 /** Checks for alarm, returns true if one is ringing */
 bool EspAlarmService::checkForAlarm() {
@@ -102,6 +116,7 @@ bool EspAlarmService::pacify() {
     }
     return true;
 }
+
 std::list<alarms_t> EspAlarmService::getRingingAlarms() {
     std::lock_guard<std::mutex> guard(alarmServiceMutex);
     std::list<alarms_t> ringingAlarms;
