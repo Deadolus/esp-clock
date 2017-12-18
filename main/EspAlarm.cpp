@@ -50,3 +50,12 @@ void EspAlarm::saveToPersistentStorage() {
         i++;
     }
 }
+
+void EspAlarm::loadFromPeristentStorage() {
+    size_t alarms = persistentStorage_.getValue<uint32_t>(std::string("count"));
+    for (size_t i; i<alarms; i++) {
+        std::string current = persistentStorage_.getValue<std::string>(std::string("Alarm")+std::to_string(i));
+
+    }
+
+}
