@@ -66,7 +66,6 @@ extern "C" void app_main()
             if(wifi.isConnected()) wifi.stopWifi();
             });
     alarms.setAlarmCallback([&](){
-            auto ringingAlarms = alarms.getRingingAlarms();
             audioplayer.startAudio();
             pwmLed.setIntensity(100);
     });
@@ -79,10 +78,7 @@ extern "C" void app_main()
     ESP_LOGI(TAG, "Everything started...");
 
     while(true) {
-        if(!alarms.checkForAlarm()) {
-            pwmLed.setIntensity(0);
-        }
-        vTaskDelay(500 / portTICK_PERIOD_MS);
+        vTaskDelay(5000 / portTICK_PERIOD_MS);
     }
 }
 
