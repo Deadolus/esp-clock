@@ -24,7 +24,6 @@
  * THE SOFTWARE.
  */
 
-//#include <SPI.h>
 #include "EspDisplay.h"
 #include "EspSign.h"
 #include "EspSntpClient.h"
@@ -61,9 +60,7 @@
 #include <thread>
 #include <iomanip>
 
-
-extern "C" {
-}
+#include "stdlib.h"
 
 /* Can run 'make menuconfig' to choose the GPIO to blink,
    or you can edit the following line and set a number here.
@@ -87,6 +84,7 @@ static const char *TAG = "clock";
 static void obtain_time(void *);
 static void initialise_wifi();
 static void example_tg0_timer_init(timer_idx_t timer_idx, bool auto_reload, double timer_interval_sec);
+static void setTimezone();
 void IRAM_ATTR timer_group0_isr(void *para);
 
 unsigned long time_start_ms;
@@ -121,8 +119,7 @@ extern "C" void app_main()
     uint32_t test = storage.getValue<uint32_t>("test");
     uint32_t test2{10};
     storage.setValue<uint32_t>(std::string("test"), test2);
-    setenv("TZ", "CET-1", 1);
-    tzset();
+    setTimezone();
     /* if(esp_sleep_get_wakeup_cause() != ESP_SLEEP_WAKEUP_TIMER) */
     ESP_ERROR_CHECK( nvs_flash_init() );
     std::thread wifiThread(initialise_wifi);
@@ -153,6 +150,12 @@ extern "C" void app_main()
     //esp_light_sleep_start();
     //esp_deep_sleep_start();
 }
+
+void setTimezone() {
+	setenv("TZ", "CET-1", 1);
+	tzset();
+}
+
 
 //void obtain_time()
 void obtain_time(void *pvParameters)
