@@ -46,8 +46,6 @@ std::string SimpleAlarmSerializer::serialize(alarms_t& alarm) {
 alarms_t SimpleAlarmSerializer::deserialize(std::string const& text) {
     alarms_t retVal{};
     std::vector<std::string> fields = split(text, ",");
-    std::string field;
-    field = fields.at(1);
     retVal.name = fields.at(0);
     retVal.time = Clock::convertToTimePoint(static_cast<time_t>(std::stoi(fields.at(1))));
     retVal.snoozeTime = Clock::convertToTimePoint(static_cast<time_t>(std::stoi(fields.at(2))));
