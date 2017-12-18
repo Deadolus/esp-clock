@@ -36,6 +36,8 @@ file(GLOB SRC_FILES ../*.cpp)
 file(GLOB TEST_SRC_FILES 
 	#${CMAKE_CURRENT_SOURCE_DIR}/../main/*.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/../main/EspAlarmService.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../main/SimpleAlarmSerializer.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../main/Clock.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/tests/*.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/helpers/*.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
