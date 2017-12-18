@@ -45,7 +45,6 @@ void EspAlarm::saveToPersistentStorage() {
     size_t i = 0;
     for(auto& alarm: m_alarms) {
         SimpleAlarmSerializer serializer;
-
         persistentStorage_.setValue<std::string>(std::string("Alarm")+std::to_string(i), serializer.serialize(alarm));
         i++;
     }
@@ -54,8 +53,9 @@ void EspAlarm::saveToPersistentStorage() {
 void EspAlarm::loadFromPeristentStorage() {
     size_t alarms = persistentStorage_.getValue<uint32_t>(std::string("count"));
     for (size_t i; i<alarms; i++) {
+        SimpleAlarmSerializer serializer;
         std::string current = persistentStorage_.getValue<std::string>(std::string("Alarm")+std::to_string(i));
-
+        m_alarms.push_back(serializer.deserialize(current));
     }
 
 }

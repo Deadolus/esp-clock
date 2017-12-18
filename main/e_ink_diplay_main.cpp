@@ -100,6 +100,7 @@ extern "C" void app_main()
     EspDisplay display;
     EspSign espsign(display);
     EspAlarm alarm{};
+    alarm.loadFromPeristentStorage();
     EspAlarmService alarms{alarm, std::chrono::minutes(10)};
     static EspAudioPlayer audioplayer;
     static EspPwmLed pwmLed{CONFIG_LED_GPIO};
