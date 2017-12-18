@@ -81,9 +81,6 @@ static const char *TAG = "clock";
  * maintains its value when ESP32 wakes from deep sleep.
  */
 //RTC_DATA_ATTR static int boot_count = 0; 
-//static void obtain_time();
-static void obtain_time(void *);
-static void initialise_wifi();
 static void example_tg0_timer_init(timer_idx_t timer_idx, bool auto_reload, double timer_interval_sec);
 static void setTimezone();
 void IRAM_ATTR timer_group0_isr(void *para);
@@ -94,6 +91,7 @@ unsigned long time_now_s;
 
 extern "C" void app_main()
 {
+    ESP_ERROR_CHECK( nvs_flash_init() );
     static EspHttpServer httpserver;
     static EspWifi wifi;
     EspSntpClient sntp{wifi};
@@ -117,17 +115,11 @@ extern "C" void app_main()
             ESP_LOGI(TAG, "Button long pressed!");
             if(wifi.isConnected()) wifi.stopWifi();
             });
-    EspPersistentStorage storage{"storage"};
-    uint32_t test = storage.getValue<uint32_t>("test");
-    uint32_t test2{10};
-    storage.setValue<uint32_t>(std::string("test"), test2);
+    wifi.init();
+    wifi.startWifi();
     setTimezone();
+    sntp.getTime(false);
     /* if(esp_sleep_get_wakeup_cause() != ESP_SLEEP_WAKEUP_TIMER) */
-    ESP_ERROR_CHECK( nvs_flash_init() );
-    std::thread wifiThread(initialise_wifi);
-    wifiThread.detach();
-    std::thread obtainTime(obtain_time, nullptr);
-    obtainTime.detach();
     //example_tg0_timer_init(TIMER_0, TEST_WITHOUT_RELOAD, TIMER_INTERVAL0_SEC);
     httpserver.startServer();
     EspDisplayService displayService{display, espsign, alarm, alarms, wifi, sntp, 5000};
@@ -156,48 +148,6 @@ extern "C" void app_main()
 void setTimezone() {
 	setenv("TZ", "CET-1", 1);
 	tzset();
-}
-
-
-//void obtain_time()
-void obtain_time(void *pvParameters)
-{
-    EspWifi wifi{};
-    EspSntpClient sntpClient{ wifi };
-    sntpClient.getTime(false);
-    //test alarm
-    EspAlarm alarm;
-    alarms_t soon{};
-    soon.time = Clock::getCurrentTimeAsTimePoint()+std::chrono::seconds(4);
-    soon.weekRepeat = 0b0111111; // Mo, tue, thu, fr
-    soon.name = "Soon Alarm";
-    alarms_t wakeup{};
-
-    time_t now = Clock::getCurrentTimeAsTimet();
-    std::tm wakeup_tm{};
-    wakeup_tm = *localtime(&now);
-    //wakeup_tm.tm_mday++;
-    wakeup_tm.tm_hour = 17;
-    wakeup_tm.tm_min = 12;
-    wakeup.time = Clock::convertToTimePoint(wakeup_tm);
-    wakeup.weekRepeat = 0b1111111;
-    wakeup.name = "Wakeup";
-    //alarms_t soon{std::chrono::system_clock::now()+std::chrono::seconds(4),std::chrono::system_clock::from_time_t(0), static_cast<timer_idx_t>(0), AlarmStatus::Pacified, [](alarms_t){} };
-
-    //alarm.setAlarm(soon);
-    //alarm.setAlarm(wakeup);
-}
-
-static void initialise_wifi()
-{
-    EspWifi wifi{};
-    wifi.init();
-    wifi.startWifi();
-}
-
-void updateTime() {
-
-
 }
 
 /*
