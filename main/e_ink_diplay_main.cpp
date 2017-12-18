@@ -42,12 +42,12 @@ void setTimezone();
 extern "C" void app_main()
 {
     ESP_ERROR_CHECK( nvs_flash_init() );
-    EspHttpServer httpserver;
     EspWifi wifi;
     EspSntpClient sntp{wifi};
     EspDisplay display;
     EspSign espsign(display);
     EspAlarm alarm{};
+    EspHttpServer httpserver{alarm};
     alarm.loadFromPeristentStorage();
     EspAlarmService alarms{alarm, std::chrono::minutes(10)};
     EspAudioPlayer audioplayer;

@@ -45,17 +45,24 @@ void EspAlarm::saveToPersistentStorage() {
     size_t i = 0;
     for(auto& alarm: m_alarms) {
         SimpleAlarmSerializer serializer;
-        persistentStorage_.setValue<std::string>(std::string("Alarm")+std::to_string(i), serializer.serialize(alarm));
+        std::string alarmNr = std::string("Alarm")+std::to_string(i);
+        std::string serializedAlarm = serializer.serialize(alarm);
+        persistentStorage_.setValue<std::string>(alarmNr.c_str(), serializedAlarm.c_str());
+        ESP_LOGI(TAG, "Serializing alarm: %s/%s", alarmNr.c_str(), serializedAlarm.c_str());
         i++;
     }
 }
 
 void EspAlarm::loadFromPeristentStorage() {
     size_t alarms = persistentStorage_.getValue<uint32_t>(std::string("count"));
-    for (size_t i; i<alarms; i++) {
+    ESP_LOGI(TAG, "There were %u saved alarms", alarms);
+    for (size_t i=0; i<alarms; i++) {
         SimpleAlarmSerializer serializer;
-        std::string current = persistentStorage_.getValue<std::string>(std::string("Alarm")+std::to_string(i));
+        std::string alarmNr = std::string("Alarm")+std::to_string(i);
+        std::string current = persistentStorage_.getValue<std::string>(alarmNr.c_str());
+        ESP_LOGI(TAG, "Deserializing alarm: %s", current.c_str());
         m_alarms.push_back(serializer.deserialize(current));
+        ESP_LOGI(TAG, "Loaded alarm: %s", m_alarms.back().name.c_str());
     }
 
 }

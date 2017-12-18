@@ -61,7 +61,6 @@ void EspPersistentStorage::setValue<int32_t>(std::string name, int32_t const& va
 //std::string
 template<>
 std::string EspPersistentStorage::getValue<std::string>(std::string name) {
-    std::string retVal{};
     std::array<char, 64> buffer{};
     size_t requiredSize;
     esp_err_t error{};
@@ -70,7 +69,7 @@ std::string EspPersistentStorage::getValue<std::string>(std::string name) {
     if(requiredSize<=64) {
     (nvs_get_str(storageHandle_, name.c_str(), buffer.data(), &requiredSize));
     }
-    return retVal;
+    return std::string(buffer.data());
 }
 
 template<>
