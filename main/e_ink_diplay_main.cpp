@@ -37,6 +37,7 @@
 #include "EspPersistentStorage.h"
 #include "EspDisplayService.h"
 #include "Clock.h"
+#include "SimpleAlarmSerializer.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"

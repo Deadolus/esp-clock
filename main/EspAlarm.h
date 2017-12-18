@@ -13,6 +13,7 @@ class EspAlarm :
         virtual alarms_t getNextAlarm() override;
         virtual void deleteAlarm(alarms_t& alarm) override;
     private:
+        void saveToPersistentStorage();
         static std::list<alarms_t> m_alarms;
         EspPersistentStorage persistentStorage_{"Alarms"};
 };

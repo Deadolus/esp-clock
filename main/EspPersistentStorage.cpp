@@ -37,7 +37,7 @@ uint32_t EspPersistentStorage::getValue<uint32_t>(std::string name) {
 }
 
 template<>
-void EspPersistentStorage::setValue<uint32_t>(std::string name, uint32_t& value) {
+void EspPersistentStorage::setValue<uint32_t>(std::string name, uint32_t const& value) {
     ESP_ERROR_CHECK(nvs_set_u32(storageHandle_, name.c_str(), value));
     ESP_ERROR_CHECK(nvs_commit(storageHandle_));
 }
@@ -53,7 +53,7 @@ int32_t EspPersistentStorage::getValue<int32_t>(std::string name) {
 }
 
 template<>
-void EspPersistentStorage::setValue<int32_t>(std::string name, int32_t& value) {
+void EspPersistentStorage::setValue<int32_t>(std::string name, int32_t const& value) {
     ESP_ERROR_CHECK(nvs_set_i32(storageHandle_, name.c_str(), value));
     ESP_ERROR_CHECK(nvs_commit(storageHandle_));
 }
@@ -74,10 +74,11 @@ std::string EspPersistentStorage::getValue<std::string>(std::string name) {
 }
 
 template<>
-void EspPersistentStorage::setValue<std::string>(std::string name, std::string& value) {
+void EspPersistentStorage::setValue<std::string>(std::string name, std::string const& value) {
     ESP_ERROR_CHECK(nvs_set_str(storageHandle_, name.c_str(), value.c_str()));
     ESP_ERROR_CHECK(nvs_commit(storageHandle_));
 }
+
 
 //TODO: u8, i16, u16, i64, u64, blob
 //https://esp-idf.readthedocs.io/en/v1.0/api/nvs_flash.html

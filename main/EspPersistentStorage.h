@@ -16,7 +16,7 @@ class EspPersistentStorage //:
         template <class T>
             T getValue(std::string name) ;
         template <class T>
-            void setValue(std::string name, T& value) ;
+            void setValue(std::string name, T const& value) ;
     private:
         nvs_handle storageHandle_;
 };
