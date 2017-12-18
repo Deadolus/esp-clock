@@ -57,7 +57,6 @@ EspButton::EspButton(unsigned int gpio, bool inverse): gpio_(gpio), inverse_(inv
 }
 
 EspButton::~EspButton() {
-    vTaskDelete(buttonTaskHandle);
 }
 
 bool EspButton::pressed() {
