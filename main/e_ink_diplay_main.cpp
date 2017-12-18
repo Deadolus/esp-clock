@@ -42,17 +42,17 @@ void setTimezone();
 extern "C" void app_main()
 {
     ESP_ERROR_CHECK( nvs_flash_init() );
-    static EspHttpServer httpserver;
-    static EspWifi wifi;
+    EspHttpServer httpserver;
+    EspWifi wifi;
     EspSntpClient sntp{wifi};
     EspDisplay display;
     EspSign espsign(display);
     EspAlarm alarm{};
     alarm.loadFromPeristentStorage();
     EspAlarmService alarms{alarm, std::chrono::minutes(10)};
-    static EspAudioPlayer audioplayer;
-    static EspPwmLed pwmLed{CONFIG_LED_GPIO};
-    static EspButton button{0, true};
+    EspAudioPlayer audioplayer;
+    EspPwmLed pwmLed{CONFIG_LED_GPIO};
+    EspButton button{0, true};
     button.setPressCb([&](){
             ESP_LOGI(TAG, "Button pressed!");
             alarms.pacify();
