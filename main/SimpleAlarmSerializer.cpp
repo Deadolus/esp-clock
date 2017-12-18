@@ -6,8 +6,29 @@
 #include "esp_log.h"
 
 #include <sstream>
+#include <string>
+#include <vector>
 
+namespace {
 static const char* TAG = "SimpleSerializer";
+    //https://stackoverflow.com/questions/236129/the-most-elegant-way-to-iterate-the-words-of-a-string
+    std::vector<std::string> split(const std::string& text, const std::string& delims)
+    {
+        std::vector<std::string> tokens;
+        std::size_t start = text.find_first_not_of(delims), end = 0;
+
+        while((end = text.find_first_of(delims, start)) != std::string::npos)
+        {
+            tokens.push_back(text.substr(start, end - start));
+            start = text.find_first_not_of(delims, end);
+        }
+        if(start != std::string::npos)
+            tokens.push_back(text.substr(start));
+
+        return tokens;
+    }
+}
+
 
 
 std::string SimpleAlarmSerializer::serialize(alarms_t& alarm) {
@@ -16,8 +37,20 @@ std::string SimpleAlarmSerializer::serialize(alarms_t& alarm) {
     retVal << alarm.name <<",";
     retVal << Clock::getTimet(alarm.time) <<",";
     retVal << Clock::getTimet(alarm.snoozeTime) <<",";
-    retVal << alarm.weekRepeat.to_string();
-    ESP_LOGI(TAG, "%s", retVal.str().c_str());
+    retVal << std::to_string(alarm.weekRepeat.to_ulong());
+    //ESP_LOGI(TAG, "%s", retVal.str().c_str());
 
     return retVal.str();
+}
+
+alarms_t SimpleAlarmSerializer::deserialize(std::string const& text) {
+    alarms_t retVal{};
+    std::vector<std::string> fields = split(text, ",");
+    std::string field;
+    field = fields.at(1);
+    retVal.name = fields.at(0);
+    retVal.time = Clock::convertToTimePoint(static_cast<time_t>(std::stoi(fields.at(1))));
+    retVal.snoozeTime = Clock::convertToTimePoint(static_cast<time_t>(std::stoi(fields.at(2))));
+    retVal.weekRepeat = std::bitset<7>(std::stoi(fields.at(3)));
+    return retVal;
 }
