@@ -26,6 +26,9 @@ struct alarms_t {
     friend bool operator==(const alarms_t& lhs, const alarms_t& rhs) {
         return std::tie(lhs.time, lhs.name) == std::tie(rhs.time, rhs.name);
     }
+    friend bool operator<(const alarms_t& lhs, const alarms_t& rhs) {
+        return std::tie(lhs.time, lhs.name) < std::tie(rhs.time, rhs.name);
+    }
 };
 
 class Alarm 
