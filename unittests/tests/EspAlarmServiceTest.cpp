@@ -11,6 +11,7 @@ class EspAlarmServiceTest : public ::testing::Test {
     protected:
         virtual void SetUp() {
             alarms.getAlarms().clear();
+            testee.setAlarmCallback([](){});
         }
         EspAlarmService testee;
         EspAlarm alarms;

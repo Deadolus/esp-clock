@@ -47,8 +47,10 @@ bool alarmShouldRing(alarms_t& alarm, std::chrono::minutes snoozeTime) {
     }
 }
 EspAlarmService::EspAlarmService(Alarm& alarm, std::chrono::minutes snoozeTime) : alarms_(alarm), snoozeTime_(snoozeTime) {
+#ifndef GOOGLETEST
     std::thread task(alarmServiceTask, std::ref(*this));
     task.detach();
+#endif
 }
 
 void EspAlarmService::alarmServiceTask(EspAlarmService& alarmService) {
@@ -133,5 +135,6 @@ std::list<alarms_t> EspAlarmService::getRingingAlarms() {
 
 void EspAlarmService::setAlarmCallback(std::function<void()> callback)
 {
+    std::lock_guard<std::mutex> guard(alarmServiceMutex_);
     alarmCallback_ = callback;
 }
