@@ -26,6 +26,23 @@ namespace {
     str.replace(str.find(from), from.length(), to);
   return str;
 }
+
+std::string alarmsToHtml(EspAlarm& alarms) {
+    std::stringstream allAlarms{};
+    for(auto& alarm: alarms.getAlarms()) {
+        tm time = Clock::getTm(alarm.time);
+        allAlarms << alarm.name;
+        allAlarms << ": ";
+        allAlarms << time.tm_hour;
+        allAlarms << ":";
+        allAlarms << time.tm_min;
+        allAlarms << ":";
+        allAlarms << time.tm_sec;
+        allAlarms << "<br>";
+        //allAlarms.append(alarm.name+": "+itoa(time.tm_hour)+":"+itoa(time.tm_min));
+    }
+    return allAlarms.str();
+}
 }
 
 enum {
@@ -60,23 +77,7 @@ int32_t ssi_handler(int32_t iIndex, char *pcInsert, int32_t iInsertLen)
             //snprintf(pcInsert, iInsertLen, (GPIO.OUT & BIT(LED_PIN)) ? "Off" : "On");
             break;
         case SSI_ALARMS:
-            {
-            std::stringstream allAlarms{};
-            for(auto& alarm: alarms.getAlarms()) {
-                tm time = Clock::getTm(alarm.time);
-                allAlarms << alarm.name;
-                allAlarms << ": ";
-                allAlarms << time.tm_hour;
-                allAlarms << ":";
-                allAlarms << time.tm_min;
-                allAlarms << ":";
-                allAlarms << time.tm_sec;
-                allAlarms << "<br>";
-                //allAlarms.append(alarm.name+": "+itoa(time.tm_hour)+":"+itoa(time.tm_min));
-            }
-            snprintf(pcInsert, iInsertLen, allAlarms.str().c_str());
-            //snprintf(pcInsert, iInsertLen, (GPIO.OUT & BIT(LED_PIN)) ? "Off" : "On");
-            }
+            snprintf(pcInsert, iInsertLen, alarmsToHtml(alarms).c_str());
             break;
         default:
             snprintf(pcInsert, iInsertLen, "N/A");
