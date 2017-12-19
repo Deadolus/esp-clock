@@ -47,7 +47,14 @@ HTTP Server is up and running.</div>
 </p>
 
 			<p>I have these alarms for you: <br>
-            <!--#alarms-->
+<table class="table table-striped" id="alarmTable"><tr>
+    <th>Name</th>
+    <th>Time</th>
+    <th>Delete</th>
+  </tr>
+<!-- Place for alarms -->
+</table>
+            
             </p>
 
 			<div class="cover" align="center">
@@ -82,13 +89,44 @@ HTTP Server is up and running.</div>
 				var ls = document.getElementById('ledState').innerHTML;
 				ls = ls.split(/-->/).pop().trim();
 				document.getElementById('led-switch').checked = (ls == 'On');
+splitInsertAlarms("A,17:30;B,15:30");
+var str = <!--#alarms-->;
+splitInsertAlarms(str);
+$('.deleteButton').on('click', function () { 
+deleteAlarm($(this).closest('tr').index()); 
+});
 			};
+
 			function gpio() {
 				if (document.getElementById('led-switch').checked)
 					window.location.href = 'gpio?off=2';
 				else
 					window.location.href = 'gpio?on=2';
 			};
+
+function deleteAlarm(row) {
+console.log("Deleting row " + row);
+$('#alarmTable tr').eq(row).remove()
+//TODO send deletion request to ESP
+}
+
+function splitInsertAlarms(str) {
+if(str == null) return;
+ 
+var arr = str.split(';')
+arr.forEach(function(alarmStr) {
+  var alarm = alarmStr.split(',');
+  insertRow(alarm[0], alarm[1]);
+});
+
+}
+function insertRow(name, time) {
+console.log("Got: "+name+"-->"+time);
+var htmlStr = "<tr><td><b>"+name+"</b></td><td>"+time+"</td><td><button type='button' class='deleteButton btn btn-danger btn-sm'>Delete</button></td></tr>"
+$("#alarmTable> tbody:last").append(htmlStr);
+}
+
+		</script>
 		</script>
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->

@@ -31,13 +31,13 @@ std::string alarmsToHtml(Alarm& alarms) {
     for(auto& alarm: alarms.getAlarms()) {
         tm time = Clock::getTm(alarm.time);
         allAlarms << alarm.name;
-        allAlarms << ": ";
+        allAlarms << ",";
         allAlarms << time.tm_hour;
         allAlarms << ":";
         allAlarms << time.tm_min;
         allAlarms << ":";
         allAlarms << time.tm_sec;
-        allAlarms << "<br>";
+        allAlarms << ";";
         //allAlarms.append(alarm.name+": "+itoa(time.tm_hour)+":"+itoa(time.tm_min));
     }
     return allAlarms.str();
