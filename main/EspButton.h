@@ -2,9 +2,6 @@
 
 #include "Button.h"
 
-#include <freertos/FreeRTOS.h>
-#include <freertos/task.h>
-
 #include <functional>
 
 class EspButton : 
@@ -28,6 +25,5 @@ class EspButton :
         std::function<void()> longPressCb_{};
         std::function<void()> extraLongPressCb_{};
         static void buttonTask(void *pvParameters);
-        TaskHandle_t buttonTaskHandle{};
 };
 

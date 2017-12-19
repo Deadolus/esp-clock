@@ -10,8 +10,6 @@
 #include <string>
 #include <string.h>
 #include <stdio.h>
-#include <freertos/FreeRTOS.h>
-#include <freertos/task.h>
 //#include <ssid_config.h>
 #include <httpd/httpd.h>
 #include <thread>

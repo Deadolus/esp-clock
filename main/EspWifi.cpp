@@ -1,13 +1,12 @@
 #include "EspWifi.h"
 #include "esp_log.h"
 #include "esp_wifi.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/event_groups.h"
 #include "esp_event_loop.h"
 #include "esp_system.h"
 #include "sdkconfig.h"
 #include <string>
 #include <cstring>
+#include <thread>
 
 
 static const char* TAG = "wifi";
@@ -16,15 +15,12 @@ static const char* TAG = "wifi";
 
    but we only care about one event - are we connected
    to the AP with an IP? */
-unsigned int EspWifi::connected_bit_{BIT0};
-/* FreeRTOS event group to signal when we are connected & ready to make a request */
-EventGroupHandle_t EspWifi::eventgroup_;
+bool EspWifi::connected_bit_{BIT0};
 
 EspWifi::EspWifi() {}
 
 void EspWifi::init() {
     tcpip_adapter_init();
-    eventgroup_ = xEventGroupCreate();
     ESP_ERROR_CHECK( esp_event_loop_init(event_handler, NULL) );
     esp_event_loop_init(event_handler, NULL);
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
@@ -46,11 +42,13 @@ void EspWifi::stopWifi() {
 }
 
 bool EspWifi::isConnected() {
-return (xEventGroupGetBits(eventgroup_) & connected_bit_) == connected_bit_;
+return connected_bit_;
 }
 
 void EspWifi::waitForConnection() {
-    xEventGroupWaitBits(eventgroup_, connected_bit_, false, true, portMAX_DELAY);
+    while(!connected_bit_) {
+        std::this_thread::sleep_for(std::chrono::microseconds(10));
+    }
 }
 
 esp_err_t EspWifi::event_handler(void *ctx, system_event_t *event)
@@ -60,14 +58,14 @@ esp_err_t EspWifi::event_handler(void *ctx, system_event_t *event)
         esp_wifi_connect();
         break;
     case SYSTEM_EVENT_STA_GOT_IP:
-        xEventGroupSetBits(eventgroup_, connected_bit_);
+        connected_bit_ = true;
     ESP_LOGI(TAG, "Connected");
         break;
     case SYSTEM_EVENT_STA_DISCONNECTED:
         /* This is a workaround as ESP32 WiFi libs don't currently
            auto-reassociate. */
         //esp_wifi_connect();
-        xEventGroupClearBits(eventgroup_, connected_bit_);
+        connected_bit_ = false;
         break;
     default:
         break;

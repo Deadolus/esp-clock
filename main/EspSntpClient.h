@@ -1,8 +1,6 @@
 #pragma once
 
 #include "SntpClient.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/event_groups.h"
 class Wifi;
 
 class EspSntpClient : 

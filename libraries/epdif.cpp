@@ -33,7 +33,6 @@
 #include <stdio.h>
 #include <cstring>
 #include "esp_system.h"
-#include "freertos/task.h"
 #include <mutex>
 #include <thread>
 

@@ -6,8 +6,6 @@
 #include "EspWifi.h"
 #include "EspSntpClient.h"
 #include "EspSntpClient.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
 #include "esp_log.h"
 #include <thread>
 

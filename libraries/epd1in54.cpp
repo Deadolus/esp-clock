@@ -27,7 +27,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "epd1in54.h"
-#include "freertos/task.h"
 
 #define LOW 0
 #define HIGH 1

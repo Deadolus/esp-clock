@@ -2,8 +2,6 @@
 #include "apps/sntp/sntp.h"
 #include "esp_log.h"
 #include "EspWifi.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/event_groups.h"
 #include <thread>
 
 static char* NTP_SERVER = "pool.ntp.org";
