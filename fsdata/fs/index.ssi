@@ -107,7 +107,8 @@ function gpio() {
 function deleteAlarm(row) {
   console.log("Deleting row " + row);
   $('#alarmTable tr').eq(row).remove()
-  //TODO send deletion request to ESP
+  newUrl = "delete?alarm="+(row-1);
+  window.location.href = newUrl;
 }
 
 function splitInsertAlarms(str) {
