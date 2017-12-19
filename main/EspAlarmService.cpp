@@ -36,7 +36,7 @@ bool correctTime(std::chrono::system_clock::time_point alarmTime) {
 bool alarmShouldRing(alarms_t& alarm, std::chrono::minutes snoozeTime) {
         std::chrono::system_clock::time_point snoozePoint = alarm.snoozeTime+snoozeTime;
         if(
-                (correctDayOfWeek(alarm.weekRepeat) &&  ( correctTime(alarm.time)))
+                ((correctDayOfWeek(alarm.weekRepeat) || alarm.singleShot) &&  ( correctTime(alarm.time)))
                 || (Clock::getCurrentTimeAsTimePoint() == snoozePoint)
                 || (alarm.status == AlarmStatus::Ringing)
           )
