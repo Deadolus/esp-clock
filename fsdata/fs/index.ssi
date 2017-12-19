@@ -106,26 +106,26 @@ function gpio() {
 
 function deleteAlarm(row) {
   console.log("Deleting row " + row);
-  $('#alarmTable tr').eq(row).remove()
+  $('#alarmTable tr').eq(row).remove();
   newUrl = "delete?alarm="+(row-1);
   window.location.href = newUrl;
-}
+};
 
 function splitInsertAlarms(str) {
   if(str == null) return;
 
-  var arr = str.split(';')
+  var arr = str.split(';');
   arr.forEach(function(alarmStr) {
     var alarm = alarmStr.split(',');
     insertRow(alarm[0], alarm[1]);
   });
 
-}
+};
 function insertRow(name, time) {
   console.log("Got: "+name+"-->"+time);
-  var htmlStr = "<tr><td><b>"+name+"</b></td><td>"+time+"</td><td><button type='button' class='deleteButton btn btn-danger btn-sm'>Delete</button></td></tr>"
+  var htmlStr = "<tr><td><b>"+name+"</b></td><td>"+time+"</td><td><button type='button' class='deleteButton btn btn-danger btn-sm'>Delete</button></td></tr>";
   $("#alarmTable> tbody:last").append(htmlStr);
-}
+};
 
         </script>
       </script>
