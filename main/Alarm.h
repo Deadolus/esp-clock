@@ -25,7 +25,7 @@ struct alarms_t {
     std::function<void(alarms_t&)> callback{};
     bool singleShot{false};
     friend bool operator==(const alarms_t& lhs, const alarms_t& rhs) {
-        return std::tie(lhs.time, lhs.name) == std::tie(rhs.time, rhs.name);
+        return std::tie(lhs.time, lhs.name, lhs.weekRepeat) == std::tie(rhs.time, rhs.name, rhs.weekRepeat);
     }
     friend bool operator<(const alarms_t& lhs, const alarms_t& rhs) {
         return std::tie(lhs.time, lhs.name) < std::tie(rhs.time, rhs.name);
