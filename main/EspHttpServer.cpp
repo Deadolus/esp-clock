@@ -120,6 +120,7 @@ const char* EspHttpServer::newAlarm_cgi_handler(int iIndex, int iNumParams, char
             ESP_LOGI(TAG, "snoozeTime: %s", pcValue[i]);
         }
         if(strcmp(pcParam[i], "repeatingAlarm")==0) {
+            try { alarm.singleShot = std::stoi(pcValue[i]); } catch(std::exception ){}
             ESP_LOGI(TAG, "repeatingAlarm: %s", pcValue[i]);
         }
         if(strcmp(pcParam[i], "days")==0) {
