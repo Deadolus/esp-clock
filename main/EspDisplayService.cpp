@@ -42,6 +42,6 @@ void EspDisplayService::displayServiceTask(unsigned int delay, EspDisplay& displ
         display.setTime(sntp);
         display.send();
         display.sleep();
-        vTaskDelay(delay / portTICK_PERIOD_MS);
+        std::this_thread::sleep_for(std::chrono::milliseconds(delay));
     }
 }

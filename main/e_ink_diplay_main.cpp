@@ -78,7 +78,7 @@ extern "C" void app_main()
     ESP_LOGI(TAG, "Everything started...");
 
     while(true) {
-        vTaskDelay(5000 / portTICK_PERIOD_MS);
+        std::this_thread::sleep_for(std::chrono::seconds(5));
     }
 }
 

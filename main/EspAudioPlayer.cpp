@@ -156,7 +156,6 @@ ESP_LOGI(TAG, "Audio, tot size: %d", tot_size);
     }
     example_reset_play_mode();
     ESP_LOGI(TAG, "Finished playing audio");
-    //vTaskDelay(100 / portTICK_PERIOD_MS);
     example_reset_play_mode();
     //free(flash_read_buff);
     free(i2s_write_buff);

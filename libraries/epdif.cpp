@@ -35,7 +35,8 @@
 #include "esp_system.h"
 #include "freertos/task.h"
 #include <mutex>
-//#include <spi.h>
+#include <thread>
+
 #define INPUT 0
 #define OUTPUT 1
 #define HIGH 1
@@ -60,8 +61,7 @@ int EpdIf::DigitalRead(int pin) {
 }
 
 void EpdIf::DelayMs(unsigned int delaytime) {
-    vTaskDelay(delaytime / portTICK_PERIOD_MS);
-    //delay(delaytime);
+    std::this_thread::sleep_for(std::chrono::milliseconds(delaytime));
 }
 
 void EpdIf::SpiTransfer(unsigned char data) {
@@ -83,7 +83,6 @@ void EpdIf::SpiTransfer(unsigned char data) {
     //t.user=(void*)1;                //D/C needs to be set to 1
 //    gpio_set_level(static_cast<gpio_num_t>(CS_PIN), LOW);
     //printf("Transmitting data, %u\n", data);
-    //vTaskDelay(1/ portTICK_PERIOD_MS);
     ret=spi_device_transmit(spi, &t);  //Transmit!
     //assert( ret == ESP_OK );
     if( ret != ESP_OK )

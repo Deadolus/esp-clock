@@ -193,10 +193,8 @@ void websocket_task(void *pvParameter)
         if (len < sizeof (response))
             websocket_write(pcb, (unsigned char *) response, len, WS_TEXT_MODE);
 
-        vTaskDelay(2000 / portTICK_PERIOD_MS);
+        std::this_thread::sleep_for(std::chrono::seconds(2));
     }
-
-    vTaskDelete(NULL);
 }
 
 /**
@@ -291,7 +289,7 @@ void httpd_task(void *pvParameters)
     httpd_init();
 
     for (;;) {
-        vTaskDelay(1 / portTICK_PERIOD_MS);
+        std::this_thread::sleep_for(std::chrono::microseconds(1));
     }
 }
 

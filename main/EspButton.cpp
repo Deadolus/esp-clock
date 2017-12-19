@@ -11,9 +11,6 @@ static const unsigned int SHORT_PRESS = 5;
 static const unsigned int LONG_PRESS = 50;
 static const unsigned int EXTRA_LONG_PRESS = 200;
 
-void button_Task(void *pvParameters) {
-    vTaskDelay(10 / portTICK_PERIOD_MS);
-}
 void EspButton::buttonTask(void *pvParameters) {
     EspButton* button = static_cast<EspButton*>(pvParameters);
     while(true) {
@@ -32,14 +29,12 @@ void EspButton::buttonTask(void *pvParameters) {
             //reset pressed Time
             button->pressedTime = 0;
         }
-
-        vTaskDelay(10 / portTICK_PERIOD_MS);
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 }
 
 EspButton::EspButton(unsigned int gpio, bool inverse): gpio_(gpio), inverse_(inverse) {
     gpio_config_t io_conf{};
-    BaseType_t returned{};
     //TODO: will probably overwrite existing button configurations...
     io_conf.pin_bit_mask = (1<<gpio_);
     io_conf.mode = GPIO_MODE_INPUT;

@@ -4,6 +4,7 @@
 #include "EspWifi.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
+#include <thread>
 
 static char* NTP_SERVER = "pool.ntp.org";
 static const char* TAG = "sntp";
@@ -23,7 +24,7 @@ void EspSntpClient::getTime(bool turnOffWifiAfterwards) {
     const int retry_count = 10;
     while(!timeSet() && ++retry < retry_count) {
         ESP_LOGI(TAG, "Waiting for system time to be set... (%d/%d)", retry, retry_count);
-        vTaskDelay(2000 / portTICK_PERIOD_MS);
+        std::this_thread::sleep_for(std::chrono::seconds(2));
     }
     if(turnOffWifiAfterwards) {
         ESP_LOGI(TAG, "Stopping WIFI");
