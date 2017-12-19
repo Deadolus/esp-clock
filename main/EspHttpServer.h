@@ -11,6 +11,7 @@ class EspHttpServer :
         virtual void startServer() override;
         static int32_t ssi_handler(int32_t iIndex, char *pcInsert, int32_t iInsertLen);
         static const char *newAlarm_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[]);
+        static const char *delete_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[]);
     private:
         static EspHttpServer* getInstance();
         static Alarm& getInstanceAlarms();

@@ -133,24 +133,20 @@ const char* EspHttpServer::newAlarm_cgi_handler(int iIndex, int iNumParams, char
     return "/newalarm.html";
 }
 
-const char *gpio_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
+const char* EspHttpServer::delete_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
     ESP_LOGI(TAG, "Got request for gpio");
-    //url handler, e.g. gpio?off=2
-    for (int i = 0; i < iNumParams; i++) {
-        if (strcmp(pcParam[i], "on") == 0) {
-            //uint8_t gpio_num = atoi(pcValue[i]);
-            ////gpio_enable(gpio_num, GPIO_OUTPUT);
-            //gpio_set_level(gpio_num, true);
-        } else if (strcmp(pcParam[i], "off") == 0) {
-            //uint8_t gpio_num = atoi(pcValue[i]);
-            //gpio_enable(gpio_num, GPIO_OUTPUT);
-            //gpio_set_level(gpio_num, false);
-        } else if (strcmp(pcParam[i], "toggle") == 0) {
-            //uint8_t gpio_num = atoi(pcValue[i]);
-            //gpio_enable(gpio_num, GPIO_OUTPUT);
-            //gpio_toggle(gpio_num);
-        }
+    //url handler, e.g. delete?off=2
+    int deleteNr{-1};
+    try {
+        deleteNr = std::stoi(std::string(pcParam[0]));
+    } catch(std::exception e) {}
+    if(deleteNr >= 0) {
+        auto& alarms = getInstanceAlarms().getAlarms();
+        auto it = alarms.begin();
+        std::advance(it, deleteNr);
+        alarms.erase(it);
+        ESP_LOGI(TAG, "Deleted alarm Nr. %d", deleteNr);
     }
     return "/index.ssi";
 }
@@ -251,7 +247,7 @@ void websocket_open_cb(struct tcp_pcb *pcb, const char *uri)
 void httpd_task(void *pvParameters)
 {
     tCGI pCGIs[] = {
-        {"/gpio", (tCGIHandler) gpio_cgi_handler},
+        {"/delete", (tCGIHandler) EspHttpServer::delete_cgi_handler},
         {"/about", (tCGIHandler) about_cgi_handler},
         {"/websockets", (tCGIHandler) websocket_cgi_handler},
         {"/newalarm", (tCGIHandler) EspHttpServer::newAlarm_cgi_handler},
