@@ -90,7 +90,7 @@ int32_t EspHttpServer::ssi_handler(int32_t iIndex, char *pcInsert, int32_t iInse
     return (strlen(pcInsert));
 }
 
-char* EspHttpServer::newAlarm_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
+const char* EspHttpServer::newAlarm_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
     Alarm& alarms = getInstanceAlarms();
     ESP_LOGI(TAG, "Got request for newAlarm, params: %i, index: %i", iNumParams, iIndex);
@@ -135,21 +135,21 @@ char* EspHttpServer::newAlarm_cgi_handler(int iIndex, int iNumParams, char *pcPa
     return "/newalarm.html";
 }
 
-char *gpio_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
+const char *gpio_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
     ESP_LOGI(TAG, "Got request for gpio");
     //url handler, e.g. gpio?off=2
     for (int i = 0; i < iNumParams; i++) {
         if (strcmp(pcParam[i], "on") == 0) {
-            uint8_t gpio_num = atoi(pcValue[i]);
+            //uint8_t gpio_num = atoi(pcValue[i]);
             ////gpio_enable(gpio_num, GPIO_OUTPUT);
             //gpio_set_level(gpio_num, true);
         } else if (strcmp(pcParam[i], "off") == 0) {
-            uint8_t gpio_num = atoi(pcValue[i]);
+            //uint8_t gpio_num = atoi(pcValue[i]);
             //gpio_enable(gpio_num, GPIO_OUTPUT);
             //gpio_set_level(gpio_num, false);
         } else if (strcmp(pcParam[i], "toggle") == 0) {
-            uint8_t gpio_num = atoi(pcValue[i]);
+            //uint8_t gpio_num = atoi(pcValue[i]);
             //gpio_enable(gpio_num, GPIO_OUTPUT);
             //gpio_toggle(gpio_num);
         }
@@ -157,13 +157,13 @@ char *gpio_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValu
     return "/index.ssi";
 }
 
-char *about_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
+const char *about_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
     ESP_LOGI(TAG, "Got request for about");
     return "/about.html";
 }
 
-char *websocket_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
+const char *websocket_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
     ESP_LOGI(TAG, "Got request for websocket");
     return "/websockets.html";
