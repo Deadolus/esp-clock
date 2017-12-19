@@ -23,6 +23,7 @@ struct alarms_t {
     //!days of week, bit 0 is sunday, bit 6 saturday
     std::bitset<7> weekRepeat{};
     std::function<void(alarms_t&)> callback{};
+    bool singleShot{false};
     friend bool operator==(const alarms_t& lhs, const alarms_t& rhs) {
         return std::tie(lhs.time, lhs.name) == std::tie(rhs.time, rhs.name);
     }
