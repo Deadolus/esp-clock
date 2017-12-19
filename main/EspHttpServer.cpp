@@ -19,6 +19,7 @@
 #define LED_PIN 2
 
 static const char* TAG = "HttpServer";
+EspHttpServer* EspHttpServer::instance_{};
 namespace {
     std::string replaceStr(std::string & str, const std::string & from, const std::string & to)
 {
@@ -27,7 +28,7 @@ namespace {
   return str;
 }
 
-std::string alarmsToHtml(EspAlarm& alarms) {
+std::string alarmsToHtml(Alarm& alarms) {
     std::stringstream allAlarms{};
     for(auto& alarm: alarms.getAlarms()) {
         tm time = Clock::getTm(alarm.time);
@@ -53,9 +54,9 @@ enum {
     SSI_ALARMS
 };
 
-int32_t ssi_handler(int32_t iIndex, char *pcInsert, int32_t iInsertLen)
+int32_t EspHttpServer::ssi_handler(int32_t iIndex, char *pcInsert, int32_t iInsertLen)
 {
-    EspAlarm alarms;
+    Alarm& alarms = getInstanceAlarms();
     //client send iIndex from pcConfigSSITags in to here - 
     //we populate pcInsert and return it to client
     ESP_LOGI(TAG, "Got request for %i", iIndex);
@@ -89,9 +90,9 @@ int32_t ssi_handler(int32_t iIndex, char *pcInsert, int32_t iInsertLen)
     return (strlen(pcInsert));
 }
 
-char *newAlarm_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
+char* EspHttpServer::newAlarm_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
-    EspAlarm alarms;
+    Alarm& alarms = getInstanceAlarms();
     ESP_LOGI(TAG, "Got request for newAlarm, params: %i, index: %i", iNumParams, iIndex);
     //url handler e.g. /newAalarm?time=xxx&days=xxxx
     alarms_t alarm;
@@ -257,7 +258,7 @@ void httpd_task(void *pvParameters)
         {"/gpio", (tCGIHandler) gpio_cgi_handler},
         {"/about", (tCGIHandler) about_cgi_handler},
         {"/websockets", (tCGIHandler) websocket_cgi_handler},
-        {"/newalarm", (tCGIHandler) newAlarm_cgi_handler},
+        {"/newalarm", (tCGIHandler) EspHttpServer::newAlarm_cgi_handler},
     };
 
     //limited to 8chars
@@ -283,7 +284,7 @@ void httpd_task(void *pvParameters)
 
     /* register handlers and start the server */
     http_set_cgi_handlers(pCGIs, sizeof (pCGIs) / sizeof (pCGIs[0]));
-    http_set_ssi_handler((tSSIHandler) ssi_handler, pcConfigSSITags,
+    http_set_ssi_handler((tSSIHandler) EspHttpServer::ssi_handler, pcConfigSSITags,
             sizeof (pcConfigSSITags) / sizeof (pcConfigSSITags[0]));
     websocket_register_callbacks((tWsOpenHandler) websocket_open_cb,
             (tWsHandler) websocket_cb);
@@ -294,11 +295,22 @@ void httpd_task(void *pvParameters)
     }
 }
 
-//EspHttpServer::EspHttpServer(Alarm& alarms) : alarms_(alarms) {}
+EspHttpServer::EspHttpServer(Alarm& alarms) : alarms_(alarms)  {
+    instance_ = this;
+}
+
 void EspHttpServer::startServer() {
     ESP_LOGI(TAG, "Starting webserver");
     /* initialize tasks */
     //xTaskCreate(&httpd_task, "HTTP Daemon", 8000, NULL, 2, NULL);
     std::thread server(&httpd_task, nullptr);
     server.detach();
+}
+
+EspHttpServer* EspHttpServer::getInstance() {
+    return instance_;
+}
+
+Alarm& EspHttpServer::getInstanceAlarms() {
+    return EspHttpServer::getInstance()->alarms_;
 }
