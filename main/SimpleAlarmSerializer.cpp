@@ -47,8 +47,10 @@ alarms_t SimpleAlarmSerializer::deserialize(std::string const& text) {
     alarms_t retVal{};
     std::vector<std::string> fields = split(text, ",");
     retVal.name = fields.at(0);
+    try {
     retVal.time = Clock::convertToTimePoint(static_cast<time_t>(std::stoi(fields.at(1))));
     retVal.snoozeTime = Clock::convertToTimePoint(static_cast<time_t>(std::stoi(fields.at(2))));
     retVal.weekRepeat = std::bitset<7>(std::stoi(fields.at(3)));
+    } catch(std::exception e) {}
     return retVal;
 }
