@@ -85,7 +85,7 @@ void EspDisplay::showNextAlarmInfo(alarms_t alarm) {
     std::chrono::system_clock::time_point now = Clock::getCurrentTimeAsTimePoint();
     auto duration = alarm.time - now;
     //tm alarmTime = Clock::getTm(duration);
-    long seconds = std::chrono::duration_cast<std::chrono::minutes>(duration).count();
+    long seconds = std::chrono::duration_cast<std::chrono::minutes>(duration).count()+1;
     sprintf(buf, "%ld:%02ld", seconds/60, seconds%60);
     clearLine(Font24, NEXT_ALARM_LINE-2*Font24.Height);
     write(std::string(buf), NEXT_ALARM_LINE-2*Font24.Height, 0, Font::Font24);

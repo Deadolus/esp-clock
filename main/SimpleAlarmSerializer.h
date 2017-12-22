@@ -8,6 +8,6 @@ class SimpleAlarmSerializer :
     public AlarmSerializer 
 {
     public:
-        virtual std::string serialize(alarms_t& alarm) override;
+        virtual std::string serialize(alarms_t const& alarm) override;
         virtual alarms_t deserialize(std::string const& text) override;
 };

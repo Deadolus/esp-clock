@@ -57,6 +57,7 @@ extern "C" void app_main()
             display.fullUpdate();
             pwmLed.setIntensity(0);
             if(!wifi.isConnected()) wifi.startWifi();
+            alarm.saveAlarms();
             });
     button.setLongPressCb([&](){
             ESP_LOGI(TAG, "Button long pressed!");

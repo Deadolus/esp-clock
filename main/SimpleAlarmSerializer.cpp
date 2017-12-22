@@ -31,14 +31,14 @@ static const char* TAG = "SimpleSerializer";
 
 
 
-std::string SimpleAlarmSerializer::serialize(alarms_t& alarm) {
+std::string SimpleAlarmSerializer::serialize(alarms_t const& alarm) {
     std::stringstream retVal;
 
     retVal << alarm.name <<",";
     retVal << Clock::getTimet(alarm.time) <<",";
     retVal << Clock::getTimet(alarm.snoozeTime) <<",";
     retVal << std::to_string(alarm.weekRepeat.to_ulong());
-    //ESP_LOGI(TAG, "%s", retVal.str().c_str());
+    ESP_LOGI(TAG, "Serialized: %s", retVal.str().c_str());
 
     return retVal.str();
 }
@@ -46,11 +46,13 @@ std::string SimpleAlarmSerializer::serialize(alarms_t& alarm) {
 alarms_t SimpleAlarmSerializer::deserialize(std::string const& text) {
     alarms_t retVal{};
     std::vector<std::string> fields = split(text, ",");
+    if(fields.size() == 4) {
     retVal.name = fields.at(0);
     try {
     retVal.time = Clock::convertToTimePoint(static_cast<time_t>(std::stoi(fields.at(1))));
     retVal.snoozeTime = Clock::convertToTimePoint(static_cast<time_t>(std::stoi(fields.at(2))));
     retVal.weekRepeat = std::bitset<7>(std::stoi(fields.at(3)));
     } catch(std::exception e) {}
+    }
     return retVal;
 }

@@ -120,8 +120,8 @@ const char* EspHttpServer::newAlarm_cgi_handler(int iIndex, int iNumParams, char
             ESP_LOGI(TAG, "snoozeTime: %s", pcValue[i]);
         }
         if(strcmp(pcParam[i], "repeatingAlarm")==0) {
-            try { alarm.singleShot = std::stoi(pcValue[i]); } catch(std::exception ){}
-            ESP_LOGI(TAG, "repeatingAlarm: %s", pcValue[i]);
+            try { alarm.singleShot = !static_cast<bool>(std::stoi(pcValue[i])); } catch(std::exception ){}
+            ESP_LOGI(TAG, "repeatingAlarm: %s-->%d", pcValue[i], alarm.singleShot);
         }
         if(strcmp(pcParam[i], "days")==0) {
             ESP_LOGI(TAG, "days: %s", pcValue[i]);
@@ -136,17 +136,16 @@ const char* EspHttpServer::newAlarm_cgi_handler(int iIndex, int iNumParams, char
 
 const char* EspHttpServer::delete_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
-    ESP_LOGI(TAG, "Got request for gpio");
+    ESP_LOGI(TAG, "Got request for Delete");
     //url handler, e.g. delete?off=2
     int deleteNr{-1};
     try {
-        deleteNr = std::stoi(std::string(pcParam[0]));
+        deleteNr = std::stoi(std::string(pcValue[0]));
     } catch(std::exception e) {}
-    if(deleteNr >= 0) {
-        auto& alarms = getInstanceAlarms().getAlarms();
-        auto it = alarms.begin();
-        std::advance(it, deleteNr);
-        alarms.erase(it);
+    ESP_LOGI(TAG, "Going to try to delete %d, numParms: %d, count :%d", deleteNr, iNumParams, getInstanceAlarms().getAlarms().size());
+    if(iNumParams==1 && deleteNr >= 0) {
+        auto& alarms = getInstanceAlarms();
+        alarms.deleteAlarm(deleteNr);
         ESP_LOGI(TAG, "Deleted alarm Nr. %d", deleteNr);
     }
     return "/index.ssi";

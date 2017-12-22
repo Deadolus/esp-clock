@@ -89,8 +89,8 @@
             var ls = document.getElementById('ledState').innerHTML;
             ls = ls.split(/-->/).pop().trim();
             document.getElementById('led-switch').checked = (ls == 'On');
-            splitInsertAlarms("A,17:30;B,15:30");
-            var str = <!--#alarms-->;
+            //splitInsertAlarms("A,17:30;B,15:30");
+            var str = "<!--#alarms-->";
             splitInsertAlarms(str);
             $('.deleteButton').on('click', function () { 
               deleteAlarm($(this).closest('tr').index()); 
@@ -113,11 +113,14 @@ function deleteAlarm(row) {
 
 function splitInsertAlarms(str) {
   if(str == null) return;
+  str = str.split(/-->/).pop().trim();
 
   var arr = str.split(';');
   arr.forEach(function(alarmStr) {
     var alarm = alarmStr.split(',');
+    if(alarm.length == 2) {
     insertRow(alarm[0], alarm[1]);
+    }
   });
 
 };

@@ -124,7 +124,7 @@ window.onload = function () {
       +"&name="+$('#name').val()
       +"&snoozeTime="+$('#snoozeTime').val()
       +"&repeatingAlarm="
-      +$('#repeatingAlarm')[0].checked
+      +($('#repeatingAlarm')[0].checked ? "1" : "0")
       +"&days="
       +Number($('#sunday')[0].checked)
       +Number($('#monday')[0].checked)

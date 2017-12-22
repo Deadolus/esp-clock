@@ -5,6 +5,7 @@
 #include "nvs.h"
 #include <string>
 #include <cstdint>
+#include <mutex>
 
 class EspPersistentStorage //: 
 //    public PersistentStorage 
@@ -14,9 +15,12 @@ class EspPersistentStorage //:
         EspPersistentStorage(std::string flashNamespace);
         virtual ~EspPersistentStorage();
         template <class T>
-            T getValue(std::string name) ;
+            T getValue(std::string const& name) ;
         template <class T>
-            void setValue(std::string name, T const& value) ;
+            void setValue(std::string const& name, T const& value) ;
+        template <class T>
+            void erase(T const& value);
     private:
         nvs_handle storageHandle_;
+        static std::mutex storageMutex_;
 };
