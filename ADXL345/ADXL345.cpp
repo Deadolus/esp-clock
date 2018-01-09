@@ -33,11 +33,41 @@ THE SOFTWARE.
 #include "ADXL345.h"
 #include "driver/i2c.h"
 
-namespace {
-    void writeByte (uint8_t devAddr, uint8_t regAddr, uint8_t data) {
+#define WRITE_BIT                          I2C_MASTER_WRITE /*!< I2C master write */
+#define READ_BIT                           I2C_MASTER_READ  /*!< I2C master read */
+#define ACK_CHECK_EN                       0x1              /*!< I2C master will check ack from slave*/
+#define ACK_CHECK_DIS                      0x0              /*!< I2C master will not check ack from slave */
+#define ACK_VAL                            0x0              /*!< I2C ack value */
+#define NACK_VAL                           0x1              /*!< I2C nack value */
 
+static i2c_port_t i2c_num =               I2C_NUM_0;        /*!<I2C port number for slave dev */
+
+namespace {
+    void writeByte (uint8_t devAddr, uint8_t regAddr, uint8_t data, uint8_t size=1) {
+
+    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+    i2c_master_start(cmd);
+    i2c_master_write_byte(cmd, ( devAddr << 1 ) | WRITE_BIT, ACK_CHECK_EN);
+    //i2c_master_write(cmd, data_wr, size, ACK_CHECK_EN);
+    i2c_master_write(cmd, &regAddr, size, ACK_CHECK_EN);
+    i2c_master_stop(cmd);
+    esp_err_t ret = i2c_master_cmd_begin(i2c_num, cmd, 1000 / portTICK_RATE_MS);
+    i2c_cmd_link_delete(cmd);
+    //return ret;
     }
-    void readByte (uint8_t devAddr, uint8_t regAddr, uint8_t *data) {
+    void readByte (uint8_t devAddr, uint8_t regAddr, uint8_t *data, uint8_t size=1) {
+    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+    i2c_master_start(cmd);
+    i2c_master_write_byte(cmd, ( devAddr << 1 ) | READ_BIT, ACK_CHECK_EN);
+    if (size > 1) {
+        //i2c_master_read(cmd, data_rd, size - 1, ACK_VAL);
+        i2c_master_read(cmd, data, size - 1, ACK_VAL);
+    }
+    i2c_master_read_byte(cmd, data + size - 1, NACK_VAL);
+    i2c_master_stop(cmd);
+    esp_err_t ret = i2c_master_cmd_begin(i2c_num, cmd, 1000 / portTICK_RATE_MS);
+    i2c_cmd_link_delete(cmd);
+    //return ret;
 
     }
     void readBit(uint8_t addr, uint8_t command, uint8_t bit, uint8_t* buffer) {
