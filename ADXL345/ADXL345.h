@@ -30,10 +30,7 @@ THE SOFTWARE.
 ===============================================
 */
 
-#ifndef _ADXL345_H_
-#define _ADXL345_H_
-
-#include "I2Cdev.h"
+#pragma once
 
 #define ADXL345_ADDRESS_ALT_LOW     0x53 // alt address pin low (GND)
 #define ADXL345_ADDRESS_ALT_HIGH    0x1D // alt address pin high (VCC)
@@ -163,6 +160,7 @@ THE SOFTWARE.
 #define ADXL345_FIFOSTAT_LENGTH_BIT         5
 #define ADXL345_FIFOSTAT_LENGTH_LENGTH      6
 
+#include <cstdint>
 class ADXL345 {
     public:
         ADXL345();
@@ -358,4 +356,3 @@ class ADXL345 {
         uint8_t buffer[6];
 };
 
-#endif /* _ADXL345_H_ */
