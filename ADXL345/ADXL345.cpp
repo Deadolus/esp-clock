@@ -70,7 +70,11 @@ namespace {
     //return ret;
 
     }
+
     void readBit(uint8_t addr, uint8_t command, uint8_t bit, uint8_t* buffer) {
+        uint8_t temp;
+         readByte(addr, command, &temp);
+         *buffer = (temp & (1<<bit)) == true;
 
     }
 
@@ -78,12 +82,23 @@ namespace {
 
     }
     void writeBit (uint8_t devAddr, uint8_t regAddr, uint8_t bitNum, uint8_t data) {
+        uint8_t temp;
+        readByte(devAddr, regAddr, &temp);
+        //clear bitNum bit
+        temp &= ~(1UL << bitNum);
+        //set bit according to data
+        temp |= ((data&0x1UL)<<bitNum);
+        writeByte(devAddr, regAddr, temp);
 
     }
     void writeBits (uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint8_t length, uint8_t data) {
 
     }
     void readBytes (uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8_t *data) {
+        for(size_t i = 0; i<length; i++){
+            readByte(devAddr, regAddr, data+i);
+        }
+
 
     }
 
