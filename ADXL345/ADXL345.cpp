@@ -7,28 +7,28 @@
 //     2011-07-31 - initial release
 
 /* ============================================
-I2Cdev device library code is placed under the MIT license
-Copyright (c) 2011 Jeff Rowberg
+   I2Cdev device library code is placed under the MIT license
+   Copyright (c) 2011 Jeff Rowberg
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+   Permission is hereby granted, free of charge, to any person obtaining a copy
+   of this software and associated documentation files (the "Software"), to deal
+   in the Software without restriction, including without limitation the rights
+   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   copies of the Software, and to permit persons to whom the Software is
+   furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
+   The above copyright notice and this permission notice shall be included in
+   all copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-===============================================
-*/
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+   THE SOFTWARE.
+   ===============================================
+   */
 
 #include "ADXL345.h"
 #include "driver/i2c.h"
@@ -45,42 +45,53 @@ static i2c_port_t i2c_num =               I2C_NUM_0;        /*!<I2C port number 
 namespace {
     void writeByte (uint8_t devAddr, uint8_t regAddr, uint8_t data, uint8_t size=1) {
 
-    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-    i2c_master_start(cmd);
-    i2c_master_write_byte(cmd, ( devAddr << 1 ) | WRITE_BIT, ACK_CHECK_EN);
-    //i2c_master_write(cmd, data_wr, size, ACK_CHECK_EN);
-    i2c_master_write(cmd, &regAddr, size, ACK_CHECK_EN);
-    i2c_master_stop(cmd);
-    esp_err_t ret = i2c_master_cmd_begin(i2c_num, cmd, 1000 / portTICK_RATE_MS);
-    i2c_cmd_link_delete(cmd);
-    //return ret;
+        i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+        i2c_master_start(cmd);
+        i2c_master_write_byte(cmd, ( devAddr << 1 ) | WRITE_BIT, ACK_CHECK_EN);
+        //i2c_master_write(cmd, data_wr, size, ACK_CHECK_EN);
+        i2c_master_write(cmd, &regAddr, size, ACK_CHECK_EN);
+        i2c_master_stop(cmd);
+        esp_err_t ret = i2c_master_cmd_begin(i2c_num, cmd, 1000 / portTICK_RATE_MS);
+        i2c_cmd_link_delete(cmd);
+        //return ret;
     }
     void readByte (uint8_t devAddr, uint8_t regAddr, uint8_t *data, uint8_t size=1) {
-    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-    i2c_master_start(cmd);
-    i2c_master_write_byte(cmd, ( devAddr << 1 ) | READ_BIT, ACK_CHECK_EN);
-    if (size > 1) {
-        //i2c_master_read(cmd, data_rd, size - 1, ACK_VAL);
-        i2c_master_read(cmd, data, size - 1, ACK_VAL);
-    }
-    i2c_master_read_byte(cmd, data + size - 1, NACK_VAL);
-    i2c_master_stop(cmd);
-    esp_err_t ret = i2c_master_cmd_begin(i2c_num, cmd, 1000 / portTICK_RATE_MS);
-    i2c_cmd_link_delete(cmd);
-    //return ret;
+        i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+        i2c_master_start(cmd);
+        i2c_master_write_byte(cmd, ( devAddr << 1 ) | READ_BIT, ACK_CHECK_EN);
+        if (size > 1) {
+            //i2c_master_read(cmd, data_rd, size - 1, ACK_VAL);
+            i2c_master_read(cmd, data, size - 1, ACK_VAL);
+        }
+        i2c_master_read_byte(cmd, data + size - 1, NACK_VAL);
+        i2c_master_stop(cmd);
+        esp_err_t ret = i2c_master_cmd_begin(i2c_num, cmd, 1000 / portTICK_RATE_MS);
+        i2c_cmd_link_delete(cmd);
+        //return ret;
 
     }
 
     void readBit(uint8_t addr, uint8_t command, uint8_t bit, uint8_t* buffer) {
         uint8_t temp;
-         readByte(addr, command, &temp);
-         *buffer = (temp & (1<<bit)) == true;
+        readByte(addr, command, &temp);
+        *buffer = (temp & (1<<bit)) == true;
 
     }
 
     void readBits (uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint8_t length, uint8_t *data) {
-
+        // 01101001 read byte
+        // 76543210 bit numbers
+        //    xxx   args: bitStart=4, length=3
+        //    010   masked
+        //   -> 010 shifted
+        uint8_t b;
+        readByte(devAddr, regAddr, &b);
+        uint8_t mask = ((1 << length) - 1) << (bitStart - length + 1);
+        b &= mask;
+        b >>= (bitStart - length + 1);
+        *data = b;
     }
+
     void writeBit (uint8_t devAddr, uint8_t regAddr, uint8_t bitNum, uint8_t data) {
         uint8_t temp;
         readByte(devAddr, regAddr, &temp);
@@ -92,7 +103,21 @@ namespace {
 
     }
     void writeBits (uint8_t devAddr, uint8_t regAddr, uint8_t bitStart, uint8_t length, uint8_t data) {
-
+        //      010 value to write
+        // 76543210 bit numbers
+        //    xxx   args: bitStart=4, length=3
+        // 00011100 mask byte
+        // 10101111 original value (sample)
+        // 10100011 original & ~mask
+        // 10101011 masked | value
+        uint8_t b;
+        readByte(devAddr, regAddr, &b);
+        uint8_t mask = ((1 << length) - 1) << (bitStart - length + 1);
+        data <<= (bitStart - length + 1); // shift data into correct position
+        data &= mask; // zero all non-important bits in data
+        b &= ~(mask); // zero all important bits in existing byte
+        b |= data; // combine data with existing byte
+        writeByte(devAddr, regAddr, b);
     }
     void readBytes (uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8_t *data) {
         for(size_t i = 0; i<length; i++){
@@ -127,8 +152,8 @@ ADXL345::ADXL345(uint8_t address) {
  * less demanding mode of operation.
  */
 void ADXL345::initialize() {
-static gpio_num_t I2C_EXAMPLE_MASTER_SCL_IO{static_cast<gpio_num_t>(19)};               /*!< gpio number for I2C master clock */
-static gpio_num_t I2C_EXAMPLE_MASTER_SDA_IO{static_cast<gpio_num_t>(18)};               /*!< gpio number for I2C master data  */
+    static gpio_num_t I2C_EXAMPLE_MASTER_SCL_IO{static_cast<gpio_num_t>(19)};               /*!< gpio number for I2C master clock */
+    static gpio_num_t I2C_EXAMPLE_MASTER_SDA_IO{static_cast<gpio_num_t>(18)};               /*!< gpio number for I2C master data  */
 #define I2C_EXAMPLE_MASTER_NUM             I2C_NUM_1        /*!< I2C port number for master dev */
 #define I2C_EXAMPLE_MASTER_TX_BUF_DISABLE  0                /*!< I2C master do not need buffer */
 #define I2C_EXAMPLE_MASTER_RX_BUF_DISABLE  0                /*!< I2C master do not need buffer */
@@ -143,8 +168,8 @@ static gpio_num_t I2C_EXAMPLE_MASTER_SDA_IO{static_cast<gpio_num_t>(18)};       
     conf.master.clk_speed = I2C_EXAMPLE_MASTER_FREQ_HZ;
     i2c_param_config(i2c_master_port, &conf);
     i2c_driver_install(i2c_master_port, conf.mode,
-                       I2C_EXAMPLE_MASTER_RX_BUF_DISABLE,
-                       I2C_EXAMPLE_MASTER_TX_BUF_DISABLE, 0);
+            I2C_EXAMPLE_MASTER_RX_BUF_DISABLE,
+            I2C_EXAMPLE_MASTER_TX_BUF_DISABLE, 0);
     writeByte(devAddr, ADXL345_RA_POWER_CTL, 0); // reset all power settings
     setAutoSleepEnabled(true);
     setMeasureEnabled(true);
@@ -186,10 +211,10 @@ uint8_t ADXL345::getTapThreshold() {
     return buffer[0];
 }
 /** Set tap threshold.
-  * @param threshold Tap magnitude threshold (scaled at 62.5 mg/LSB)
-  * @see ADXL345_RA_THRESH_TAP
-  * @see getTapThreshold()
-  */
+ * @param threshold Tap magnitude threshold (scaled at 62.5 mg/LSB)
+ * @see ADXL345_RA_THRESH_TAP
+ * @see getTapThreshold()
+ */
 void ADXL345::setTapThreshold(uint8_t threshold) {
     writeByte(devAddr, ADXL345_RA_THRESH_TAP, threshold);
 }
