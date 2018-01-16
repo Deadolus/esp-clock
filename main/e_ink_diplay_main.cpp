@@ -12,6 +12,7 @@
 #include "EspDisplayService.h"
 #include "Clock.h"
 #include "SimpleAlarmSerializer.h"
+#include "ADXLService.h"
 
 #include "driver/gpio.h"
 #include "sdkconfig.h"
@@ -48,6 +49,7 @@ extern "C" void app_main()
     alarm.loadFromPeristentStorage();
     EspAlarmService alarms{alarm, std::chrono::minutes(10)};
     EspAudioPlayer audioplayer;
+    ADXLService tapSensor;
     EspPwmLed pwmLed{CONFIG_LED_GPIO};
     EspButton button{0, true};
     button.setPressCb([&](){
