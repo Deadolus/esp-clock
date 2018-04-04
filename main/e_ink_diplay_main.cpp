@@ -81,6 +81,6 @@ extern "C" void app_main()
 }
 
 void setTimezone() {
-	setenv("TZ", "CET-1", 1);
+	setenv("TZ", "CET-2", 1);
 	tzset();
 }
