@@ -70,7 +70,6 @@ void EspAlarm::saveToPersistentStorage() {
          ESP_LOGI(TAG, "Saving to storage..."); 
         persistentStorage_.setValue<std::string>(alarmNr.c_str(), serializedAlarm.c_str());
         ESP_LOGI(TAG, "Serialized and saved alarm: %s/%s", alarmNr.c_str(), serializedAlarm.c_str()); 
-        i++;
     }
 }
 
