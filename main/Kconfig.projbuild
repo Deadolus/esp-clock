@@ -110,4 +110,29 @@ config WIFI_PASSWORD
 
 		Can be left blank if the network has no security set.
 
+config I2S_BCK
+    int "I2S BCK"
+	range 0 34
+	default 1
+	help
+
+    GPIOs 35-39 are input-only so cannot be used as outputs.
+
+config I2S_DOUT
+    int "I2S DOUT"
+	range 0 34
+	default 22
+	help
+
+    GPIOs 35-39 are input-only so cannot be used as outputs.
+
+config I2S_LCK
+    int "I2S LCK"
+	range 0 34
+	default 23
+	help
+
+    The GPIO for I2S WS/LCK
+    GPIOs 35-39 are input-only so cannot be used as outputs.
+
 endmenu

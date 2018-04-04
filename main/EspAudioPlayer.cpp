@@ -46,9 +46,9 @@ static bool PLAY_AUDIO{false};
 
         //3-wire: lcrk bck, din (no sck needed)
         i2s_pin_config_t pin_config;
-        pin_config.bck_io_num =1; //bck
-        pin_config.ws_io_num = 23; //lrck
-        pin_config.data_out_num = 22; //->din
+        pin_config.bck_io_num =CONFIG_I2S_BCK; //bck
+        pin_config.ws_io_num = CONFIG_I2S_LCK; //lrck
+        pin_config.data_out_num = CONFIG_I2S_DOUT; //->din
         pin_config.data_in_num = -1;//I2S_PIN_NO_CHANGE;
         //};
         //install and start i2s driver
