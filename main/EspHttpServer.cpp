@@ -26,18 +26,23 @@ namespace {
   return str;
 }
 
-std::string alarmsToHtml(Alarm& alarms) {
+std::string alarmToHtml(const alarms_t& alarm) {
+    std::stringstream retVal{};
+        tm time = Clock::getTm(alarm.time);
+        retVal << alarm.name;
+        retVal << ",";
+        retVal << time.tm_hour;
+        retVal << ":";
+        retVal << time.tm_min;
+        retVal << ":";
+        retVal << time.tm_sec;
+        retVal << ";";
+        return retVal.str();
+}
+std::string alarmsToHtml(const Alarm& alarms) {
     std::stringstream allAlarms{};
     for(auto& alarm: alarms.getAlarms()) {
-        tm time = Clock::getTm(alarm.time);
-        allAlarms << alarm.name;
-        allAlarms << ",";
-        allAlarms << time.tm_hour;
-        allAlarms << ":";
-        allAlarms << time.tm_min;
-        allAlarms << ":";
-        allAlarms << time.tm_sec;
-        allAlarms << ";";
+        allAlarms << alarmToHtml(alarm);
         //allAlarms.append(alarm.name+": "+itoa(time.tm_hour)+":"+itoa(time.tm_min));
     }
     return allAlarms.str();
@@ -72,7 +77,7 @@ int32_t EspHttpServer::ssi_handler(int32_t iIndex, char *pcInsert, int32_t iInse
             break;
         case SSI_NEXT_ALARM:
             //snprintf(pcInsert, iInsertLen, "Soon!");
-            snprintf(pcInsert, iInsertLen, alarms.getNextAlarm().name.c_str());
+            snprintf(pcInsert, iInsertLen, alarmToHtml(alarms.getNextAlarm()).c_str());
             //snprintf(pcInsert, iInsertLen, (GPIO.OUT & BIT(LED_PIN)) ? "Off" : "On");
             break;
         case SSI_ALARMS:

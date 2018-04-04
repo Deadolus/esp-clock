@@ -12,7 +12,7 @@ class EspAlarm :
         virtual void setAlarm(alarms_t const& time) override;
         //virtual std::list<alarms_t>& getAlarms() const override;
         virtual std::vector<alarms_t>& getAlarms() const override;
-        virtual alarms_t getNextAlarm() override;
+        virtual const alarms_t getNextAlarm() const override;
         virtual void deleteAlarm(alarms_t& alarm) override;
         virtual void deleteAlarm(unsigned int position) override;
         virtual void loadFromPeristentStorage() override;

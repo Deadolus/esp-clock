@@ -12,14 +12,14 @@ void EspAlarm::setAlarm(alarms_t const& alarm) {
     ESP_LOGI(TAG, "Got new alarm, name: %s", alarm.name.c_str())
         if(m_alarms.size() <= MAX_ALARMS) {
             m_alarms.push_back(alarm);
-//            saveToPersistentStorage();
+            saveToPersistentStorage();
         }
 }
  std::vector<alarms_t>& EspAlarm::getAlarms() const {
      return m_alarms;
  }
 
-alarms_t EspAlarm::getNextAlarm() {
+const alarms_t EspAlarm::getNextAlarm() const {
     std::chrono::system_clock::time_point maxTime{std::chrono::system_clock::time_point::max()};
     std::chrono::system_clock::time_point now{std::chrono::system_clock::now()};
     alarms_t nextAlarm;

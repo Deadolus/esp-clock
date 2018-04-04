@@ -39,7 +39,7 @@ class Alarm
         virtual void setAlarm(alarms_t const& alarm) = 0;
         //virtual std::list<alarms_t>& getAlarms() const = 0;
         virtual std::vector<alarms_t>& getAlarms() const = 0;
-        virtual alarms_t getNextAlarm() = 0;
+        virtual const alarms_t getNextAlarm() const = 0;
         virtual void deleteAlarm(alarms_t& alarm) = 0;
         virtual void deleteAlarm(unsigned int position) = 0;
         virtual void loadFromPeristentStorage() = 0;
