@@ -133,6 +133,7 @@ const char* EspHttpServer::newAlarm_cgi_handler(int iIndex, int iNumParams, char
             alarm.weekRepeat = std::bitset<7>(pcValue[i]);
             //days is last entry so we can now set alarm
             alarms.setAlarm(alarm);
+            return "/index.ssi";
         }
 
     }
