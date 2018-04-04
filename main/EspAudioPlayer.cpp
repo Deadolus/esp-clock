@@ -20,7 +20,6 @@ static const i2s_bits_per_sample_t EXAMPLE_I2S_SAMPLE_BITS{static_cast<i2s_bits_
 //I2S read buffer length
 #define EXAMPLE_I2S_READ_LEN      (16 * 1024.0)
 //I2S data format
-//#define EXAMPLE_I2S_FORMAT        (I2S_CHANNEL_FMT_ONLY_RIGHT)
 #define EXAMPLE_I2S_FORMAT        (I2S_CHANNEL_FMT_RIGHT_LEFT)
 //I2S channel number
 static const i2s_channel_t EXAMPLE_I2S_CHANNEL_NUM{static_cast<i2s_channel_t>(2)};
@@ -75,8 +74,6 @@ static bool PLAY_AUDIO{false};
     void example_set_file_play_mode()
     {
         i2s_set_clk(EXAMPLE_I2S_NUM, 16000, EXAMPLE_I2S_SAMPLE_BITS, EXAMPLE_I2S_CHANNEL_NUM);
-        //i2s_set_clk(EXAMPLE_I2S_NUM, EXAMPLE_I2S_SAMPLE_RATE, EXAMPLE_I2S_SAMPLE_BITS, EXAMPLE_I2S_CHANNEL_NUM);
-        //i2s_set_clk(EXAMPLE_I2S_NUM, 16000, EXAMPLE_I2S_SAMPLE_BITS, static_cast<i2s_channel_t>(1));
     }
     /**
      * @brief Scale data to 16bit/32bit for I2S DMA output.
@@ -152,7 +149,7 @@ void example_disp_buf(uint8_t* buf, int length)
     int i2s_read_len = EXAMPLE_I2S_READ_LEN;
     uint8_t* i2s_write_buff = (uint8_t*) calloc(i2s_read_len, sizeof(char));
     example_i2s_init();
-    //example_set_file_play_mode();
+    example_set_file_play_mode();
 ESP_LOGI(TAG, "Audio, tot size: %d", tot_size);
     while (PLAY_AUDIO) {
         int offset = 0;
@@ -162,7 +159,7 @@ ESP_LOGI(TAG, "Audio, tot size: %d", tot_size);
         int i2s_wr_len = example_i2s_dac_data_scale(i2s_write_buff, (uint8_t*)(audio_table + offset), play_len);
         //int i2s_wr_len = play_len;
         i2s_write_bytes(EXAMPLE_I2S_NUM, (const char*) i2s_write_buff, i2s_wr_len, portMAX_DELAY);
-        offset += i2s_wr_len;
+        offset += play_len;
         //example_disp_buf((uint8_t*) i2s_write_buff, i2s_wr_len);
         ESP_LOGI(TAG, "Now at offset %d/%d, wr_len: %d", offset, tot_size, i2s_wr_len);
     }
