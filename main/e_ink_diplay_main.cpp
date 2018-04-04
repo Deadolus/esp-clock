@@ -74,6 +74,13 @@ extern "C" void app_main()
     httpserver.startServer();
     EspDisplayService displayService{display, espsign, alarm, alarms, wifi, sntp, 5000};
     ESP_LOGI(TAG, "Everything started...");
+    alarms_t testAlarm;
+    testAlarm.time = std::chrono::system_clock::now() + std::chrono::seconds(1);
+    testAlarm.singleShot = true;
+    testAlarm.name="MyTest";
+    testAlarm.weekRepeat = 0xff;
+    //alarm.setAlarm(testAlarm );
+
 
     while(true) {
         std::this_thread::sleep_for(std::chrono::seconds(5));
