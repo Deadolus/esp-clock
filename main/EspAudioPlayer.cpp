@@ -33,22 +33,31 @@ static bool PLAY_AUDIO{false};
      */
     void example_i2s_init()
     {
-        gpio_set_pull_mode(static_cast<gpio_num_t>(CONFIG_DAC_GPIO), GPIO_PULLDOWN_ONLY);
         i2s_port_t i2s_num = EXAMPLE_I2S_NUM;
         i2s_config_t i2s_config{};
-        i2s_config.mode = static_cast<i2s_mode_t>(I2S_MODE_MASTER | I2S_MODE_RX | I2S_MODE_TX | I2S_MODE_DAC_BUILT_IN | I2S_MODE_ADC_BUILT_IN);
+        i2s_config.mode = static_cast<i2s_mode_t>(I2S_MODE_MASTER | I2S_MODE_TX );
         i2s_config.sample_rate =  EXAMPLE_I2S_SAMPLE_RATE;
         i2s_config.bits_per_sample = EXAMPLE_I2S_SAMPLE_BITS;
-        i2s_config.communication_format = I2S_COMM_FORMAT_I2S_MSB;
+        i2s_config.communication_format = static_cast<i2s_comm_format_t>(I2S_COMM_FORMAT_I2S_MSB );
         i2s_config.channel_format = EXAMPLE_I2S_FORMAT;
         i2s_config.intr_alloc_flags = 0;
         i2s_config.dma_buf_count = 2;
         i2s_config.dma_buf_len = 1024;
+
+        //3-wire: lcrk bck, din (no sck needed)
+        i2s_pin_config_t pin_config;
+        pin_config.bck_io_num =1; //bck
+        pin_config.ws_io_num = 23; //lrck
+        pin_config.data_out_num = 22; //->din
+        pin_config.data_in_num = -1;//I2S_PIN_NO_CHANGE;
         //};
         //install and start i2s driver
         i2s_driver_install(i2s_num, &i2s_config, 0, NULL);
+        //set i2s pins
+        i2s_set_pin(i2s_num, &pin_config);
+        i2s_set_sample_rates(i2s_num, EXAMPLE_I2S_SAMPLE_RATE);
         //init DAC pad
-        i2s_set_dac_mode(I2S_DAC_CHANNEL_BOTH_EN);
+        //i2s_set_dac_mode(I2S_DAC_CHANNEL_BOTH_EN);
         //init ADC pad
         //i2s_set_adc_mode(ADC_UNIT_1, ADC1_CHANNEL_0);
     }
@@ -65,7 +74,9 @@ static bool PLAY_AUDIO{false};
      */
     void example_set_file_play_mode()
     {
-        i2s_set_clk(EXAMPLE_I2S_NUM, 16000, EXAMPLE_I2S_SAMPLE_BITS, static_cast<i2s_channel_t>(1));
+        i2s_set_clk(EXAMPLE_I2S_NUM, 16000, EXAMPLE_I2S_SAMPLE_BITS, EXAMPLE_I2S_CHANNEL_NUM);
+        //i2s_set_clk(EXAMPLE_I2S_NUM, EXAMPLE_I2S_SAMPLE_RATE, EXAMPLE_I2S_SAMPLE_BITS, EXAMPLE_I2S_CHANNEL_NUM);
+        //i2s_set_clk(EXAMPLE_I2S_NUM, 16000, EXAMPLE_I2S_SAMPLE_BITS, static_cast<i2s_channel_t>(1));
     }
     /**
      * @brief Scale data to 16bit/32bit for I2S DMA output.
@@ -77,6 +88,7 @@ static bool PLAY_AUDIO{false};
         uint32_t j = 0;
 //#if (EXAMPLE_I2S_SAMPLE_BITS == 16)
         for (int i = 0; i < len; i++) {
+            //d_buff[i] = s_buff[i];
             d_buff[j++] = 0;
             d_buff[j++] = s_buff[i];
         }
@@ -140,7 +152,7 @@ void example_disp_buf(uint8_t* buf, int length)
     int i2s_read_len = EXAMPLE_I2S_READ_LEN;
     uint8_t* i2s_write_buff = (uint8_t*) calloc(i2s_read_len, sizeof(char));
     example_i2s_init();
-    example_set_file_play_mode();
+    //example_set_file_play_mode();
 ESP_LOGI(TAG, "Audio, tot size: %d", tot_size);
     while (PLAY_AUDIO) {
         int offset = 0;
@@ -148,10 +160,11 @@ ESP_LOGI(TAG, "Audio, tot size: %d", tot_size);
         int play_len = ((tot_size - offset) > (4 * 1024)) ? (4 * 1024) : (tot_size - offset);
 
         int i2s_wr_len = example_i2s_dac_data_scale(i2s_write_buff, (uint8_t*)(audio_table + offset), play_len);
+        //int i2s_wr_len = play_len;
         i2s_write_bytes(EXAMPLE_I2S_NUM, (const char*) i2s_write_buff, i2s_wr_len, portMAX_DELAY);
-        offset += play_len;
-        //example_disp_buf((uint8_t*) i2s_write_buff, 32);
-        //ESP_LOGI(TAG, "Now at offset %d/%d", offset, tot_size);
+        offset += i2s_wr_len;
+        //example_disp_buf((uint8_t*) i2s_write_buff, i2s_wr_len);
+        ESP_LOGI(TAG, "Now at offset %d/%d, wr_len: %d", offset, tot_size, i2s_wr_len);
     }
     }
     example_reset_play_mode();
@@ -163,8 +176,8 @@ ESP_LOGI(TAG, "Audio, tot size: %d", tot_size);
     i2s_stop(i2s_num);
     i2s_zero_dma_buffer(i2s_num);
     i2s_driver_uninstall(i2s_num);
-    gpio_set_pull_mode(static_cast<gpio_num_t>(CONFIG_DAC_GPIO), GPIO_FLOATING);
-    gpio_set_level(static_cast<gpio_num_t>(CONFIG_DAC_GPIO), 1);
+    //gpio_set_pull_mode(static_cast<gpio_num_t>(CONFIG_DAC_GPIO), GPIO_FLOATING);
+    //gpio_set_level(static_cast<gpio_num_t>(CONFIG_DAC_GPIO), 1);
     //Finally - unlock mutex
     AUDIO_PLAYER_MUTEX.unlock();
     }
