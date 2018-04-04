@@ -65,7 +65,7 @@ void EspAlarm::saveToPersistentStorage() {
     for(size_t i=0; i<m_alarms.size(); i++) {
         //std::string alarmNr = std::string("Alarm");
         //alarmNr.append(std::to_string(i));
-        std::string alarmNr = alarmString.append(std::to_string(i));
+        std::string alarmNr = alarmString+std::to_string(i);
         std::string serializedAlarm = serializer.serialize(m_alarms.at(i));
          ESP_LOGI(TAG, "Saving to storage..."); 
         persistentStorage_.setValue<std::string>(alarmNr.c_str(), serializedAlarm.c_str());
