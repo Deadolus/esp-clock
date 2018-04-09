@@ -135,4 +135,21 @@ config I2S_LCK
     The GPIO for I2S WS/LCK
     GPIOs 35-39 are input-only so cannot be used as outputs.
 
+config I2C_SDA
+    int "I2C SDA"
+	range 0 34
+	default 18
+	help
+
+    The GPIO for I2C SDA
+    GPIOs 35-39 are input-only so cannot be used as outputs.
+
+config I2C_SCL
+    int "I2C SCL"
+	range 0 34
+	default 19
+	help
+
+    The GPIO for I2C SCL
+    GPIOs 35-39 are input-only so cannot be used as outputs.
 endmenu
