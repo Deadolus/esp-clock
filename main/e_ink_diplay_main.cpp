@@ -40,16 +40,16 @@ void setTimezone();
 extern "C" void app_main()
 {
     ESP_ERROR_CHECK( nvs_flash_init() );
-    EspWifi wifi;
+    EspWifi wifi{};
     EspSntpClient sntp{wifi};
-    EspDisplay display;
+    EspDisplay display{};
     EspSign espsign(display);
     EspAlarm alarm{};
     EspHttpServer httpserver{alarm};
     alarm.loadFromPeristentStorage();
     EspAlarmService alarms{alarm, std::chrono::minutes(10)};
-    EspAudioPlayer audioplayer;
-    ADXLService tapSensor;
+    ADXLService sensorService{};
+    EspAudioPlayer audioplayer{};
     EspPwmLed pwmLed{CONFIG_LED_GPIO};
     EspButton button{0, true};
     button.setPressCb([&](){
@@ -59,10 +59,9 @@ extern "C" void app_main()
             display.fullUpdate();
             pwmLed.setIntensity(0);
             if(!wifi.isConnected()) wifi.startWifi();
-            alarm.saveAlarms();
+            //alarm.saveAlarms();
             });
     button.setLongPressCb([&](){
-            ESP_LOGI(TAG, "Button long pressed!");
             if(wifi.isConnected()) wifi.stopWifi();
             });
     alarms.setAlarmCallback([&](){
