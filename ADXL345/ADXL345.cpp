@@ -54,7 +54,7 @@ namespace {
         i2c_master_write(cmd, &data, size, ACK_CHECK_EN);
         i2c_master_stop(cmd);
         esp_err_t ret = i2c_master_cmd_begin(i2c_num, cmd, 1000 / portTICK_RATE_MS);
-        ESP_LOGI(TAG, "Write I2C: %d", ret);
+        //ESP_LOGI(TAG, "Write I2C: %d", ret);
         i2c_cmd_link_delete(cmd);
         //return ret;
     }
@@ -71,7 +71,7 @@ namespace {
         i2c_master_read_byte(cmd, data+size-1, NACK_VAL);
         i2c_master_stop(cmd);
         esp_err_t ret = i2c_master_cmd_begin(i2c_num, cmd, 1000 / portTICK_RATE_MS);
-        ESP_LOGI(TAG, "Read I2C: %d", ret);
+        //ESP_LOGI(TAG, "Read I2C: %d", ret);
         i2c_cmd_link_delete(cmd);
         //return ret;
 
