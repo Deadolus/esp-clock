@@ -6,14 +6,22 @@
 #include <thread>
 
 namespace {
-static const char* TAG = "AlarmService";
+    static const char* TAG = "AlarmService";
 }
 
 ADXLService::ADXLService() {
-    ESP_LOGI(TAG, "Sensor Device Id: %u", sensor_.getDeviceID());
-    ESP_LOGI(TAG, "Tap threshold: %u", sensor_.getTapThreshold());
+    sensor_.initialize();
+    sensor_.setMeasureEnabled(true);
+    sensor_.setSleepEnabled(false);
+    ESP_LOGI(TAG, "Test sensor %d", sensor_.testConnection());
 #ifndef GOOGLETEST
-    //std::thread task(alarmServiceTask, std::ref(*this));
-    //task.detach();
+    std::thread task(ADXLServiceTask, std::ref(sensor_));
+    task.detach();
 #endif
+}
+
+void ADXLService::ADXLServiceTask(ADXL345& sensor) {
+
+    ESP_LOGI(TAG, "Accel: %d, %d, %d", sensor.getAccelerationX(), sensor.getAccelerationY(), sensor.getAccelerationZ());
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
 }
