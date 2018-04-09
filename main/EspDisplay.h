@@ -18,6 +18,9 @@ class EspDisplay :
         virtual void clearNextAlarmName() override;
         virtual void setAlarm(std::string alarm) override;
         virtual void clearAlarm() override;
+        virtual void clearNextAlarm() override;
+        virtual void clearNextAlarmTime() override;
+        virtual void clearNextAlarmCountdown() override;
         virtual void showNextAlarmInfo(alarms_t alarm) override;
         virtual void setTime(EspSntpClient& sntp) override;
         virtual void partialUpdate() override;

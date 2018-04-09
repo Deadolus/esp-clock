@@ -19,6 +19,9 @@ class Display
         virtual void clearNextAlarmName() = 0;
         virtual void setAlarm(std::string alarm) = 0;
         virtual void clearAlarm() = 0;
+        virtual void clearNextAlarm() = 0;
+        virtual void clearNextAlarmTime() = 0;
+        virtual void clearNextAlarmCountdown() = 0;
         virtual void showNextAlarmInfo(alarms_t alarm) = 0;
         virtual void setTime(EspSntpClient& sntp) = 0;
         virtual void partialUpdate() = 0;

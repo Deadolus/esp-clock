@@ -13,6 +13,8 @@ static const uint8_t COLORED = 0;
 static const uint8_t UNCOLORED = 1;
 static bool display_initialized{false};
 static const int NEXT_ALARM_LINE = EPD_HEIGHT-32;
+static const int NEXT_ALARM_TIME_LINE = NEXT_ALARM_LINE-Font24.Height;
+static const int NEXT_ALARM_COUNTDOWN_LINE = NEXT_ALARM_TIME_LINE-Font24.Height;
 static const int ALARM_LINE = 050;
 static const char* TAG = "Display";
 
@@ -47,8 +49,7 @@ void EspDisplay::setImage(const unsigned char* image, unsigned int x, unsigned i
 }
 void EspDisplay::setNextAlarmName(std::string name, std::chrono::system_clock::time_point time) {
     tm alarmTime = Clock::getTm(time);
-    clearNextAlarmName();
-    clearLine(Font24, NEXT_ALARM_LINE-Font24.Height);
+    clearNextAlarm();
     if(name.size() > 10){
     name = name.substr(10);
     }
@@ -56,7 +57,7 @@ void EspDisplay::setNextAlarmName(std::string name, std::chrono::system_clock::t
     if( time != std::chrono::system_clock::time_point::max()) {
         char buf[16];
         sprintf(buf, "%d:%02d", alarmTime.tm_hour, alarmTime.tm_min);
-        write(std::string(buf), NEXT_ALARM_LINE-Font24.Height, 0, Font::Font24);
+        write(std::string(buf), NEXT_ALARM_TIME_LINE, 0, Font::Font24);
         //ESP_LOGI(TAG, "%s", buf);
     }
 
@@ -64,7 +65,14 @@ void EspDisplay::setNextAlarmName(std::string name, std::chrono::system_clock::t
 }
 
 void EspDisplay::clearNextAlarmName() {
-    clearLine(Font24, EPD_HEIGHT-32);
+    clearLine(Font24, NEXT_ALARM_LINE);
+}
+void EspDisplay::clearNextAlarmTime() {
+    clearLine(Font24, NEXT_ALARM_TIME_LINE);
+}
+
+void EspDisplay::clearNextAlarmCountdown() {
+    clearLine(Font24, NEXT_ALARM_TIME_LINE);
 }
 
 void EspDisplay::setAlarm(std::string alarm) {
@@ -79,6 +87,12 @@ void EspDisplay::clearAlarm() {
     clearLine(Font24, ALARM_LINE);
 }
 
+void EspDisplay::clearNextAlarm() {
+    clearNextAlarmName();
+    clearNextAlarmTime();
+    clearNextAlarmCountdown();
+}
+
 void EspDisplay::showNextAlarmInfo(alarms_t alarm) {
     if( alarm.time != std::chrono::system_clock::time_point::max()) {
     char buf[10];
@@ -87,8 +101,8 @@ void EspDisplay::showNextAlarmInfo(alarms_t alarm) {
     //tm alarmTime = Clock::getTm(duration);
     long seconds = std::chrono::duration_cast<std::chrono::minutes>(duration).count()+1;
     sprintf(buf, "%ld:%02ld", seconds/60, seconds%60);
-    clearLine(Font24, NEXT_ALARM_LINE-2*Font24.Height);
-    write(std::string(buf), NEXT_ALARM_LINE-2*Font24.Height, 0, Font::Font24);
+    clearLine(Font24, NEXT_ALARM_COUNTDOWN_LINE);
+    write(std::string(buf), NEXT_ALARM_COUNTDOWN_LINE, 0, Font::Font24);
     }
 
 }
