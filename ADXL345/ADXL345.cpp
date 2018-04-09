@@ -32,6 +32,7 @@
 
 #include "ADXL345.h"
 #include "driver/i2c.h"
+#include "esp_log.h"
 
 #define WRITE_BIT                          I2C_MASTER_WRITE /*!< I2C master write */
 #define READ_BIT                           I2C_MASTER_READ  /*!< I2C master read */
@@ -43,12 +44,14 @@ static const i2c_ack_type_t NACK_VAL{static_cast<i2c_ack_type_t>(0x1)};         
 static i2c_port_t i2c_num =               I2C_NUM_0;        /*!<I2C port number for slave dev */
 
 namespace {
+    static const char* TAG = "ADXL345";
     void writeByte (uint8_t devAddr, uint8_t regAddr, uint8_t data, uint8_t size=1) {
 
         i2c_cmd_handle_t cmd = i2c_cmd_link_create();
         i2c_master_start(cmd);
         i2c_master_write_byte(cmd, ( devAddr << 1 ) | WRITE_BIT, ACK_CHECK_EN);
-        i2c_master_write(cmd, &regAddr, size, ACK_CHECK_EN);
+        i2c_master_write(cmd, &regAddr, 1, ACK_CHECK_EN);
+        i2c_master_write(cmd, &data, size, ACK_CHECK_EN);
         i2c_master_stop(cmd);
         esp_err_t ret = i2c_master_cmd_begin(i2c_num, cmd, 1000 / portTICK_RATE_MS);
         ESP_LOGI(TAG, "Write I2C: %d", ret);
@@ -58,8 +61,14 @@ namespace {
     void readByte (uint8_t devAddr, uint8_t regAddr, uint8_t *data, uint8_t size=1) {
         i2c_cmd_handle_t cmd = i2c_cmd_link_create();
         i2c_master_start(cmd);
+        i2c_master_write_byte(cmd, ( devAddr << 1 ) | WRITE_BIT, ACK_CHECK_EN);
+        i2c_master_write(cmd, &regAddr, 1, ACK_CHECK_EN);
+        i2c_master_start(cmd);
         i2c_master_write_byte(cmd, ( devAddr << 1 ) | READ_BIT, ACK_CHECK_EN);
-        i2c_master_read(cmd, size, NACK_VAL);
+        if (size > 1) {
+            i2c_master_read(cmd, data, size - 1, ACK_VAL);
+        }
+        i2c_master_read_byte(cmd, data+size-1, NACK_VAL);
         i2c_master_stop(cmd);
         esp_err_t ret = i2c_master_cmd_begin(i2c_num, cmd, 1000 / portTICK_RATE_MS);
         ESP_LOGI(TAG, "Read I2C: %d", ret);
@@ -149,27 +158,30 @@ ADXL345::ADXL345(uint8_t address) {
  * less demanding mode of operation.
  */
 void ADXL345::initialize() {
-    static gpio_num_t I2C_EXAMPLE_MASTER_SCL_IO{static_cast<gpio_num_t>(19)};               /*!< gpio number for I2C master clock */
-    static gpio_num_t I2C_EXAMPLE_MASTER_SDA_IO{static_cast<gpio_num_t>(18)};               /*!< gpio number for I2C master data  */
-#define I2C_EXAMPLE_MASTER_NUM             I2C_NUM_1        /*!< I2C port number for master dev */
+    static gpio_num_t I2C_EXAMPLE_MASTER_SCL_IO{static_cast<gpio_num_t>(CONFIG_I2C_SCL)};               /*!< gpio number for I2C master clock */
+    static gpio_num_t I2C_EXAMPLE_MASTER_SDA_IO{static_cast<gpio_num_t>(CONFIG_I2C_SDA)};               /*!< gpio number for I2C master data  */
+#define I2C_EXAMPLE_MASTER_NUM             I2C_NUM_0        /*!< I2C port number for master dev */
 #define I2C_EXAMPLE_MASTER_TX_BUF_DISABLE  0                /*!< I2C master do not need buffer */
 #define I2C_EXAMPLE_MASTER_RX_BUF_DISABLE  0                /*!< I2C master do not need buffer */
 #define I2C_EXAMPLE_MASTER_FREQ_HZ         100000           /*!< I2C master clock frequency */
     i2c_port_t i2c_master_port = I2C_EXAMPLE_MASTER_NUM;
-    i2c_config_t conf;
+    i2c_config_t conf{};
     conf.mode = I2C_MODE_MASTER;
     conf.sda_io_num = I2C_EXAMPLE_MASTER_SDA_IO;
     conf.sda_pullup_en = GPIO_PULLUP_ENABLE;
     conf.scl_io_num = I2C_EXAMPLE_MASTER_SCL_IO;
     conf.scl_pullup_en = GPIO_PULLUP_ENABLE;
     conf.master.clk_speed = I2C_EXAMPLE_MASTER_FREQ_HZ;
-    i2c_param_config(i2c_master_port, &conf);
-    i2c_driver_install(i2c_master_port, conf.mode,
+    esp_err_t ret = i2c_param_config(i2c_master_port, &conf);
+    ESP_LOGI(TAG, "param config: %d", ret);
+    ret = i2c_driver_install(i2c_master_port, conf.mode,
             I2C_EXAMPLE_MASTER_RX_BUF_DISABLE,
             I2C_EXAMPLE_MASTER_TX_BUF_DISABLE, 0);
+    ESP_LOGI(TAG, "I2C driver installed %d", ret);
     writeByte(devAddr, ADXL345_RA_POWER_CTL, 0); // reset all power settings
-    setAutoSleepEnabled(true);
+    //setAutoSleepEnabled(true);
     setMeasureEnabled(true);
+    ESP_LOGI(TAG, "Finished initializing");
 }
 
 /** Verify the I2C connection.
