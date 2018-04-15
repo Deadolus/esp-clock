@@ -126,9 +126,7 @@ namespace {
         writeByte(devAddr, regAddr, b);
     }
     void readBytes (uint8_t devAddr, uint8_t regAddr, uint8_t length, uint8_t *data) {
-        for(size_t i = 0; i<length; i++){
-            readByte(devAddr, regAddr, data+i);
-        }
+        readByte(devAddr, regAddr, data, length);
 
 
     }
