@@ -338,7 +338,9 @@ class ADXL345 {
         int16_t getAccelerationX();
         int16_t getAccelerationY();
         int16_t getAccelerationZ();
-        int16_t getGX();
+        float getGX();
+        float getGY();
+        float getGZ();
 
         // FIFO_CTL register
         uint8_t getFIFOMode();

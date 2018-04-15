@@ -1667,12 +1667,18 @@ int16_t ADXL345::getAccelerationZ() {
     readBytes(devAddr, ADXL345_RA_DATAZ0, 2, buffer);
     return (((int16_t)buffer[1]) << 8) | buffer[0];
 }
-int16_t ADXL345::getGX() {
+float ADXL345::getGX() {
     //assuming 2G range:
     //in 2g, 10-bit mode ADXL345 outubs 1 LSB for every 3.9mg
     //The 10bit resolution is a signed integer, so a maximal value of negative 512 is reachable
     //this 512 multiplied by 0.0039 will equal 1.9968 Gs
     return getAccelerationX() * 0.0039;
+}
+float ADXL345::getGY() {
+    return getAccelerationY() * 0.0039;
+}
+float ADXL345::getGZ() {
+    return getAccelerationZ() * 0.0039;
 }
 
 // FIFO_CTL register
