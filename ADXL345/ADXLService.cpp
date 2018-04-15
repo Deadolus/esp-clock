@@ -24,7 +24,7 @@ ADXLService::ADXLService() {
 void ADXLService::ADXLServiceTask(ADXL345& sensor) {
 
     while(true) {
-        ESP_LOGI(TAG, "Accel: %d, %d, %d", sensor.getAccelerationX(), sensor.getAccelerationY(), sensor.getAccelerationZ());
+        ESP_LOGI(TAG, "Accel: %d, %d, %d, : %f, %f, %f", sensor.getAccelerationX(), sensor.getAccelerationY(), sensor.getAccelerationZ(), sensor.getGX(), sensor.getGY(), sensor.getGZ());
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
 }
