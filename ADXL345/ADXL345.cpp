@@ -33,6 +33,7 @@
 #include "ADXL345.h"
 #include "driver/i2c.h"
 #include "esp_log.h"
+#include <cstdio>
 
 #define WRITE_BIT                          I2C_MASTER_WRITE /*!< I2C master write */
 #define READ_BIT                           I2C_MASTER_READ  /*!< I2C master read */
@@ -1438,7 +1439,7 @@ uint8_t ADXL345::getIntSingleTapSource() {
  */
 uint8_t ADXL345::getIntDoubleTapSource() {
     readBit(devAddr, ADXL345_RA_INT_SOURCE, ADXL345_INT_DOUBLE_TAP_BIT, buffer);
-    return buffer[0];
+    return buffer[1];
 }
 /** Get ACTIVITY interrupt source flag.
  * @return Interrupt source flag
@@ -1649,6 +1650,7 @@ void ADXL345::getAcceleration(int16_t* x, int16_t* y, int16_t* z) {
  */
 int16_t ADXL345::getAccelerationX() {
     readBytes(devAddr, ADXL345_RA_DATAX0, 2, buffer);
+    //ESP_LOGI(TAG, "Direct: %u, %u", buffer[1], buffer[0]);
     return (((int16_t)buffer[1]) << 8) | buffer[0];
 }
 /** Get Y-axis accleration measurement.
