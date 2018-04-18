@@ -1,10 +1,11 @@
 #pragma once
 #include "ADXL345.h"
+#include <functional>
 
 class ADXLService {
     public: 
-        ADXLService();
+        explicit ADXLService(std::function<void()> func);
     private:
-        static void ADXLServiceTask(ADXL345& sensor);
+        static void ADXLServiceTask(ADXL345& sensor, std::function<void()> cb);
         ADXL345 sensor_;
 };

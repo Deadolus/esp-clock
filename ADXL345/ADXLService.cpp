@@ -6,16 +6,18 @@
 
 #include <thread>
 #include <mutex>
+#include <functional>
 
 namespace {
-    static const char* TAG = "AlarmService";
+    static const char* TAG = "ADXLService";
     static std::mutex interruptMutex_{};
 }
 
 static void IRAM_ATTR myISR(void *arg) {
     interruptMutex_.unlock();
 }
-ADXLService::ADXLService() {
+ADXLService::ADXLService(std::function<void()> cb) {
+    interruptMutex_.lock();
     sensor_.initialize();
     sensor_.setMeasureEnabled(true);
     sensor_.setSleepEnabled(false);
@@ -26,11 +28,12 @@ ADXLService::ADXLService() {
     sensor_.setTapAxisXEnabled(true);
     sensor_.setTapAxisYEnabled(true);
     sensor_.setIntSingleTapPin(0);//INT1 pin
-    //sensor_.setIntSingleTapEnabled(true);
+    sensor_.getIntSingleTapSource(); //clear interrupt
+    sensor_.setIntSingleTapEnabled(true);
     //sensor_.setTapAxisZEnabled(true);
     gpio_config_t io_conf;
     //interrupt of rising edge
-    io_conf.intr_type = static_cast<gpio_int_type_t>(GPIO_PIN_INTR_POSEDGE);
+    io_conf.intr_type = static_cast<gpio_int_type_t>(GPIO_INTR_POSEDGE);
     //bit mask of the pins, use GPIO4/5 here
     io_conf.pin_bit_mask = 1<<5;
     //set as input mode
@@ -44,20 +47,24 @@ ADXLService::ADXLService() {
     gpio_isr_handler_add(static_cast<gpio_num_t>(5), myISR,nullptr);
     ESP_LOGI(TAG, "Test sensor %d", sensor_.testConnection());
 #ifndef GOOGLETEST
-    std::thread task(ADXLServiceTask, std::ref(sensor_));
+    std::thread task(ADXLServiceTask, std::ref(sensor_), cb);
     task.detach();
 #endif
 }
 
-void ADXLService::ADXLServiceTask(ADXL345& sensor) {
+void ADXLService::ADXLServiceTask(ADXL345& sensor, std::function<void()> callback) {
 
     while(true) {
 //        ESP_LOGI(TAG, "Accel: %d, %d, %d, : %f, %f, %f", sensor.getAccelerationX(), sensor.getAccelerationY(), sensor.getAccelerationZ(), sensor.getGX(), sensor.getGY(), sensor.getGZ());
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
-        if(!interruptMutex_.try_lock())
+        if(interruptMutex_.try_lock())
         {
         ESP_LOGI(TAG, "Got interrupt!");
         sensor.getIntSingleTapSource(); //clear interrupt
+        if(callback) {
+            callback();
+        }
+
 
         }
     }
