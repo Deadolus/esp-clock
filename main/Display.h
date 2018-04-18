@@ -9,6 +9,7 @@ enum class Font {
     Font8, 
     Font16, 
     Font24
+    Font36,
 };
 class Display 
 {

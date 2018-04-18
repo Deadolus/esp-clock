@@ -28,6 +28,8 @@ namespace {
                 return Font16;
             case Font::Font24:
                 return Font24;
+            case Font::Font36:
+                return Font36;
         }
         return Font8;
     }
@@ -184,5 +186,6 @@ void EspDisplay::setTime(EspSntpClient& sntp) {
     else
         sprintf(strftime_buf, "--:--");
 
-    write(std::string(strftime_buf), 200, 0, Font::Font24);
+    //write(std::string(strftime_buf), 200, 0, Font::Font36);
+    write(std::string(strftime_buf), 47, (200-(5*31))/2, Font::Font36);
 }
