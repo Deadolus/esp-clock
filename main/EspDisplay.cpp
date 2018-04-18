@@ -72,7 +72,7 @@ void EspDisplay::clearNextAlarmTime() {
 }
 
 void EspDisplay::clearNextAlarmCountdown() {
-    clearLine(Font24, NEXT_ALARM_TIME_LINE);
+    clearLine(Font24, NEXT_ALARM_COUNTDOWN_LINE);
 }
 
 void EspDisplay::setAlarm(std::string alarm) {
