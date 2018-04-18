@@ -51,9 +51,8 @@ extern "C" void app_main()
     EspAudioPlayer audioplayer{};
     EspPwmLed pwmLed{CONFIG_LED_GPIO};
     EspButton button{0, true};
-    EspDisplayService displayService{display, espsign, alarm, alarms, wifi, sntp, 5000};
     auto pacifyFunction =  [&]() {
-            ESP_LOGI(TAG, "Button pressed!");
+            ESP_LOGI(TAG, "Pacify function called");
             alarms.pacify();
             audioplayer.stopAudio();
             display.fullUpdate();
@@ -72,6 +71,7 @@ extern "C" void app_main()
     ADXLService sensorService{pacifyFunction};
     wifi.init();
     wifi.startWifi();
+    EspDisplayService displayService{display, espsign, alarm, alarms, wifi, sntp, 5000};
     setTimezone();
     sntp.getTime(false);
     httpserver.startServer();
