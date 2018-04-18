@@ -30,19 +30,21 @@ std::string alarmToHtml(const alarms_t& alarm) {
     std::stringstream retVal{};
         tm time = Clock::getTm(alarm.time);
         retVal << alarm.name;
+        if(alarm.time < std::chrono::system_clock::time_point::max()) {
         retVal << ",";
         retVal << time.tm_hour;
         retVal << ":";
         retVal << time.tm_min;
         retVal << ":";
         retVal << time.tm_sec;
-        retVal << ";";
+        }
         return retVal.str();
 }
 std::string alarmsToHtml(const Alarm& alarms) {
     std::stringstream allAlarms{};
     for(auto& alarm: alarms.getAlarms()) {
         allAlarms << alarmToHtml(alarm);
+        allAlarms << ";";
         //allAlarms.append(alarm.name+": "+itoa(time.tm_hour)+":"+itoa(time.tm_min));
     }
     return allAlarms.str();
@@ -193,7 +195,7 @@ void websocket_task(void *pvParameter)
         if (len < sizeof (response))
             websocket_write(pcb, (unsigned char *) response, len, WS_TEXT_MODE);
 
-        std::this_thread::sleep_for(std::chrono::seconds(2));
+        std::this_thread::sleep_for(std::chrono::microseconds(10));
     }
 }
 
@@ -289,7 +291,7 @@ void httpd_task(void *pvParameters)
     httpd_init();
 
     for (;;) {
-        std::this_thread::sleep_for(std::chrono::microseconds(1));
+        std::this_thread::sleep_for(std::chrono::seconds(10));
     }
 }
 
