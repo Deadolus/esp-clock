@@ -45,14 +45,14 @@ extern "C" void app_main()
     EspDisplay display{};
     EspSign espsign(display);
     EspAlarm alarm{};
-    EspHttpServer httpserver{alarm};
     alarm.loadFromPeristentStorage();
+    EspHttpServer httpserver{alarm};
     EspAlarmService alarms{alarm, std::chrono::minutes(10)};
-    ADXLService sensorService{};
     EspAudioPlayer audioplayer{};
     EspPwmLed pwmLed{CONFIG_LED_GPIO};
     EspButton button{0, true};
-    button.setPressCb([&](){
+    EspDisplayService displayService{display, espsign, alarm, alarms, wifi, sntp, 5000};
+    auto pacifyFunction =  [&]() {
             ESP_LOGI(TAG, "Button pressed!");
             alarms.pacify();
             audioplayer.stopAudio();
@@ -60,7 +60,8 @@ extern "C" void app_main()
             pwmLed.setIntensity(0);
             if(!wifi.isConnected()) wifi.startWifi();
             //alarm.saveAlarms();
-            });
+    };
+    button.setPressCb(pacifyFunction);
     button.setLongPressCb([&](){
             if(wifi.isConnected()) wifi.stopWifi();
             });
@@ -68,12 +69,12 @@ extern "C" void app_main()
             audioplayer.startAudio();
             pwmLed.setIntensity(100);
     });
+    ADXLService sensorService{pacifyFunction};
     wifi.init();
     wifi.startWifi();
     setTimezone();
     sntp.getTime(false);
     httpserver.startServer();
-    EspDisplayService displayService{display, espsign, alarm, alarms, wifi, sntp, 5000};
     ESP_LOGI(TAG, "Everything started...");
     alarms_t testAlarm;
     testAlarm.time = std::chrono::system_clock::now() + std::chrono::seconds(1);
