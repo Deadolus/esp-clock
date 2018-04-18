@@ -159,10 +159,12 @@ void EspDisplay::write(const std::string& text, unsigned int x, unsigned int y, 
 
 /** sends whole paint_ image to display */
 void EspDisplay::send() {
+    std::lock_guard<std::mutex> lock(displayMutex);
   epd_.DisplayFrame();
 
 }
 void EspDisplay::sleep() {
+    std::lock_guard<std::mutex> lock(displayMutex);
     epd_.Sleep();
 }
 
