@@ -60,6 +60,12 @@ extern "C" void app_main()
             if(!wifi.isConnected()) wifi.startWifi();
             //alarm.saveAlarms();
     };
+    auto sensorFunction = [&](){
+        pacifyFunction();
+        pwmLed.setIntensity(80);
+        sleep(5);
+        pwmLed.setIntensity(0);
+    };
     button.setPressCb(pacifyFunction);
     button.setLongPressCb([&](){
             if(wifi.isConnected()) wifi.stopWifi();
@@ -68,7 +74,7 @@ extern "C" void app_main()
             audioplayer.startAudio();
             pwmLed.setIntensity(100);
     });
-    ADXLService sensorService{pacifyFunction};
+    ADXLService sensorService{sensorFunction};
     wifi.init();
     wifi.startWifi();
     EspDisplayService displayService{display, espsign, alarm, alarms, wifi, sntp, 5000};
