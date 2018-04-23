@@ -37,7 +37,8 @@ std::string SimpleAlarmSerializer::serialize(alarms_t const& alarm) {
     retVal << alarm.name <<",";
     retVal << Clock::getTimet(alarm.time) <<",";
     retVal << Clock::getTimet(alarm.snoozeTime) <<",";
-    retVal << std::to_string(alarm.weekRepeat.to_ulong());
+    retVal << std::to_string(alarm.weekRepeat.to_ulong())<<",";
+    retVal << std::to_string(alarm.singleShot);
     ESP_LOGI(TAG, "Serialized: %s", retVal.str().c_str());
 
     return retVal.str();
@@ -46,12 +47,13 @@ std::string SimpleAlarmSerializer::serialize(alarms_t const& alarm) {
 alarms_t SimpleAlarmSerializer::deserialize(std::string const& text) {
     alarms_t retVal{};
     std::vector<std::string> fields = split(text, ",");
-    if(fields.size() == 4) {
+    if(fields.size() == 5) {
     retVal.name = fields.at(0);
     try {
     retVal.time = Clock::convertToTimePoint(static_cast<time_t>(std::stoi(fields.at(1))));
     retVal.snoozeTime = Clock::convertToTimePoint(static_cast<time_t>(std::stoi(fields.at(2))));
     retVal.weekRepeat = std::bitset<7>(std::stoi(fields.at(3)));
+    retVal.singleShot = std::stoi(fields.at(4));
     } catch(std::exception e) {}
     }
     return retVal;
