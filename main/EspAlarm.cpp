@@ -1,6 +1,7 @@
 #include "EspAlarm.h"
 #include "esp_log.h"
 #include "SimpleAlarmSerializer.h"
+#include "Clock.h"
 #include <list>
 #include <string>
 static const char* TAG = "Alarm";
@@ -25,13 +26,22 @@ const alarms_t EspAlarm::getNextAlarm() const {
     alarms_t nextAlarm;
     nextAlarm.name = "No alarm";
     nextAlarm.time = maxTime;
+    auto alarmComparison = [&](alarms_t& alarm)->bool {
+        return (alarm.time < nextAlarm.time)
+            && (alarm.time > now);
+    };
+    auto repeatedComparison = [](alarms_t& alarm)->bool {
+        tm alarmTime = Clock::getTm(alarm.time);
+        alarmTime.tm_wday
+        
+        return true;
+    };
     for(auto& alarm: m_alarms)
     {
-        if( (alarm.time < nextAlarm.time) 
-                && (alarm.time > now)
-          ) {
+        if( alarmComparison(alarm) || repeatedComparison(alarm) ) 
+           {
             nextAlarm = alarm;
-        }
+           }
     }
     return nextAlarm;
 }
