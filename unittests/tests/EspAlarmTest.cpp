@@ -44,10 +44,12 @@ TEST_F(EspAlarmTest, will_get_alarm_in_one_hour) {
     EXPECT_STREQ("Testee", returnee.name.c_str());
 }
 
-TEST_F(EspAlarmTest, will_get_alarm_next_day) {
+TEST_F(EspAlarmTest, will_get_alarm_next_day_when_other_has_no_weekRepeat) {
     alarms_t alarm{};
     alarm.name = "Test";
     auto time = Clock::getCurrentTimeAsTm();
+    testee.setAlarm(alarm);
+
     time.tm_hour = 3;
     time.tm_min = 0;
     alarm.time = Clock::convertToTimePoint(time);
@@ -55,9 +57,34 @@ TEST_F(EspAlarmTest, will_get_alarm_next_day) {
     alarm.singleShot = false;
     alarm.name = "Testee";
     testee.setAlarm(alarm);
+
     alarm.name = "Test2";
+    alarm.weekRepeat = 0b0000000;
     alarm.time = Clock::getCurrentTimeAsTimePoint();
     testee.setAlarm(alarm);
+    auto returnee = testee.getNextAlarm();
+    EXPECT_STREQ("Testee", returnee.name.c_str());
+}
+
+TEST_F(EspAlarmTest, will_get_alarm_next_day_when_other_is_singleshot) {
+    alarms_t alarm{};
+    alarm.name = "Test";
+    auto time = Clock::getCurrentTimeAsTm();
+    testee.setAlarm(alarm);
+
+    time.tm_hour = 3;
+    time.tm_min = 0;
+    alarm.time = Clock::convertToTimePoint(time);
+    alarm.weekRepeat = 0b1111111;
+    alarm.singleShot = false;
+    alarm.name = "Testee";
+    testee.setAlarm(alarm);
+
+    alarm.name = "Test2";
+    alarm.singleShot = true;
+    alarm.time = Clock::getCurrentTimeAsTimePoint();
+    testee.setAlarm(alarm);
+
     auto returnee = testee.getNextAlarm();
     EXPECT_STREQ("Testee", returnee.name.c_str());
 }

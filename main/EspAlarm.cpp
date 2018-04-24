@@ -26,22 +26,38 @@ const alarms_t EspAlarm::getNextAlarm() const {
     alarms_t nextAlarm;
     nextAlarm.name = "No alarm";
     nextAlarm.time = maxTime;
-    auto singleShotComparison = [&](const alarms_t& alarm)->bool {
+    auto alarmComparison = [&](const alarms_t& alarm)->bool {
         return (alarm.time < nextAlarm.time)
-            && (alarm.time > now)
+            && (alarm.time > now);
+    };
+    auto singleShotComparison = [&](const alarms_t& alarm)->bool {
+        return alarmComparison(alarm)
             && alarm.singleShot;
     };
-    auto repeatedComparison = [](const alarms_t& alarm)->bool {
+    auto repeatedComparison = [&](const alarms_t& alarm)->bool {
         tm now = Clock::getCurrentTimeAsTm();
         tm alarmTime = Clock::getTm(alarm.time);
 
         if(alarm.singleShot)
             return false;
 
+        //only look for today or tomorrow
         if(!(alarm.weekRepeat.test(now.tm_wday)||alarm.weekRepeat.test(now.tm_wday++)))
             return false;
 
-        return true;
+        tm todayTime = now;
+        //wday and tm_yday are ignored by mktime
+        todayTime.tm_hour = alarmTime.tm_hour;
+        todayTime.tm_min = alarmTime.tm_min;
+        tm tomorrowTime = todayTime;
+        tomorrowTime.tm_mday++;
+
+        alarms_t todayAlarm = alarm;
+        todayAlarm.time = Clock::convertToTimePoint(todayTime);
+        alarms_t tomorrowAlarm = alarm;
+        tomorrowAlarm.time = Clock::convertToTimePoint(tomorrowTime);
+
+        return alarmComparison(todayAlarm) || alarmComparison(tomorrowAlarm);
     };
     for(auto& alarm: m_alarms)
     {
