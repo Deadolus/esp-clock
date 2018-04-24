@@ -29,13 +29,16 @@ const alarms_t EspAlarm::getNextAlarm() const {
     auto singleShotComparison = [&](const alarms_t& alarm)->bool {
         return (alarm.time < nextAlarm.time)
             && (alarm.time > now)
-            && !alarm.singleShot;
+            && alarm.singleShot;
     };
     auto repeatedComparison = [](const alarms_t& alarm)->bool {
         tm now = Clock::getCurrentTimeAsTm();
         tm alarmTime = Clock::getTm(alarm.time);
-        //alarmTime.tm_wday
+
         if(alarm.singleShot)
+            return false;
+
+        if(!(alarm.weekRepeat.test(now.tm_wday)||alarm.weekRepeat.test(now.tm_wday++)))
             return false;
 
         return true;

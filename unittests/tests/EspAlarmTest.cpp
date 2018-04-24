@@ -17,6 +17,7 @@ class EspAlarmTest : public ::testing::Test {
 
 TEST_F(EspAlarmTest, can_get_next_alarm) {
     alarms_t alarm{};
+    alarm.singleShot = true;
     alarm.name = "Testee";
     auto time = Clock::getCurrentTimeAsTm();
     alarm.time = Clock::convertToTimePoint(time)+std::chrono::hours(5);
@@ -29,6 +30,7 @@ TEST_F(EspAlarmTest, can_get_next_alarm) {
 
 TEST_F(EspAlarmTest, will_get_alarm_in_one_hour) {
     alarms_t alarm{};
+    alarm.singleShot = true;
     alarm.name = "Test";
     alarm.time = Clock::getCurrentTimeAsTimePoint();
     testee.setAlarm(alarm);
@@ -46,7 +48,7 @@ TEST_F(EspAlarmTest, will_get_alarm_next_day) {
     alarms_t alarm{};
     alarm.name = "Test";
     auto time = Clock::getCurrentTimeAsTm();
-    time.tm_hour = 1;
+    time.tm_hour = 3;
     time.tm_min = 0;
     alarm.time = Clock::convertToTimePoint(time);
     alarm.weekRepeat = 0b1111111;
@@ -54,8 +56,8 @@ TEST_F(EspAlarmTest, will_get_alarm_next_day) {
     alarm.name = "Testee";
     testee.setAlarm(alarm);
     alarm.name = "Test2";
-    alarm.singleShot = true;
     alarm.time = Clock::getCurrentTimeAsTimePoint();
+    testee.setAlarm(alarm);
     auto returnee = testee.getNextAlarm();
     EXPECT_STREQ("Testee", returnee.name.c_str());
 }
