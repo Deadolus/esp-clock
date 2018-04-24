@@ -22,7 +22,8 @@ TEST_F(SimpleAlarmSerializerTest, can_serialize_alarm_right)
     alarm.time = Clock::convertToTimePoint(20);
     alarm.snoozeTime = Clock::convertToTimePoint(10);
     alarm.weekRepeat = std::bitset<7>(0b1010101);
-    EXPECT_STREQ("Test,20,10,85", testee.serialize(alarm).c_str());
+    alarm.singleShot = true;
+    EXPECT_STREQ("Test,20,10,85,1", testee.serialize(alarm).c_str());
 }
 
 TEST_F(SimpleAlarmSerializerTest, can_deserialize_alarm_right)
@@ -32,10 +33,12 @@ TEST_F(SimpleAlarmSerializerTest, can_deserialize_alarm_right)
     alarm.time = Clock::convertToTimePoint(20);
     alarm.snoozeTime = Clock::convertToTimePoint(10);
     alarm.weekRepeat = std::bitset<7>(0b1010101);
-    std::string testString = "Test,20,10,85";
+    alarm.singleShot = true;
+    std::string testString = "Test,20,10,85,1";
     alarms_t deserialized = testee.deserialize(testString);
     EXPECT_EQ(alarm.name,deserialized.name);
     EXPECT_EQ(alarm.time,deserialized.time);
     EXPECT_EQ(alarm.snoozeTime,deserialized.snoozeTime);
     EXPECT_EQ(alarm.weekRepeat,deserialized.weekRepeat);
+    EXPECT_EQ(alarm.singleShot,deserialized.singleShot);
 }
