@@ -184,7 +184,7 @@ void EspDisplay::setTime(EspSntpClient& sntp) {
     if(sntp.timeSet())
         strftime(strftime_buf, sizeof(strftime_buf), "%R", &timeinfo);
     else
-        sprintf(strftime_buf, "--:--");
+        sprintf(strftime_buf, "00:00");
 
     //write(std::string(strftime_buf), 200, 0, Font::Font36);
     write(std::string(strftime_buf), 47, (200-(5*31))/2, Font::Font36);
