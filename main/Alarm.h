@@ -1,5 +1,6 @@
 #pragma once
 #include "driver/timer.h"
+#include "Clock.h"
 #include <cstdint>
 #include <list>
 #include <vector>
@@ -30,6 +31,31 @@ struct alarms_t {
     }
     friend bool operator<(const alarms_t& lhs, const alarms_t& rhs) {
         return std::tie(lhs.time, lhs.name) < std::tie(rhs.time, rhs.name);
+    }
+
+    const std::chrono::system_clock::time_point nextAlarm() const
+    {
+        if(singleShot)
+            return time;
+
+        tm now = Clock::getCurrentTimeAsTm();
+        tm alarmTime = Clock::getTm(time);
+
+        if(!(weekRepeat.test(now.tm_wday)||weekRepeat.test(now.tm_wday++)))
+            return std::chrono::system_clock::time_point::max();
+            
+        tm todayTime = now;
+        //wday and tm_yday are ignored by mktime
+        todayTime.tm_hour = alarmTime.tm_hour;
+        todayTime.tm_min = alarmTime.tm_min;
+
+        if(Clock::convertToTimePoint(todayTime) > Clock::convertToTimePoint(now))
+            return Clock::convertToTimePoint(todayTime);
+
+        tm tomorrowTime = todayTime;
+        tomorrowTime.tm_mday++;
+
+        return Clock::convertToTimePoint(tomorrowTime);
     }
 };
 

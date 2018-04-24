@@ -35,29 +35,13 @@ const alarms_t EspAlarm::getNextAlarm() const {
             && alarm.singleShot;
     };
     auto repeatedComparison = [&](const alarms_t& alarm)->bool {
-        tm now = Clock::getCurrentTimeAsTm();
-        tm alarmTime = Clock::getTm(alarm.time);
+    std::chrono::system_clock::time_point now{std::chrono::system_clock::now()};
 
         if(alarm.singleShot)
             return false;
 
-        //only look for today or tomorrow
-        if(!(alarm.weekRepeat.test(now.tm_wday)||alarm.weekRepeat.test(now.tm_wday++)))
-            return false;
-
-        tm todayTime = now;
-        //wday and tm_yday are ignored by mktime
-        todayTime.tm_hour = alarmTime.tm_hour;
-        todayTime.tm_min = alarmTime.tm_min;
-        tm tomorrowTime = todayTime;
-        tomorrowTime.tm_mday++;
-
-        alarms_t todayAlarm = alarm;
-        todayAlarm.time = Clock::convertToTimePoint(todayTime);
-        alarms_t tomorrowAlarm = alarm;
-        tomorrowAlarm.time = Clock::convertToTimePoint(tomorrowTime);
-
-        return alarmComparison(todayAlarm) || alarmComparison(tomorrowAlarm);
+        return (alarm.nextAlarm() < nextAlarm.time) 
+            && (alarm.nextAlarm() > now);
     };
     for(auto& alarm: m_alarms)
     {
