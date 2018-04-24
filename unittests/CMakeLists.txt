@@ -21,12 +21,12 @@ add_definitions(-std=c++1y)
 add_definitions(--coverage -g -fprofile-arcs -ftest-coverage)
 SET( CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} --coverage")
 SET( CMAKE_EXPORT_COMPILE_COMMANDS ON )
-SET(COMMON_INCLUDES 
+SET(COMMON_INCLUDES
 ../
 ../main/
 )
 
-SET(TEST_INCLUDES 
+SET(TEST_INCLUDES
 ${CMAKE_CURRENT_SOURCE_DIR}/tests
 ${CMAKE_CURRENT_SOURCE_DIR}/helpers
 )
@@ -34,11 +34,13 @@ ${CMAKE_CURRENT_SOURCE_DIR}/helpers
 include_directories(${GTEST_INCLUDE_DIRS} ${COMMON_INCLUDES} ${TEST_INCLUDES})
 
 file(GLOB SRC_FILES ../*.cpp)
-file(GLOB TEST_SRC_FILES 
-	#${CMAKE_CURRENT_SOURCE_DIR}/../main/*.cpp
+file(GLOB TEST_SRC_FILES
+    #${CMAKE_CURRENT_SOURCE_DIR}/../main/*.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/../main/EspAlarmService.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../main/SimpleAlarmSerializer.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../main/Clock.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../main/EspAlarm.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../main/EspPersistentStorage.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/tests/*.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/helpers/*.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp

@@ -10,7 +10,7 @@ static unsigned int MAX_ALARMS = 10;
 std::vector<alarms_t> EspAlarm::m_alarms{};
 
 void EspAlarm::setAlarm(alarms_t const& alarm) {
-    ESP_LOGI(TAG, "Got new alarm, name: %s", alarm.name.c_str())
+    ESP_LOGI(TAG, "Got new alarm, name: %s", alarm.name.c_str());
         if(m_alarms.size() <= MAX_ALARMS) {
             m_alarms.push_back(alarm);
             saveToPersistentStorage();
@@ -32,13 +32,13 @@ const alarms_t EspAlarm::getNextAlarm() const {
     };
     auto repeatedComparison = [](alarms_t& alarm)->bool {
         tm alarmTime = Clock::getTm(alarm.time);
-        alarmTime.tm_wday
-        
+        //alarmTime.tm_wday
+
         return true;
     };
     for(auto& alarm: m_alarms)
     {
-        if( alarmComparison(alarm) || repeatedComparison(alarm) ) 
+        if( alarmComparison(alarm) || repeatedComparison(alarm) )
            {
             nextAlarm = alarm;
            }
@@ -77,9 +77,9 @@ void EspAlarm::saveToPersistentStorage() {
         //alarmNr.append(std::to_string(i));
         std::string alarmNr = alarmString+std::to_string(i);
         std::string serializedAlarm = serializer.serialize(m_alarms.at(i));
-         ESP_LOGI(TAG, "Saving to storage..."); 
+         ESP_LOGI(TAG, "Saving to storage...");
         persistentStorage_.setValue<std::string>(alarmNr.c_str(), serializedAlarm.c_str());
-        ESP_LOGI(TAG, "Serialized and saved alarm: %s/%s", alarmNr.c_str(), serializedAlarm.c_str()); 
+        ESP_LOGI(TAG, "Serialized and saved alarm: %s/%s", alarmNr.c_str(), serializedAlarm.c_str());
     }
 }
 
