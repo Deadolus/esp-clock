@@ -96,10 +96,10 @@ void EspDisplay::clearNextAlarm() {
 }
 
 void EspDisplay::showNextAlarmInfo(alarms_t alarm) {
-    if( alarm.time != std::chrono::system_clock::time_point::max()) {
+    if( alarm.nextAlarm() != std::chrono::system_clock::time_point::max()) {
     char buf[10];
     std::chrono::system_clock::time_point now = Clock::getCurrentTimeAsTimePoint();
-    auto duration = alarm.time - now;
+    auto duration = alarm.nextAlarm() - now;
     //tm alarmTime = Clock::getTm(duration);
     long seconds = std::chrono::duration_cast<std::chrono::minutes>(duration).count()+1;
     sprintf(buf, "%ld:%02ld", seconds/60, seconds%60);
