@@ -26,19 +26,23 @@ const alarms_t EspAlarm::getNextAlarm() const {
     alarms_t nextAlarm;
     nextAlarm.name = "No alarm";
     nextAlarm.time = maxTime;
-    auto alarmComparison = [&](alarms_t& alarm)->bool {
+    auto singleShotComparison = [&](const alarms_t& alarm)->bool {
         return (alarm.time < nextAlarm.time)
-            && (alarm.time > now);
+            && (alarm.time > now)
+            && !alarm.singleShot;
     };
-    auto repeatedComparison = [](alarms_t& alarm)->bool {
+    auto repeatedComparison = [](const alarms_t& alarm)->bool {
+        tm now = Clock::getCurrentTimeAsTm();
         tm alarmTime = Clock::getTm(alarm.time);
         //alarmTime.tm_wday
+        if(alarm.singleShot)
+            return false;
 
         return true;
     };
     for(auto& alarm: m_alarms)
     {
-        if( alarmComparison(alarm) || repeatedComparison(alarm) )
+        if( singleShotComparison(alarm) || repeatedComparison(alarm) )
            {
             nextAlarm = alarm;
            }
