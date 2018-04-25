@@ -26,26 +26,14 @@ const alarms_t EspAlarm::getNextAlarm() const {
     alarms_t nextAlarm;
     nextAlarm.name = "No alarm";
     nextAlarm.time = maxTime;
-    auto alarmComparison = [&](const alarms_t& alarm)->bool {
-        return (alarm.time < nextAlarm.time)
-            && (alarm.time > now);
-    };
-    auto singleShotComparison = [&](const alarms_t& alarm)->bool {
-        return alarmComparison(alarm)
-            && alarm.singleShot;
-    };
-    auto repeatedComparison = [&](const alarms_t& alarm)->bool {
+    auto comparison = [&](const alarms_t& alarm)->bool {
     std::chrono::system_clock::time_point now{std::chrono::system_clock::now()};
-
-        if(alarm.singleShot)
-            return false;
-
-        return (alarm.nextAlarm() < nextAlarm.time) 
+        return (alarm.nextAlarm() < nextAlarm.nextAlarm()) 
             && (alarm.nextAlarm() > now);
     };
     for(auto& alarm: m_alarms)
     {
-        if( singleShotComparison(alarm) || repeatedComparison(alarm) )
+        if( comparison(alarm) )
            {
             nextAlarm = alarm;
            }
