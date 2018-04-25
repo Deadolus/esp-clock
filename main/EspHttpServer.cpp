@@ -38,7 +38,7 @@ std::string alarmToHtml(const alarms_t& alarm) {
         retVal << ":";
         retVal << time.tm_sec;
         retVal << ",";
-        retVal << alarm.weekRepeat;
+        retVal << alarm.singleShot ? "Singleshot" : alarm.weekRepeat.to_string().c_str();
         }
         return retVal.str();
 }
