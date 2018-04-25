@@ -12,10 +12,10 @@
 static const uint8_t COLORED = 0;
 static const uint8_t UNCOLORED = 1;
 static bool display_initialized{false};
-static const int NEXT_ALARM_LINE = EPD_HEIGHT-32;
-static const int NEXT_ALARM_TIME_LINE = NEXT_ALARM_LINE-Font24.Height;
-static const int NEXT_ALARM_COUNTDOWN_LINE = NEXT_ALARM_TIME_LINE-Font24.Height;
-static const int ALARM_LINE = 050;
+static const int NEXT_ALARM_LINE = EPD_HEIGHT-32-2*Font24.Height;
+static const int NEXT_ALARM_TIME_LINE = NEXT_ALARM_LINE+Font24.Height;
+static const int NEXT_ALARM_COUNTDOWN_LINE = NEXT_ALARM_TIME_LINE;
+static const int ALARM_LINE = NEXT_ALARM_LINE-Font24.Height;
 static const char* TAG = "Display";
 
 namespace {
@@ -56,13 +56,6 @@ void EspDisplay::setNextAlarmName(std::string name, std::chrono::system_clock::t
     name = name.substr(10);
     }
 
-    if( time != std::chrono::system_clock::time_point::max()) {
-        char buf[16];
-        sprintf(buf, "%d:%02d", alarmTime.tm_hour, alarmTime.tm_min);
-        write(std::string(buf), NEXT_ALARM_TIME_LINE, 0, Font::Font24);
-        //ESP_LOGI(TAG, "%s", buf);
-    }
-
     write((std::string("N:")+name), NEXT_ALARM_LINE, 0, Font::Font24);
 }
 
@@ -96,14 +89,18 @@ void EspDisplay::clearNextAlarm() {
 }
 
 void EspDisplay::showNextAlarmInfo(alarms_t alarm) {
+    clearLine(Font24, NEXT_ALARM_COUNTDOWN_LINE);
     if( alarm.nextAlarm() != std::chrono::system_clock::time_point::max()) {
-    char buf[10];
+        char buf[16];
+        tm alarmTime = Clock::getTm(alarm.nextAlarm());
+        sprintf(buf, "%d:%02d", alarmTime.tm_hour, alarmTime.tm_min);
+        write(std::string(buf), NEXT_ALARM_TIME_LINE, 100, Font::Font24);
+        //ESP_LOGI(TAG, "%s", buf);
     std::chrono::system_clock::time_point now = Clock::getCurrentTimeAsTimePoint();
     auto duration = alarm.nextAlarm() - now;
     //tm alarmTime = Clock::getTm(duration);
     long seconds = std::chrono::duration_cast<std::chrono::minutes>(duration).count()+1;
     sprintf(buf, "%ld:%02ld", seconds/60, seconds%60);
-    clearLine(Font24, NEXT_ALARM_COUNTDOWN_LINE);
     write(std::string(buf), NEXT_ALARM_COUNTDOWN_LINE, 0, Font::Font24);
     }
 
