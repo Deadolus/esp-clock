@@ -39,10 +39,15 @@ struct alarms_t {
             return time;
 
         tm now = Clock::getCurrentTimeAsTm();
-        tm alarmTime = Clock::getTm(time);
 
-        if(!(weekRepeat.test(now.tm_wday)||weekRepeat.test(now.tm_wday++)))
+        int i=0;
+        for(; i<weekRepeat.size(); i++)
+            if(weekRepeat.test(i))
+                break;
+        if(!(weekRepeat.test(now.tm_wday)||weekRepeat.test(++now.tm_wday)))
             return std::chrono::system_clock::time_point::max();
+
+        tm alarmTime = Clock::getTm(time);
             
         tm todayTime = now;
         //wday and tm_yday are ignored by mktime

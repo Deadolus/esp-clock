@@ -126,13 +126,13 @@ window.onload = function () {
       +"&repeatingAlarm="
       +($('#repeatingAlarm')[0].checked ? "1" : "0")
       +"&days="
-      +Number($('#sunday')[0].checked)
-      +Number($('#monday')[0].checked)
-      +Number($('#tuesday')[0].checked)
-      +Number($('#wednesday')[0].checked)
-      +Number($('#thursday')[0].checked)
-      +Number($('#friday')[0].checked)
       +Number($('#saturday')[0].checked)
+      +Number($('#friday')[0].checked)
+      +Number($('#thursday')[0].checked)
+      +Number($('#wednesday')[0].checked)
+      +Number($('#tuesday')[0].checked)
+      +Number($('#monday')[0].checked)
+      +Number($('#sunday')[0].checked)
     ;
     console.log(newUrl);
     window.location.href = newUrl;

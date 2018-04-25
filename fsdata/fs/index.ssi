@@ -50,6 +50,7 @@
           <table class="table table-striped" id="alarmTable"><tr>
               <th>Name</th>
               <th>Time</th>
+              <th>WeekRepeat</th>
               <th>Delete</th>
             </tr>
             <!-- Place for alarms -->
@@ -118,15 +119,15 @@ function splitInsertAlarms(str) {
   var arr = str.split(';');
   arr.forEach(function(alarmStr) {
     var alarm = alarmStr.split(',');
-    if(alarm.length == 2) {
-    insertRow(alarm[0], alarm[1]);
+    if(alarm.length == 3) {
+    insertRow(alarm[0], alarm[1], alarm[2]);
     }
   });
 
 };
-function insertRow(name, time) {
+function insertRow(name, time, weekRepeat) {
   console.log("Got: "+name+"-->"+time);
-  var htmlStr = "<tr><td><b>"+name+"</b></td><td>"+time+"</td><td><button type='button' class='deleteButton btn btn-danger btn-sm'>Delete</button></td></tr>";
+  var htmlStr = "<tr><td><b>"+name+"</b></td><td>"+time+"</td><td>"+weekRepeat+"</td><td><button type='button' class='deleteButton btn btn-danger btn-sm'>Delete</button></td></tr>";
   $("#alarmTable> tbody:last").append(htmlStr);
 };
 

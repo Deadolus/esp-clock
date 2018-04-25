@@ -37,6 +37,8 @@ std::string alarmToHtml(const alarms_t& alarm) {
         retVal << time.tm_min;
         retVal << ":";
         retVal << time.tm_sec;
+        retVal << ",";
+        retVal << alarm.weekRepeat;
         }
         return retVal.str();
 }
