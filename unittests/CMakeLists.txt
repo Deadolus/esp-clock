@@ -41,6 +41,7 @@ file(GLOB TEST_SRC_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/../main/Clock.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../main/EspAlarm.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../main/EspPersistentStorage.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../main/Timer.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/tests/*.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/helpers/*.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
