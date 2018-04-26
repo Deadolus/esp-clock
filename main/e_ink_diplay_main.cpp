@@ -43,6 +43,7 @@ extern "C" void app_main()
     EspWifi wifi{};
     EspSntpClient sntp{wifi};
     EspDisplay display{};
+    display.init();
     EspSign espsign(display);
     EspAlarm alarm{};
     alarm.loadFromPeristentStorage();
@@ -57,7 +58,6 @@ extern "C" void app_main()
             audioplayer.stopAudio();
             display.fullUpdate();
             pwmLed.setIntensity(0);
-            if(!wifi.isConnected()) wifi.startWifi();
             //alarm.saveAlarms();
     };
     auto sensorFunction = [&](){
@@ -68,7 +68,11 @@ extern "C" void app_main()
     };
     button.setPressCb(pacifyFunction);
     button.setLongPressCb([&](){
-            if(wifi.isConnected()) wifi.stopWifi();
+            if(wifi.isConnected()) 
+            wifi.stopWifi();
+            else
+            wifi.startWifi();
+
             });
     alarms.setAlarmCallback([&](){
             audioplayer.startAudio();
