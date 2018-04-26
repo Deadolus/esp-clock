@@ -23,7 +23,6 @@ TEST_F(TimerTest, can_construct_timer)
 
 TEST_F(TimerTest, does_sleep_for_appropriate_time)
 {
-    bool test{false};
     std::mutex lock;
     lock.lock();
     std::function<void()> lambda = [&]()->void{lock.unlock();};
