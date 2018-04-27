@@ -12,12 +12,12 @@ namespace {
     }
 }
 
-Timer::Timer(std::chrono::milliseconds time, std::function<void()>& callback) {
+Timer::Timer(std::chrono::milliseconds time, std::function<void()> callback) {
     std::thread task(timerTask, time, std::ref(callback));
     task.detach();
 }
 
-Timer::Timer(std::chrono::seconds time, std::function<void()>& callback) :
+Timer::Timer(std::chrono::seconds time, std::function<void()> callback) :
     Timer(std::chrono::milliseconds(time), callback)
 {
 }
