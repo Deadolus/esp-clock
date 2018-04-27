@@ -2,13 +2,18 @@
 #include <chrono>
 #include <functional>
 #include <thread>
+#include "esp_log.h"
+
+static const char *TAG = "timer";
 
 namespace {
-    void timerTask(std::chrono::milliseconds time, std::function<void()>& callback)
+    void timerTask(std::chrono::milliseconds time, std::function<void()> callback)
     {
+        ESP_LOGI(TAG, "Before sleep");
         std::this_thread::sleep_for(time);
         if(callback)
             callback();
+        ESP_LOGI(TAG, "After sleep");
     }
 }
 
