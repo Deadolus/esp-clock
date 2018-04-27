@@ -18,7 +18,7 @@ namespace {
 }
 
 Timer::Timer(std::chrono::milliseconds time, std::function<void()> callback) {
-    std::thread task(timerTask, time, std::ref(callback));
+    std::thread task(timerTask, time, callback);
     task.detach();
 }
 
