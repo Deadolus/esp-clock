@@ -63,8 +63,7 @@ extern "C" void app_main()
     auto sensorFunction = [&](){
         pacifyFunction();
         pwmLed.setIntensity(80);
-        sleep(5);
-        pwmLed.setIntensity(0);
+        Timer timer{std::chrono::seconds(5), pwmLed.setIntensity(0)};
     };
     button.setPressCb(pacifyFunction);
     button.setLongPressCb([&](){
