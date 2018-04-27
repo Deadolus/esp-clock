@@ -21,12 +21,29 @@ TEST_F(TimerTest, can_construct_timer)
     EXPECT_TRUE(test);
 }
 
-TEST_F(TimerTest, does_sleep_for_appropriate_time)
+TEST_F(TimerTest, does_sleep_for_appropriate_milliseconds_time)
 {
     std::mutex lock;
     lock.lock();
     std::function<void()> lambda = [&]()->void{lock.unlock();};
     auto time = std::chrono::milliseconds(5);
+    auto timeBefore=Clock::getCurrentTimeAsTimePoint();
+    Timer testee{time, lambda};
+    //will block until timer unlocks mutex
+    lock.lock();
+    auto timeAfter=Clock::getCurrentTimeAsTimePoint();
+    auto duration = timeAfter - timeBefore;
+
+    EXPECT_GT(duration, time);
+    EXPECT_LT(duration, 1.1*time);
+}
+
+TEST_F(TimerTest, does_sleep_for_appropriate_seconds_time)
+{
+    std::mutex lock;
+    lock.lock();
+    std::function<void()> lambda = [&]()->void{lock.unlock();};
+    auto time = std::chrono::seconds(1);
     auto timeBefore=Clock::getCurrentTimeAsTimePoint();
     Timer testee{time, lambda};
     //will block until timer unlocks mutex
