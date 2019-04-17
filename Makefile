@@ -5,8 +5,10 @@
 
 PROJECT_NAME := e_ink_display
 
-EXTRA_COMPONENT_DIRS := libraries httpd fsdata ADXL345
+EXTRA_COMPONENT_DIRS := libraries httpd lwip fsdata ADXL345
 #CXXFLAGS += "-std=c++1z"
+CXXFLAGS += "-DLWIP_HTTPD_SSI"
+CXXFLAGS += "-DLWIP_HTTPD_CGI"
 
 include $(IDF_PATH)/make/project.mk
 

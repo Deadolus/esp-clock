@@ -11,7 +11,7 @@
 #include <string.h>
 #include <stdio.h>
 //#include <ssid_config.h>
-#include <httpd/httpd.h>
+#include <lwip/apps/httpd.h>
 #include <thread>
 #include <sstream>
 #define LED_PIN 2
