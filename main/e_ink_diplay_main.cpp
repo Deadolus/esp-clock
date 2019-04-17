@@ -52,7 +52,7 @@ extern "C" void app_main()
     EspAlarmService alarms{alarm, std::chrono::minutes(10)};
     EspAudioPlayer audioplayer{};
     EspPwmLed pwmLed{CONFIG_LED_GPIO};
-    EspButton button{0, true};
+    EspButton button{CONFIG_BUTTON_GPIO, true};
     auto pacifyFunction =  [&]() {
             ESP_LOGI(TAG, "Pacify function called");
             alarms.pacify();
@@ -68,7 +68,7 @@ extern "C" void app_main()
     };
     button.setPressCb(pacifyFunction);
     button.setLongPressCb([&](){
-            if(wifi.isConnected()) 
+            if(wifi.isConnected())
             wifi.stopWifi();
             else
             wifi.startWifi();
