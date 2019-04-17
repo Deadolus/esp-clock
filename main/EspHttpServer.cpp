@@ -64,7 +64,7 @@ enum {
 int32_t EspHttpServer::ssi_handler(int32_t iIndex, char *pcInsert, int32_t iInsertLen)
 {
     Alarm& alarms = getInstanceAlarms();
-    //client send iIndex from pcConfigSSITags in to here - 
+    //client send iIndex from pcConfigSSITags in to here -
     //we populate pcInsert and return it to client
     ESP_LOGI(TAG, "Got request for %i", iIndex);
     switch (iIndex) {
@@ -173,33 +173,33 @@ const char *websocket_cgi_handler(int iIndex, int iNumParams, char *pcParam[], c
     return "/websockets.html";
 }
 
-void websocket_task(void *pvParameter)
-{
-    ESP_LOGI(TAG, "In websocket task");
-    struct tcp_pcb *pcb = (struct tcp_pcb *) pvParameter;
+/* void websocket_task(void *pvParameter) */
+/* { */
+/*     ESP_LOGI(TAG, "In websocket task"); */
+/*     struct tcp_pcb *pcb = (struct tcp_pcb *) pvParameter; */
 
-    for (;;) {
-        if (pcb == NULL || pcb->state != ESTABLISHED) {
-            printf("Connection closed, deleting task\n");
-            break;
-        }
+/*     for (;;) { */
+/*         if (pcb == NULL || pcb->state != ESTABLISHED) { */
+/*             printf("Connection closed, deleting task\n"); */
+/*             break; */
+/*         } */
 
-        int uptime = xTaskGetTickCount() * portTICK_PERIOD_MS / 1000;
-        int heap = (int) xPortGetFreeHeapSize();
-        int led = false;//!gpio_get_level(LED_PIN);
+/*         int uptime = xTaskGetTickCount() * portTICK_PERIOD_MS / 1000; */
+/*         int heap = (int) xPortGetFreeHeapSize(); */
+/*         int led = false;//!gpio_get_level(LED_PIN); */
 
-        /* Generate response in JSON format */
-        char response[64];
-        int len = snprintf(response, sizeof (response),
-                "{\"uptime\" : \"%d\","
-                " \"heap\" : \"%d\","
-                " \"led\" : \"%d\"}", uptime, heap, led);
-        if (len < sizeof (response))
-            websocket_write(pcb, (unsigned char *) response, len, WS_TEXT_MODE);
+/*         /1* Generate response in JSON format *1/ */
+/*         char response[64]; */
+/*         int len = snprintf(response, sizeof (response), */
+/*                 "{\"uptime\" : \"%d\"," */
+/*                 " \"heap\" : \"%d\"," */
+/*                 " \"led\" : \"%d\"}", uptime, heap, led); */
+/*         if (len < sizeof (response)) */
+/*             websocket_write(pcb, (unsigned char *) response, len, WS_TEXT_MODE); */
 
-        std::this_thread::sleep_for(std::chrono::microseconds(10));
-    }
-}
+/*         std::this_thread::sleep_for(std::chrono::microseconds(10)); */
+/*     } */
+/* } */
 
 /**
  * This function is called when websocket frame is received.
@@ -207,52 +207,52 @@ void websocket_task(void *pvParameter)
  * Note: this function is executed on TCP thread and should return as soon
  * as possible.
  */
-void websocket_cb(struct tcp_pcb *pcb, uint8_t *data, u16_t data_len, uint8_t mode)
-{
-    ESP_LOGI(TAG, "In websocket task, len: %u, data: %s", data_len, data);
-    //printf("[websocket_callback]:\n%.*s\n", (int) data_len, (char*) data);
+/* void websocket_cb(struct tcp_pcb *pcb, uint8_t *data, u16_t data_len, uint8_t mode) */
+/* { */
+/*     ESP_LOGI(TAG, "In websocket task, len: %u, data: %s", data_len, data); */
+/*     //printf("[websocket_callback]:\n%.*s\n", (int) data_len, (char*) data); */
 
-    uint8_t response[2];
-    uint16_t val;
+/*     uint8_t response[2]; */
+/*     uint16_t val; */
 
-    switch (data[0]) {
-        case 'A': // ADC
-            /* This should be done on a separate thread in 'real' applications */
-            val=0;
-            //val = sdk_system_adc_read();
-            break;
-        case 'D': // Disable LED
-            //gpio_set_level(LED_PIN, true);
-            val = 0xDEAD;
-            break;
-        case 'E': // Enable LED
-            //gpio_set_level(LED_PIN, false);
-            val = 0xBEEF;
-            break;
-        default:
-            printf("Unknown command\n");
-            val = 0;
-            break;
-    }
+/*     switch (data[0]) { */
+/*         case 'A': // ADC */
+/*             /1* This should be done on a separate thread in 'real' applications *1/ */
+/*             val=0; */
+/*             //val = sdk_system_adc_read(); */
+/*             break; */
+/*         case 'D': // Disable LED */
+/*             //gpio_set_level(LED_PIN, true); */
+/*             val = 0xDEAD; */
+/*             break; */
+/*         case 'E': // Enable LED */
+/*             //gpio_set_level(LED_PIN, false); */
+/*             val = 0xBEEF; */
+/*             break; */
+/*         default: */
+/*             printf("Unknown command\n"); */
+/*             val = 0; */
+/*             break; */
+/*     } */
 
-    response[1] = (uint8_t) val;
-    response[0] = val >> 8;
+/*     response[1] = (uint8_t) val; */
+/*     response[0] = val >> 8; */
 
-    websocket_write(pcb, response, 2, WS_BIN_MODE);
-}
+/*     websocket_write(pcb, response, 2, WS_BIN_MODE); */
+/* } */
 
 /**
  * This function is called when new websocket is open and
  * creates a new websocket_task if requested URI equals '/stream'.
  */
-void websocket_open_cb(struct tcp_pcb *pcb, const char *uri)
-{
-    printf("WS URI: %s\n", uri);
-    if (!strcmp(uri, "/stream")) {
-        ESP_LOGI(TAG, "request for streaming");
-        xTaskCreate(&websocket_task, "websocket_task", 256, (void *) pcb, 2, NULL);
-    }
-}
+/* void websocket_open_cb(struct tcp_pcb *pcb, const char *uri) */
+/* { */
+/*     printf("WS URI: %s\n", uri); */
+/*     if (!strcmp(uri, "/stream")) { */
+/*         ESP_LOGI(TAG, "request for streaming"); */
+/*         xTaskCreate(&websocket_task, "websocket_task", 256, (void *) pcb, 2, NULL); */
+/*     } */
+/* } */
 
 void httpd_task(void *pvParameters)
 {
@@ -288,8 +288,7 @@ void httpd_task(void *pvParameters)
     http_set_cgi_handlers(pCGIs, sizeof (pCGIs) / sizeof (pCGIs[0]));
     http_set_ssi_handler((tSSIHandler) EspHttpServer::ssi_handler, pcConfigSSITags,
             sizeof (pcConfigSSITags) / sizeof (pcConfigSSITags[0]));
-    websocket_register_callbacks((tWsOpenHandler) websocket_open_cb,
-            (tWsHandler) websocket_cb);
+    //websocket_register_callbacks((tWsOpenHandler) websocket_open_cb, (tWsHandler) websocket_cb);
     httpd_init();
 
     for (;;) {
