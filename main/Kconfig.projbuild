@@ -1,7 +1,7 @@
 menu "E-Display GPIOs"
 
 config LED_GPIO
-    int "Blink GPIO number"
+    int "LED GPIO number"
 	range 0 34
 	default 2
 	help
@@ -12,7 +12,7 @@ config LED_GPIO
 		GPIOs 35-39 are input-only so cannot be used as outputs.
 
 config BUTTON_GPIO
-    int "Blink GPIO number"
+    int "Button GPIO number"
 	range 0 34
 	default 0
 	help
@@ -23,7 +23,7 @@ config BUTTON_GPIO
 		GPIOs 35-39 are input-only so cannot be used as outputs.
 
 config DAC_GPIO
-    int "Blink GPIO number"
+    int "DAC GPIO number"
 	range 0 34
 	default 25
 	help
