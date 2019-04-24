@@ -40,7 +40,7 @@ struct alarms_t {
 
         tm now = Clock::getCurrentTimeAsTm();
 
-        int i=0;
+        unsigned int i=0;
         for(; i<weekRepeat.size(); i++)
             if(weekRepeat.test(i))
                 break;
