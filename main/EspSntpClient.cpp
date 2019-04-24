@@ -1,10 +1,10 @@
 #include "EspSntpClient.h"
-#include "apps/sntp/sntp.h"
+#include "lwip/apps/sntp.h"
 #include "esp_log.h"
 #include "EspWifi.h"
 #include <thread>
 
-static char* NTP_SERVER = "pool.ntp.org";
+static const char* NTP_SERVER = "pool.ntp.org";
 static const char* TAG = "sntp";
 
 EspSntpClient::EspSntpClient(Wifi& wifi) : wifi_(wifi) {}
@@ -14,7 +14,7 @@ void EspSntpClient::getTime(bool turnOffWifiAfterwards) {
     wifi_.waitForConnection();
 
     sntp_setoperatingmode(SNTP_OPMODE_POLL);
-    sntp_setservername(0, NTP_SERVER);
+    sntp_setservername(0, const_cast<char*>(NTP_SERVER));
     sntp_init();
 
     // wait for time to be set
