@@ -31,7 +31,7 @@ static const char* TAG = "SimpleSerializer";
 
 
 
-std::string SimpleAlarmSerializer::serialize(alarms_t const& alarm) {
+const std::string SimpleAlarmSerializer::serialize(alarms_t const& alarm) {
     std::stringstream retVal;
 
     retVal << alarm.name <<",";
