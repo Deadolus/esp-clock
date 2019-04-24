@@ -3,7 +3,7 @@
 cmake_minimum_required(VERSION 3.5)
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
-set (EXTRA_COMPONENT_DIRS "httpd")
+set (EXTRA_COMPONENT_DIRS "httpd ADXL345 libraries")
 
 set (CMAKE_CXX_STANDARD 11)
 #Workaround to really get c++11 features

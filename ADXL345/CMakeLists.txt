@@ -1,4 +1,4 @@
-file(GLOB SRC_FILES "*.c" "*.h")
+file(GLOB SRC_FILES "*.cpp" "*.h")
 set(COMPONENT_SRCS ${SRC_FILES})
 
 set (CMAKE_CXX_STANDARD 14)
