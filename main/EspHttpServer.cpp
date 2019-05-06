@@ -104,7 +104,7 @@ const char* EspHttpServer::newAlarm_cgi_handler(int iIndex, int iNumParams, char
     //url handler e.g. /newAalarm?time=xxx&days=xxxx
     alarms_t alarm;
 
-    for (int i = 0; i < iNumParams; i++) {
+    for (unsigned int i = 0; i < iNumParams; i++) {
         if(strcmp(pcParam[i], "time")==0) {
             time_t now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
             std::tm alarm_tm{};
