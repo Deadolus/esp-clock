@@ -14,7 +14,7 @@ void test(unsigned int delay, EspDisplay& display) {
 ESP_LOGI(TAG, "TEST");
 }
 
-EspDisplayService::EspDisplayService(EspDisplay& display, EspSign& espsign, EspAlarm& alarm, EspAlarmService& alarms, EspWifi& wifi, EspSntpClient& sntp, unsigned int delay=5000) 
+EspDisplayService::EspDisplayService(EspDisplay& display, EspSign& espsign, EspAlarm& alarm, EspAlarmService& alarms, EspWifi& wifi, EspSntpClient& sntp, unsigned int delay=5000)
 {
     std::thread task(displayServiceTask, delay, std::ref(display), std::ref(espsign), std::ref(alarm), std::ref(alarms), std::ref(wifi), std::ref(sntp));
     task.detach();
