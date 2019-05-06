@@ -8,6 +8,7 @@ set (EXTRA_COMPONENT_DIRS "httpd ADXL345 libraries")
 set (CMAKE_CXX_STANDARD 11)
 #Workaround to really get c++11 features
 add_definitions(-D_GLIBCXX_USE_C99)
+add_definitions(-Werror)
 
 add_definitions(-DLWIP_HTTPD_SSI)
 add_definitions(-DLWIP_HTTPD_CGI)
