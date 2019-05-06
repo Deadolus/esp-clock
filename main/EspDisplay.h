@@ -14,7 +14,7 @@ class EspDisplay :
         EspDisplay();
         virtual void init() override;
         virtual void setImage(const unsigned char* image, unsigned int x, unsigned int y, unsigned int width, unsigned int height) override;
-        virtual void setNextAlarmName(std::string alarm, std::chrono::system_clock::time_point time) override;
+        virtual void setNextAlarmName(const std::string& alarm, const std::chrono::system_clock::time_point time) override;
         virtual void clearNextAlarmName() override;
         virtual void setAlarm(std::string alarm) override;
         virtual void clearAlarm() override;
@@ -31,7 +31,7 @@ class EspDisplay :
     private:
         void clearLine(sFONT font, unsigned int x);
         unsigned char image_[1024];
-        Paint paint_{image_, 0, 0};    // width should be the multiple of 8 
+        Paint paint_{image_, 0, 0};    // width should be the multiple of 8
         Epd epd_;
         std::mutex displayMutex;
 };

@@ -24,7 +24,7 @@ EspDisplayService::EspDisplayService(EspDisplay& display, EspSign& espsign, EspA
 void EspDisplayService::displayServiceTask(unsigned int delay, EspDisplay& display, EspSign& espsign, EspAlarm& alarm, EspAlarmService& alarms, EspWifi& wifi, EspSntpClient& sntp ) {
     while(true) {
         alarms_t nextAlarm = alarm.getNextAlarm();
-        display.setNextAlarmName(nextAlarm.name.c_str(), alarm.getNextAlarm().time);
+        display.setNextAlarmName(nextAlarm.name, alarm.getNextAlarm().time);
         display.showNextAlarmInfo(nextAlarm);
         if(alarms.alarmRinging()) {
             auto ringingAlarms = alarms.getRingingAlarms();

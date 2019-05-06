@@ -20,7 +20,7 @@ static const char* TAG = "Display";
 
 namespace {
     sFONT getFont(Font font) {
-        switch(font) 
+        switch(font)
         {
             case Font::Font8:
                 return Font8;
@@ -49,14 +49,12 @@ void EspDisplay::setImage(const unsigned char* image, unsigned int x, unsigned i
     //epd_.SetFrameMemory(image, x, y, width, height);
     //epd_.DisplayFrame();
 }
-void EspDisplay::setNextAlarmName(std::string name, std::chrono::system_clock::time_point time) {
-    tm alarmTime = Clock::getTm(time);
+void EspDisplay::setNextAlarmName(const std::string& name, const std::chrono::system_clock::time_point time) {
+    //tm alarmTime = Clock::getTm(time);
+    std::string alarmName = name.substr(0,10);
+    //ESP_LOGI(TAG, "Got name: %s, converted to: %s", name.c_str(), alarmName.c_str());
     clearNextAlarm();
-    if(name.size() > 10){
-    name = name.substr(10);
-    }
-
-    write((std::string("N:")+name), NEXT_ALARM_LINE, 0, Font::Font24);
+    write((std::string("N:")+alarmName), NEXT_ALARM_LINE, 0, Font::Font24);
 }
 
 void EspDisplay::clearNextAlarmName() {
@@ -112,7 +110,7 @@ void EspDisplay::init() {
         epd_.Init(lut_full_update);
         display_initialized = true;
     }
-  /** 
+  /**
    *  there are 2 memory areas embedded in the e-paper display
    *  and once the display is refreshed, the memory area will be auto-toggled,
    *  i.e. the next action of SetFrameMemory will set the other memory area
@@ -122,7 +120,7 @@ void EspDisplay::init() {
   epd_.DisplayFrame();
   epd_.ClearFrameMemory(0xFF);   // bit set = white, bit reset = black
   epd_.DisplayFrame();
-  paint_.SetRotate(ROTATE_0); 
+  paint_.SetRotate(ROTATE_0);
 }
 
 void EspDisplay::partialUpdate(){
