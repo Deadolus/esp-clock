@@ -3,7 +3,7 @@
 #include "SntpClient.h"
 class Wifi;
 
-class EspSntpClient : 
+class EspSntpClient :
     public SntpClient {
         public:
             EspSntpClient() = delete;
@@ -12,4 +12,5 @@ class EspSntpClient :
             virtual bool timeSet() override;
         private:
             Wifi& wifi_;
+            static void getTimeTask(const bool turnOffWifiAfterwards, void* pvParameters);
     };
