@@ -38,9 +38,9 @@
       <div class="grid main">
         <h1>ESP32 Alarm clock</h1>
 
-        <div class="alert alert-success">
+        <!--<div class="alert alert-success">
           <button type="button" class="close" data-dismiss="alert">&times;</button>
-          HTTP Server is up and running.</div>
+          HTTP Server is up and running.</div>-->
 
         <p>This is an ESP32 alarm clock. Next alarm will be at: 
           <span class="badge bage-info"><!--#nalarm--></span>
