@@ -3,6 +3,7 @@
 #include "EspAlarm.h"
 #include "Clock.h"
 #include "esp_log.h"
+//#include "websockets.h"
 //#include <espressif/esp_common.h>
 //#include <esp_common.h>
 //#include <esp8266.h>
@@ -11,7 +12,10 @@
 #include <string.h>
 #include <stdio.h>
 //#include <ssid_config.h>
-#include <lwip/apps/httpd.h>
+extern "C" {
+#include <httpd.h>
+}
+//#include <lwip/apps/httpd.h>
 #include <lwip/tcp.h>
 #include <thread>
 #include <sstream>
@@ -43,6 +47,7 @@ namespace {
     }
     return retVal.str();
   }
+
   std::string alarmsToHtml(const Alarm& alarms) {
     std::stringstream allAlarms{};
     for(auto& alarm: alarms.getAlarms()) {
@@ -52,97 +57,14 @@ namespace {
     }
     return allAlarms.str();
   }
-
-/********** Following code from https://github.com/SuperHouse/esp-open-rtos ************/
-typedef enum {
-  WS_TEXT_MODE = 0x01,
-  WS_BIN_MODE  = 0x02,
-} WS_MODE;
-}
-
-/** Call tcp_write() in a loop trying smaller and smaller length
- *
- * @param pcb tcp_pcb to send
- * @param ptr Data to send
- * @param length Length of data to send (in/out: on return, contains the
- *        amount of data sent)
- * @param apiflags directly passed to tcp_write
- * @return the return value of tcp_write
- */
-err_t
-http_write(struct tcp_pcb *pcb, const void* ptr, u16_t *length, u8_t apiflags)
-{
-   u16_t len;
-   err_t err;
-   LWIP_ASSERT("length != NULL", length != NULL);
-   len = *length;
-   if (len == 0) {
-     return ERR_OK;
-   }
-   do {
-     LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("Trying to send %d bytes\n", len));
-     err = tcp_write(pcb, ptr, len, apiflags);
-     if (err == ERR_MEM) {
-       if ((tcp_sndbuf(pcb) == 0) ||
-           (tcp_sndqueuelen(pcb) >= TCP_SND_QUEUELEN)) {
-         /* no need to try smaller sizes */
-         len = 1;
-       } else {
-         len /= 2;
-       }
-       LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE,
-                   ("Send failed, trying less (%d bytes)\n", len));
-     }
-   } while ((err == ERR_MEM) && (len > 1));
-
-   if (err == ERR_OK) {
-     LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("Sent %d bytes\n", len));
-   } else {
-     LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("Send failed with err %d (\"%s\")\n", err, lwip_strerr(err)));
-   }
-
-   *length = len;
-   return err;
-}
-
-err_t websocket_write(struct tcp_pcb *pcb, const uint8_t *data, uint16_t len, uint8_t mode)
-{
-  uint8_t *buf = static_cast<uint8_t*>(mem_malloc(len + 4));
-  if (buf == NULL) {
-    LWIP_DEBUGF(HTTPD_DEBUG, ("[websocket_write] out of memory\n"));
-    return ERR_MEM;
-  }
-
-  int offset = 2;
-  buf[0] = 0x80 | mode;
-  if (len > 125) {
-    offset = 4;
-    buf[1] = 126;
-    buf[2] = len >> 8;
-    buf[3] = len;
-  } else {
-    buf[1] = len;
-  }
-
-  memcpy(&buf[offset], data, len);
-  len += offset;
-
-  LWIP_DEBUGF(HTTPD_DEBUG, ("[websocket_write] sending packet\n"));
-  err_t retval = http_write(pcb, buf, &len, TCP_WRITE_FLAG_COPY);
-  mem_free(buf);
-
-  return retval;
-}
-
-enum {
-  SSI_UPTIME,
-  SSI_FREE_HEAP,
-  SSI_LED_STATE,
-  SSI_NEXT_ALARM,
-  SSI_ALARMS
-};
-/********** end of code from https://github.com/SuperHouse/esp-open-rtos ************/
-
+  enum {
+    SSI_UPTIME,
+    SSI_FREE_HEAP,
+    SSI_LED_STATE,
+    SSI_NEXT_ALARM,
+    SSI_ALARMS
+  };
+} //end of anonymous namespace
 int32_t EspHttpServer::ssi_handler(int32_t iIndex, char *pcInsert, int32_t iInsertLen)
 {
   Alarm& alarms = getInstanceAlarms();
@@ -263,6 +185,7 @@ const char *websocket_cgi_handler(int iIndex, int iNumParams, char *pcParam[], c
 
 void websocket_task(void *pvParameter)
 {
+  static std::mutex writeTcpMutex{};
     ESP_LOGI(TAG, "In websocket task");
     struct tcp_pcb *pcb = (struct tcp_pcb *) pvParameter;
 
@@ -283,7 +206,10 @@ void websocket_task(void *pvParameter)
                 " \"heap\" : \"%d\","
                 " \"led\" : \"%d\"}", uptime, heap, led);
         if (len < sizeof (response))
-            websocket_write(pcb, (unsigned char *) response, len, WS_TEXT_MODE);
+        {
+          std::lock_guard<std::mutex> lock(writeTcpMutex);
+          websocket_write(pcb, (unsigned char *) response, len, WS_TEXT_MODE);
+        }
 
         std::this_thread::sleep_for(std::chrono::microseconds(10));
     }
@@ -338,7 +264,8 @@ void websocket_open_cb(struct tcp_pcb *pcb, const char *uri)
     printf("WS URI: %s\n", uri);
     if (!strcmp(uri, "/stream")) {
         ESP_LOGI(TAG, "request for streaming");
-        xTaskCreate(&websocket_task, "websocket_task", 256, (void *) pcb, 2, NULL);
+        std::thread websocket(&websocket_task, pcb);
+        websocket.detach();
     }
 }
 
@@ -376,7 +303,7 @@ void httpd_task(void *pvParameters)
   http_set_cgi_handlers(pCGIs, sizeof (pCGIs) / sizeof (pCGIs[0]));
   http_set_ssi_handler((tSSIHandler) EspHttpServer::ssi_handler, pcConfigSSITags,
       sizeof (pcConfigSSITags) / sizeof (pcConfigSSITags[0]));
-  //websocket_register_callbacks((tWsOpenHandler) websocket_open_cb, (tWsHandler) websocket_cb);
+  websocket_register_callbacks((tWsOpenHandler) websocket_open_cb, (tWsHandler) websocket_cb);
   httpd_init();
 
   for (;;) {

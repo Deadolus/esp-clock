@@ -1,7 +1,8 @@
 #ifndef LWIP_HTTPD_STRUCTS_H
 #define LWIP_HTTPD_STRUCTS_H
 
-#include "lwip/apps/httpd.h"
+//#include "lwip/apps/httpd.h"
+#include "httpd.h"
 
 #if LWIP_HTTPD_DYNAMIC_HEADERS
 /** This struct is used for a list of HTTP header strings for various
