@@ -12,6 +12,7 @@
 #include <stdio.h>
 //#include <ssid_config.h>
 #include <lwip/apps/httpd.h>
+#include <lwip/tcp.h>
 #include <thread>
 #include <sstream>
 #define LED_PIN 2
@@ -51,6 +52,86 @@ namespace {
     }
     return allAlarms.str();
   }
+
+/********** Following code from https://github.com/SuperHouse/esp-open-rtos ************/
+typedef enum {
+  WS_TEXT_MODE = 0x01,
+  WS_BIN_MODE  = 0x02,
+} WS_MODE;
+}
+
+/** Call tcp_write() in a loop trying smaller and smaller length
+ *
+ * @param pcb tcp_pcb to send
+ * @param ptr Data to send
+ * @param length Length of data to send (in/out: on return, contains the
+ *        amount of data sent)
+ * @param apiflags directly passed to tcp_write
+ * @return the return value of tcp_write
+ */
+err_t
+http_write(struct tcp_pcb *pcb, const void* ptr, u16_t *length, u8_t apiflags)
+{
+   u16_t len;
+   err_t err;
+   LWIP_ASSERT("length != NULL", length != NULL);
+   len = *length;
+   if (len == 0) {
+     return ERR_OK;
+   }
+   do {
+     LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("Trying to send %d bytes\n", len));
+     err = tcp_write(pcb, ptr, len, apiflags);
+     if (err == ERR_MEM) {
+       if ((tcp_sndbuf(pcb) == 0) ||
+           (tcp_sndqueuelen(pcb) >= TCP_SND_QUEUELEN)) {
+         /* no need to try smaller sizes */
+         len = 1;
+       } else {
+         len /= 2;
+       }
+       LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE,
+                   ("Send failed, trying less (%d bytes)\n", len));
+     }
+   } while ((err == ERR_MEM) && (len > 1));
+
+   if (err == ERR_OK) {
+     LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("Sent %d bytes\n", len));
+   } else {
+     LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("Send failed with err %d (\"%s\")\n", err, lwip_strerr(err)));
+   }
+
+   *length = len;
+   return err;
+}
+
+err_t websocket_write(struct tcp_pcb *pcb, const uint8_t *data, uint16_t len, uint8_t mode)
+{
+  uint8_t *buf = static_cast<uint8_t*>(mem_malloc(len + 4));
+  if (buf == NULL) {
+    LWIP_DEBUGF(HTTPD_DEBUG, ("[websocket_write] out of memory\n"));
+    return ERR_MEM;
+  }
+
+  int offset = 2;
+  buf[0] = 0x80 | mode;
+  if (len > 125) {
+    offset = 4;
+    buf[1] = 126;
+    buf[2] = len >> 8;
+    buf[3] = len;
+  } else {
+    buf[1] = len;
+  }
+
+  memcpy(&buf[offset], data, len);
+  len += offset;
+
+  LWIP_DEBUGF(HTTPD_DEBUG, ("[websocket_write] sending packet\n"));
+  err_t retval = http_write(pcb, buf, &len, TCP_WRITE_FLAG_COPY);
+  mem_free(buf);
+
+  return retval;
 }
 
 enum {
@@ -60,6 +141,7 @@ enum {
   SSI_NEXT_ALARM,
   SSI_ALARMS
 };
+/********** end of code from https://github.com/SuperHouse/esp-open-rtos ************/
 
 int32_t EspHttpServer::ssi_handler(int32_t iIndex, char *pcInsert, int32_t iInsertLen)
 {
@@ -179,33 +261,33 @@ const char *websocket_cgi_handler(int iIndex, int iNumParams, char *pcParam[], c
   return "/websockets.html";
 }
 
-/* void websocket_task(void *pvParameter) */
-/* { */
-/*     ESP_LOGI(TAG, "In websocket task"); */
-/*     struct tcp_pcb *pcb = (struct tcp_pcb *) pvParameter; */
+void websocket_task(void *pvParameter)
+{
+    ESP_LOGI(TAG, "In websocket task");
+    struct tcp_pcb *pcb = (struct tcp_pcb *) pvParameter;
 
-/*     for (;;) { */
-/*         if (pcb == NULL || pcb->state != ESTABLISHED) { */
-/*             printf("Connection closed, deleting task\n"); */
-/*             break; */
-/*         } */
+    for (;;) {
+        if (pcb == NULL || pcb->state != ESTABLISHED) {
+            printf("Connection closed, deleting task\n");
+            break;
+        }
 
-/*         int uptime = xTaskGetTickCount() * portTICK_PERIOD_MS / 1000; */
-/*         int heap = (int) xPortGetFreeHeapSize(); */
-/*         int led = false;//!gpio_get_level(LED_PIN); */
+        int uptime = xTaskGetTickCount() * portTICK_PERIOD_MS / 1000;
+        int heap = (int) xPortGetFreeHeapSize();
+        int led = false;//!gpio_get_level(LED_PIN);
 
-/*         /1* Generate response in JSON format *1/ */
-/*         char response[64]; */
-/*         int len = snprintf(response, sizeof (response), */
-/*                 "{\"uptime\" : \"%d\"," */
-/*                 " \"heap\" : \"%d\"," */
-/*                 " \"led\" : \"%d\"}", uptime, heap, led); */
-/*         if (len < sizeof (response)) */
-/*             websocket_write(pcb, (unsigned char *) response, len, WS_TEXT_MODE); */
+        /* Generate response in JSON format */
+        char response[64];
+        int len = snprintf(response, sizeof (response),
+                "{\"uptime\" : \"%d\","
+                " \"heap\" : \"%d\","
+                " \"led\" : \"%d\"}", uptime, heap, led);
+        if (len < sizeof (response))
+            websocket_write(pcb, (unsigned char *) response, len, WS_TEXT_MODE);
 
-/*         std::this_thread::sleep_for(std::chrono::microseconds(10)); */
-/*     } */
-/* } */
+        std::this_thread::sleep_for(std::chrono::microseconds(10));
+    }
+}
 
 /**
  * This function is called when websocket frame is received.
@@ -213,52 +295,52 @@ const char *websocket_cgi_handler(int iIndex, int iNumParams, char *pcParam[], c
  * Note: this function is executed on TCP thread and should return as soon
  * as possible.
  */
-/* void websocket_cb(struct tcp_pcb *pcb, uint8_t *data, u16_t data_len, uint8_t mode) */
-/* { */
-/*     ESP_LOGI(TAG, "In websocket task, len: %u, data: %s", data_len, data); */
-/*     //printf("[websocket_callback]:\n%.*s\n", (int) data_len, (char*) data); */
+void websocket_cb(struct tcp_pcb *pcb, uint8_t *data, u16_t data_len, uint8_t mode)
+{
+    ESP_LOGI(TAG, "In websocket task, len: %u, data: %s", data_len, data);
+    //printf("[websocket_callback]:\n%.*s\n", (int) data_len, (char*) data);
 
-/*     uint8_t response[2]; */
-/*     uint16_t val; */
+    uint8_t response[2];
+    uint16_t val;
 
-/*     switch (data[0]) { */
-/*         case 'A': // ADC */
-/*             /1* This should be done on a separate thread in 'real' applications *1/ */
-/*             val=0; */
-/*             //val = sdk_system_adc_read(); */
-/*             break; */
-/*         case 'D': // Disable LED */
-/*             //gpio_set_level(LED_PIN, true); */
-/*             val = 0xDEAD; */
-/*             break; */
-/*         case 'E': // Enable LED */
-/*             //gpio_set_level(LED_PIN, false); */
-/*             val = 0xBEEF; */
-/*             break; */
-/*         default: */
-/*             printf("Unknown command\n"); */
-/*             val = 0; */
-/*             break; */
-/*     } */
+    switch (data[0]) {
+        case 'A': // ADC
+            /* This should be done on a separate thread in 'real' applications */
+            val=0;
+            //val = sdk_system_adc_read();
+            break;
+        case 'D': // Disable LED
+            //gpio_set_level(LED_PIN, true);
+            val = 0xDEAD;
+            break;
+        case 'E': // Enable LED
+            //gpio_set_level(LED_PIN, false);
+            val = 0xBEEF;
+            break;
+        default:
+            printf("Unknown command\n");
+            val = 0;
+            break;
+    }
 
-/*     response[1] = (uint8_t) val; */
-/*     response[0] = val >> 8; */
+    response[1] = (uint8_t) val;
+    response[0] = val >> 8;
 
-/*     websocket_write(pcb, response, 2, WS_BIN_MODE); */
-/* } */
+    websocket_write(pcb, response, 2, WS_BIN_MODE);
+}
 
 /**
  * This function is called when new websocket is open and
  * creates a new websocket_task if requested URI equals '/stream'.
  */
-/* void websocket_open_cb(struct tcp_pcb *pcb, const char *uri) */
-/* { */
-/*     printf("WS URI: %s\n", uri); */
-/*     if (!strcmp(uri, "/stream")) { */
-/*         ESP_LOGI(TAG, "request for streaming"); */
-/*         xTaskCreate(&websocket_task, "websocket_task", 256, (void *) pcb, 2, NULL); */
-/*     } */
-/* } */
+void websocket_open_cb(struct tcp_pcb *pcb, const char *uri)
+{
+    printf("WS URI: %s\n", uri);
+    if (!strcmp(uri, "/stream")) {
+        ESP_LOGI(TAG, "request for streaming");
+        xTaskCreate(&websocket_task, "websocket_task", 256, (void *) pcb, 2, NULL);
+    }
+}
 
 void httpd_task(void *pvParameters)
 {
