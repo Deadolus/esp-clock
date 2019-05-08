@@ -2452,7 +2452,10 @@ websocket_send_close(struct tcp_pcb *pcb)
   const u8_t buf[] = {0x88, 0x02, 0x03, 0xe8};
   u16_t len = sizeof (buf);
   LWIP_DEBUGF(HTTPD_DEBUG, ("[wsoc] closing connection\n"));
-  return tcp_write(pcb, buf, len, TCP_WRITE_FLAG_COPY);
+   pthread_mutex_lock(&tcpMutex);
+   err_t err = tcp_write(pcb, buf, len, TCP_WRITE_FLAG_COPY);
+   pthread_mutex_unlock(&tcpMutex);
+   return err;
 }
 
 /**
