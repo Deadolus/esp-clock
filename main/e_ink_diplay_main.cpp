@@ -48,11 +48,11 @@ extern "C" void app_main()
     EspSign espsign(display);
     EspAlarm alarm{};
     alarm.loadFromPeristentStorage();
-    EspHttpServer httpserver{alarm};
     EspAlarmService alarms{alarm, std::chrono::minutes(10)};
     EspAudioPlayer audioplayer{};
     EspPwmLed pwmLed{CONFIG_LED_GPIO};
     EspButton button{CONFIG_BUTTON_GPIO, true};
+    EspHttpServer httpserver{alarm, pwmLed};
     auto pacifyFunction =  [&]() {
             ESP_LOGI(TAG, "Pacify function called");
             alarms.pacify();

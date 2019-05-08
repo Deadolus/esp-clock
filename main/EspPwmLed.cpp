@@ -45,5 +45,9 @@ void EspPwmLed::setOff() {
 }
 
 void EspPwmLed::setOn() {
-
+            ledc_set_duty(ledChannel_.speed_mode, ledChannel_.channel, 100);
+            ledc_update_duty(ledChannel_.speed_mode, ledChannel_.channel);
+}
+unsigned int EspPwmLed::getIntensity() {
+  return (ledc_get_duty(ledChannel_.speed_mode, ledChannel_.channel) / std::pow(2,10))*100;
 }

@@ -3,6 +3,7 @@
 #include "EspAlarm.h"
 #include "Clock.h"
 #include "esp_log.h"
+#include "PwmLed.h"
 //#include "websockets.h"
 //#include <espressif/esp_common.h>
 //#include <esp_common.h>
@@ -81,8 +82,8 @@ int32_t EspHttpServer::ssi_handler(int32_t iIndex, char *pcInsert, int32_t iInse
       snprintf(pcInsert, iInsertLen, "%d", (int) xPortGetFreeHeapSize());
       break;
     case SSI_LED_STATE:
-      snprintf(pcInsert, iInsertLen, "I don't know");
-      //snprintf(pcInsert, iInsertLen, (GPIO.OUT & BIT(LED_PIN)) ? "Off" : "On");
+      //snprintf(pcInsert, iInsertLen, "I don't know");
+      snprintf(pcInsert, iInsertLen, EspHttpServer::getInstanceLed().getIntensity() > 0 ? "On" : "Off");
       break;
     case SSI_NEXT_ALARM:
       //snprintf(pcInsert, iInsertLen, "Soon!");
@@ -190,7 +191,7 @@ const char *websocket_cgi_handler(int iIndex, int iNumParams, char *pcParam[], c
 
 void websocket_task(void *pvParameter)
 {
-    ESP_LOGI(TAG, "In websocket task");
+    //ESP_LOGI(TAG, "In websocket task");
     struct tcp_pcb *pcb = (struct tcp_pcb *) pvParameter;
 
     for (;;) {
@@ -201,7 +202,7 @@ void websocket_task(void *pvParameter)
 
         int uptime = xTaskGetTickCount() * portTICK_PERIOD_MS / 1000;
         int heap = (int) xPortGetFreeHeapSize();
-        int led = false;//!gpio_get_level(LED_PIN);
+        int led = EspHttpServer::getInstanceLed().getIntensity() > 0;
 
         /* Generate response in JSON format */
         char response[64];
@@ -211,7 +212,7 @@ void websocket_task(void *pvParameter)
                 " \"led\" : \"%d\"}", uptime, heap, led);
         if (len < sizeof (response))
         {
-          ESP_LOGI(TAG, "Sending statistic through websocket");
+          //ESP_LOGI(TAG, "Sending statistic through websocket");
           std::lock_guard<std::mutex> lock(writeTcpMutex_);
           websocket_write(pcb, (unsigned char *) response, len, WS_TEXT_MODE);
         }
@@ -228,7 +229,7 @@ void websocket_task(void *pvParameter)
  */
 void websocket_cb(struct tcp_pcb *pcb, uint8_t *data, u16_t data_len, uint8_t mode)
 {
-    ESP_LOGI(TAG, "In websocket task, len: %u, data: %s", data_len, data);
+    //ESP_LOGI(TAG, "In websocket task, len: %u, data: %s", data_len, data);
     //printf("[websocket_callback]:\n%.*s\n", (int) data_len, (char*) data);
     std::lock_guard<std::mutex> lock(writeTcpMutex_);
 
@@ -244,10 +245,12 @@ void websocket_cb(struct tcp_pcb *pcb, uint8_t *data, u16_t data_len, uint8_t mo
             break;
         case 'D': // Disable LED
             //gpio_set_level(LED_PIN, true);
+            EspHttpServer::getInstanceLed().setOff();
             val = 0xDEAD;
             break;
         case 'E': // Enable LED
             //gpio_set_level(LED_PIN, false);
+            EspHttpServer::getInstanceLed().setOn();
             val = 0xBEEF;
             break;
         default:
@@ -258,7 +261,7 @@ void websocket_cb(struct tcp_pcb *pcb, uint8_t *data, u16_t data_len, uint8_t mo
 
     response[1] = (uint8_t) val;
     response[0] = val >> 8;
-    ESP_LOGI(TAG, "Sending answer through websocket");
+    //ESP_LOGI(TAG, "Sending answer through websocket");
 
     websocket_write(pcb, response, 2, WS_BIN_MODE);
 }
@@ -272,7 +275,7 @@ void websocket_open_cb(struct tcp_pcb *pcb, const char *uri)
     printf("WS URI: %s\n", uri);
     if (!strcmp(uri, "/stream")) {
         ESP_LOGI(TAG, "request for streaming");
-        std::thread websocket(&websocket_task, pcb);
+        std::thread websocket(&websocket_task,pcb);
         websocket.detach();
     }
 }
@@ -337,4 +340,7 @@ EspHttpServer* EspHttpServer::getInstance() {
 
 Alarm& EspHttpServer::getInstanceAlarms() {
   return EspHttpServer::getInstance()->alarms_;
+}
+PwmLed& EspHttpServer::getInstanceLed() {
+  return EspHttpServer::getInstance()->led_;
 }
