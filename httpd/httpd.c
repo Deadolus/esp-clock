@@ -272,7 +272,9 @@
 #include <mbedtls/sha1.h>
 #include <mbedtls/base64.h>
 #include "strcasestr.h"
+#include <pthread.h>
 
+static pthread_mutex_t tcpMutex = PTHREAD_MUTEX_INITIALIZER;
 static const char WS_HEADER[] = "Upgrade: websocket\r\n";
 static const char WS_GUID[] = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 static const char WS_RSP[] = "HTTP/1.1 101 Switching Protocols\r\n" \
@@ -642,6 +644,7 @@ http_write(struct tcp_pcb *pcb, const void* ptr, u16_t *length, u8_t apiflags)
    if (len == 0) {
      return ERR_OK;
    }
+   pthread_mutex_lock(&tcpMutex);
    do {
      LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("Trying to send %d bytes\n", len));
      err = tcp_write(pcb, ptr, len, apiflags);
@@ -657,6 +660,7 @@ http_write(struct tcp_pcb *pcb, const void* ptr, u16_t *length, u8_t apiflags)
                    ("Send failed, trying less (%d bytes)\n", len));
      }
    } while ((err == ERR_MEM) && (len > 1));
+   pthread_mutex_unlock(&tcpMutex);
 
    if (err == ERR_OK) {
      LWIP_DEBUGF(HTTPD_DEBUG | LWIP_DBG_TRACE, ("Sent %d bytes\n", len));
@@ -2433,7 +2437,7 @@ websocket_write(struct tcp_pcb *pcb, const uint8_t *data, uint16_t len, uint8_t 
   len += offset;
 
   LWIP_DEBUGF(HTTPD_DEBUG, ("[websocket_write] sending packet\n"));
-  err_t retval = http_write(pcb, buf, &len, TCP_WRITE_FLAG_COPY);
+  err_t  retval = http_write(pcb, buf, &len, TCP_WRITE_FLAG_COPY);
   mem_free(buf);
 
   return retval;

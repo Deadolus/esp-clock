@@ -91,8 +91,9 @@ function setMsg(cls, text) {
   console.log(text);
 }
 function startPolling() {
+    //labels:{fillStyle:'#000000'},maxValue:1024,minValue:0});
   var chart = new SmoothieChart({millisPerPixel:11,grid:{fillStyle:'#ffffff',strokeStyle:'#ffffff',borderVisible:false},
-    labels:{fillStyle:'#000000'},maxValue:1024,minValue:0});
+    labels:{fillStyle:'#000000'},responsive: true});
   chart.addTimeSeries(series, {lineWidth:2,strokeStyle:'#03a9f4',fillStyle:'#f1f5fa'});
   chart.streamTo(document.getElementById("chartCanvas"), 500);
   setInterval(function() { wsWrite('A'); }, 500);

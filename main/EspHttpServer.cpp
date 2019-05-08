@@ -22,6 +22,7 @@ extern "C" {
 #define LED_PIN 2
 
 static const char* TAG = "HttpServer";
+static std::mutex writeTcpMutex_{};
 EspHttpServer* EspHttpServer::instance_{};
 namespace {
   std::string replaceStr(std::string & str, const std::string & from, const std::string & to)
@@ -103,6 +104,7 @@ int32_t EspHttpServer::ssi_handler(int32_t iIndex, char *pcInsert, int32_t iInse
 
 const char* EspHttpServer::newAlarm_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
+  std::lock_guard<std::mutex> lock(writeTcpMutex_);
   Alarm& alarms = getInstanceAlarms();
   ESP_LOGI(TAG, "Got request for newAlarm, params: %i, index: %i", iNumParams, iIndex);
   //url handler e.g. /newAalarm?time=xxx&days=xxxx
@@ -156,6 +158,7 @@ const char* EspHttpServer::newAlarm_cgi_handler(int iIndex, int iNumParams, char
 
 const char* EspHttpServer::delete_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
+  std::lock_guard<std::mutex> lock(writeTcpMutex_);
   ESP_LOGI(TAG, "Got request for Delete");
   //url handler, e.g. delete?off=2
   int deleteNr{-1};
@@ -173,19 +176,20 @@ const char* EspHttpServer::delete_cgi_handler(int iIndex, int iNumParams, char *
 
 const char *about_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
+  std::lock_guard<std::mutex> lock(writeTcpMutex_);
   ESP_LOGI(TAG, "Got request for about");
   return "/about.html";
 }
 
 const char *websocket_cgi_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
 {
+  std::lock_guard<std::mutex> lock(writeTcpMutex_);
   ESP_LOGI(TAG, "Got request for websocket");
   return "/websockets.html";
 }
 
 void websocket_task(void *pvParameter)
 {
-  static std::mutex writeTcpMutex{};
     ESP_LOGI(TAG, "In websocket task");
     struct tcp_pcb *pcb = (struct tcp_pcb *) pvParameter;
 
@@ -207,11 +211,12 @@ void websocket_task(void *pvParameter)
                 " \"led\" : \"%d\"}", uptime, heap, led);
         if (len < sizeof (response))
         {
-          std::lock_guard<std::mutex> lock(writeTcpMutex);
+          ESP_LOGI(TAG, "Sending statistic through websocket");
+          std::lock_guard<std::mutex> lock(writeTcpMutex_);
           websocket_write(pcb, (unsigned char *) response, len, WS_TEXT_MODE);
         }
 
-        std::this_thread::sleep_for(std::chrono::microseconds(10));
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
 }
 
@@ -225,6 +230,7 @@ void websocket_cb(struct tcp_pcb *pcb, uint8_t *data, u16_t data_len, uint8_t mo
 {
     ESP_LOGI(TAG, "In websocket task, len: %u, data: %s", data_len, data);
     //printf("[websocket_callback]:\n%.*s\n", (int) data_len, (char*) data);
+    std::lock_guard<std::mutex> lock(writeTcpMutex_);
 
     uint8_t response[2];
     uint16_t val;
@@ -232,8 +238,9 @@ void websocket_cb(struct tcp_pcb *pcb, uint8_t *data, u16_t data_len, uint8_t mo
     switch (data[0]) {
         case 'A': // ADC
             /* This should be done on a separate thread in 'real' applications */
-            val=0;
+            //val=0;
             //val = sdk_system_adc_read();
+            val = xPortGetFreeHeapSize();
             break;
         case 'D': // Disable LED
             //gpio_set_level(LED_PIN, true);
@@ -251,6 +258,7 @@ void websocket_cb(struct tcp_pcb *pcb, uint8_t *data, u16_t data_len, uint8_t mo
 
     response[1] = (uint8_t) val;
     response[0] = val >> 8;
+    ESP_LOGI(TAG, "Sending answer through websocket");
 
     websocket_write(pcb, response, 2, WS_BIN_MODE);
 }
@@ -311,7 +319,7 @@ void httpd_task(void *pvParameters)
   }
 }
 
-EspHttpServer::EspHttpServer(Alarm& alarms) : alarms_(alarms)  {
+EspHttpServer::EspHttpServer(Alarm& alarms, PwmLed& led) : alarms_(alarms), led_(led)  {
   instance_ = this;
 }
 

@@ -2,7 +2,8 @@
 #include "HttpServer.h"
 #include "Alarm.h"
 #include <cstdint>
-class EspHttpServer : 
+#include <mutex>
+class EspHttpServer :
     public HttpServer
 {
     public:
