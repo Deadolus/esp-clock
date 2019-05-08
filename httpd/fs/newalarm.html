@@ -28,8 +28,8 @@
         <!-- Collect the nav links, forms, and other content for toggling -->
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
           <ul class="nav navbar-nav">
-            <li class="active"><a href="/">Home</a></li>
-            <li><a class="newalarm" href="newalarm">New Alarm</a></li>
+            <li><a href="/">Home</a></li>
+            <li class="active"><a class="newalarm" href="newalarm">New Alarm</a></li>
             <li><a href="websockets">WebSockets</a></li>
             <li><a href="about">About</a></li>
           </ul>
@@ -118,7 +118,7 @@ window.onload = function () {
     //$('#tuesday').button('toggle') // button text will be "finished!"
     console.log("Monday is " + $('#monday')[0].checked);
     //window.location.assign("https://www.w3schools.com");
-    var newUrl = 
+    var newUrl =
 'newalarm?time='
       +$('#time').val()
       +"&name="+$('#name').val()
