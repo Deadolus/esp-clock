@@ -2,7 +2,7 @@
 #include "EspDisplay.h"
 #include "Clock.h"
 #include "Alarm.h"
-#include <epd1in54.h>
+#include <epd2in9b.h>
 #include <epdpaint.h>
 #include "esp_log.h"
 #include "EspSntpClient.h"
@@ -44,7 +44,7 @@ EspDisplay::EspDisplay() : paint_(image_, 0, 0)
 void EspDisplay::setImage(const unsigned char* image, unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
     std::lock_guard<std::mutex> lock(displayMutex);
     //paint_.SetFrameMemory(image, x, y, width, height);
-    epd_.SetFrameMemory(image, x, y, width, height);
+    epd_.SetPartialWindowBlack(image, x, y, width, height);
     //epd_.DisplayFrame();
     //epd_.SetFrameMemory(image, x, y, width, height);
     //epd_.DisplayFrame();
@@ -106,8 +106,8 @@ void EspDisplay::showNextAlarmInfo(alarms_t alarm) {
 void EspDisplay::init() {
     std::lock_guard<std::mutex> lock(displayMutex);
     if(!display_initialized) {
-        epd_.SpiInit();
-        epd_.Init(lut_full_update);
+        epd_.Init();
+        //epd_.Init(lut_full_update);
         display_initialized = true;
     }
   /**
@@ -116,24 +116,26 @@ void EspDisplay::init() {
    *  i.e. the next action of SetFrameMemory will set the other memory area
    *  therefore you have to clear the frame memory twice.
    */
-  epd_.ClearFrameMemory(0xFF);   // bit set = white, bit reset = black
+  epd_.ClearFrame();   // bit set = white, bit reset = black
   epd_.DisplayFrame();
-  epd_.ClearFrameMemory(0xFF);   // bit set = white, bit reset = black
+  epd_.ClearFrame();   // bit set = white, bit reset = black
   epd_.DisplayFrame();
   paint_.SetRotate(ROTATE_0);
 }
 
 void EspDisplay::partialUpdate(){
     std::lock_guard<std::mutex> lock(displayMutex);
-  if (epd_.Init(lut_partial_update) != 0) {
+/*if(epd_.Init() != 0) {*/
+  /*if (epd_.Init(lut_partial_update) != 0) {
       printf("e-Paper init failed");
       return;
-  }
+  }*/
 }
 
 void EspDisplay::fullUpdate(){
     std::lock_guard<std::mutex> lock(displayMutex);
-  if (epd_.Init(lut_full_update) != 0) {
+  //if (epd_.Init(lut_full_update) != 0) {
+if(epd_.Init() != 0) {
       printf("e-Paper init failed");
       return;
   }
@@ -149,8 +151,9 @@ void EspDisplay::write(const std::string& text, unsigned int x, unsigned int y, 
     paint_.SetRotate(ROTATE_270);
     paint_.DrawStringAt(0, font.Height/8, text.c_str(), &font, COLORED);
     //epd_.SetFrameMemory(paint_.GetImage(), x-font.Height, y, paint_.GetWidth(), paint_.GetHeight());
+    epd_.SetPartialWindowBlack(paint_.GetImage(), x-font.Height, y, paint_.GetWidth(), paint_.GetHeight());
     //epd_.DisplayFrame();
-    epd_.SetFrameMemory(paint_.GetImage(), x-font.Height, y, paint_.GetWidth(), paint_.GetHeight());
+    //epd_.SetPartialWindowBlack(paint_.GetImage(), x-font.Height, y, paint_.GetWidth(), paint_.GetHeight());
     //epd_.DisplayFrame();
 }
 
@@ -175,12 +178,14 @@ void EspDisplay::clearLine(sFONT font, unsigned int x) {
 void EspDisplay::setTime(EspSntpClient& sntp) {
     char strftime_buf[64];
     struct tm timeinfo = Clock::getCurrentTimeAsTm();
+    sFONT font = getFont(Font::Font36);
     //std::strftime(strftime_buf, sizeof(strftime_buf), "%c", &timeinfo);
     if(sntp.timeSet())
         strftime(strftime_buf, sizeof(strftime_buf), "%R", &timeinfo);
     else
         sprintf(strftime_buf, "00:00");
+    ESP_LOGI(TAG, "Current time: %s", strftime_buf);
 
     //write(std::string(strftime_buf), 200, 0, Font::Font36);
-    write(std::string(strftime_buf), 47, (200-(5*31))/2, Font::Font36);
+    write(std::string(strftime_buf), (EPD_WIDTH-font.Height)/2, (EPD_HEIGHT-(5*font.Width))/2, Font::Font36);
 }

@@ -69,3 +69,8 @@ void ADXLService::ADXLServiceTask(ADXL345& sensor, std::function<void()> callbac
         }
     }
 }
+
+float ADXLService::getGX()  {
+  const float a = sensor_.getGX();
+  return a;
+}

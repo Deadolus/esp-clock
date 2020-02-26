@@ -14,7 +14,7 @@ class EspPwmLed :
         virtual void setIntensity(unsigned int intensity) override;
         virtual void setOff() override;
         virtual void setOn() override;
-        virtual unsigned int getIntensity();
+        virtual unsigned int getIntensity() override;
     private:
         unsigned int intensity_{};
         ledc_channel_config_t ledChannel_{};

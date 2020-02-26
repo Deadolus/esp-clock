@@ -448,7 +448,7 @@ static struct http_state *http_connections;
 
 #if LWIP_HTTPD_STRNSTR_PRIVATE
 /** Like strstr but does not need 'buffer' to be NULL-terminated */
-static char*
+/*static char*
 strnstr(const char* buffer, const char* token, size_t n)
 {
   const char* p;
@@ -462,7 +462,7 @@ strnstr(const char* buffer, const char* token, size_t n)
     }
   }
   return NULL;
-}
+}*/
 #endif /* LWIP_HTTPD_STRNSTR_PRIVATE */
 
 #if LWIP_HTTPD_KILL_OLD_ON_CONNECTIONS_EXCEEDED

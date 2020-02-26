@@ -137,7 +137,7 @@ const char* EspHttpServer::newAlarm_cgi_handler(int iIndex, int iNumParams, char
       ESP_LOGI(TAG, "snoozeTime: %s", pcValue[i]);
     }
     if(strcmp(pcParam[i], "repeatingAlarm")==0) {
-      try { alarm.singleShot = !static_cast<bool>(std::stoi(pcValue[i])); } catch(std::exception ){}
+      try { alarm.singleShot = !static_cast<bool>(std::stoi(pcValue[i])); } catch(std::exception& ){}
       ESP_LOGI(TAG, "repeatingAlarm: %s-->%d", pcValue[i], alarm.singleShot);
       if(alarm.singleShot && (alarm.time < std::chrono::system_clock::now())) {
         ESP_LOGI(TAG, "Increasing singleshot time for tomorrow.");
@@ -165,7 +165,7 @@ const char* EspHttpServer::delete_cgi_handler(int iIndex, int iNumParams, char *
   int deleteNr{-1};
   try {
     deleteNr = std::stoi(std::string(pcValue[0]));
-  } catch(std::exception e) {}
+  } catch(std::exception& e) {}
   ESP_LOGI(TAG, "Going to try to delete %d, numParms: %d, count :%d", deleteNr, iNumParams, getInstanceAlarms().getAlarms().size());
   if(iNumParams==1 && deleteNr >= 0) {
     auto& alarms = getInstanceAlarms();
@@ -282,12 +282,12 @@ void websocket_open_cb(struct tcp_pcb *pcb, const char *uri)
 
 void httpd_task(void *pvParameters)
 {
-  tCGI pCGIs[] = {
+  /*tCGI pCGIs[] = {
     {"/delete", (tCGIHandler) EspHttpServer::delete_cgi_handler},
     {"/about", (tCGIHandler) about_cgi_handler},
     {"/websockets", (tCGIHandler) websocket_cgi_handler},
     {"/newalarm", (tCGIHandler) EspHttpServer::newAlarm_cgi_handler},
-  };
+  };*/
 
   //limited to 8chars
   const char *pcConfigSSITags[] = {
@@ -311,9 +311,9 @@ void httpd_task(void *pvParameters)
   };
 
   /* register handlers and start the server */
-  http_set_cgi_handlers(pCGIs, sizeof (pCGIs) / sizeof (pCGIs[0]));
-  http_set_ssi_handler((tSSIHandler) EspHttpServer::ssi_handler, pcConfigSSITags,
-      sizeof (pcConfigSSITags) / sizeof (pcConfigSSITags[0]));
+  //http_set_cgi_handlers(pCGIs, sizeof (pCGIs) / sizeof (pCGIs[0]));
+  //http_set_ssi_handler((tSSIHandler) EspHttpServer::ssi_handler, pcConfigSSITags,
+      //sizeof (pcConfigSSITags) / sizeof (pcConfigSSITags[0]));
   websocket_register_callbacks((tWsOpenHandler) websocket_open_cb, (tWsHandler) websocket_cb);
   httpd_init();
 

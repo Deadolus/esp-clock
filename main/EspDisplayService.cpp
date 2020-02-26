@@ -23,6 +23,7 @@ EspDisplayService::EspDisplayService(EspDisplay& display, EspSign& espsign, EspA
 
 void EspDisplayService::displayServiceTask(unsigned int delay, EspDisplay& display, EspSign& espsign, EspAlarm& alarm, EspAlarmService& alarms, EspWifi& wifi, EspSntpClient& sntp ) {
     while(true) {
+      ESP_LOGI(TAG, "Display loop");
         alarms_t nextAlarm = alarm.getNextAlarm();
         display.setNextAlarmName(nextAlarm.name, alarm.getNextAlarm().time);
         display.showNextAlarmInfo(nextAlarm);
@@ -39,7 +40,7 @@ void EspDisplayService::displayServiceTask(unsigned int delay, EspDisplay& displ
         espsign.setClock(sntp.timeSet());
         display.setTime(sntp);
         display.send();
-        display.sleep();
+        //display.sleep();
         std::this_thread::sleep_for(std::chrono::milliseconds(delay));
     }
 }

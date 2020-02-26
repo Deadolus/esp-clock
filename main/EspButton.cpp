@@ -34,14 +34,14 @@ void EspButton::buttonTask(void *pvParameters) {
 EspButton::EspButton(unsigned int gpio, bool inverse): gpio_(gpio), inverse_(inverse) {
     gpio_config_t io_conf{};
     //TODO: will probably overwrite existing button configurations...
-    io_conf.pin_bit_mask = (1<<gpio_);
+    io_conf.pin_bit_mask = (1ULL<<gpio_);
     io_conf.mode = GPIO_MODE_INPUT;
-    io_conf.pull_up_en = static_cast<gpio_pullup_t>(0);
+    //io_conf.pull_up_en = static_cast<gpio_pullup_t>(0);
     gpio_config(&io_conf);
     std::thread task(EspButton::buttonTask, this);
     task.detach();
 
-    ESP_LOGI(TAG, "Started button task");
+    ESP_LOGI(TAG, "Started button task, pin %u",gpio);
     //returned = xTaskCreate(&button_Task, "buttontask", 4000, NULL, 2, &buttonTaskHandle);
     //returned = xTaskCreate(&button_Task, "buttontask", 4000, NULL, 2, NULL);
     /* if(returned != pdPASS) { */

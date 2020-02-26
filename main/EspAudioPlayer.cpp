@@ -143,7 +143,7 @@ void example_disp_buf(uint8_t* buf, int length)
     printf("======\n");
 }
 
-    void esp_play_audio() {
+    void esp_play_audio() {/*
     ESP_LOGI(TAG, "Playing audio");
     int tot_size = sizeof(audio_table);
     int i2s_read_len = EXAMPLE_I2S_READ_LEN;
@@ -176,7 +176,7 @@ ESP_LOGI(TAG, "Audio, tot size: %d", tot_size);
     //gpio_set_pull_mode(static_cast<gpio_num_t>(CONFIG_DAC_GPIO), GPIO_FLOATING);
     //gpio_set_level(static_cast<gpio_num_t>(CONFIG_DAC_GPIO), 1);
     //Finally - unlock mutex
-    AUDIO_PLAYER_MUTEX.unlock();
+    AUDIO_PLAYER_MUTEX.unlock();*/
     }
 }
 

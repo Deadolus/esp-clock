@@ -13,7 +13,7 @@ config LED_GPIO
 
 config BUTTON_GPIO
     int "Button GPIO number"
-	range 0 34
+	range 0 39
 	default 0
 	help
 		GPIO number where "light" gpio is attached to.

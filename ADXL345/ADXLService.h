@@ -3,8 +3,9 @@
 #include <functional>
 
 class ADXLService {
-    public: 
+    public:
         explicit ADXLService(std::function<void()> func);
+        float getGX() ;
     private:
         static void ADXLServiceTask(ADXL345& sensor, std::function<void()> cb);
         ADXL345 sensor_;

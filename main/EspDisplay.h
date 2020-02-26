@@ -2,7 +2,7 @@
 #include "Display.h"
 #include "Alarm.h"
 
-#include <epd1in54.h>
+#include <epd2in9b.h>
 #include <epdpaint.h>
 
 #include <mutex>

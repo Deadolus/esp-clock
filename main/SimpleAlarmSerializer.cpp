@@ -54,7 +54,7 @@ alarms_t SimpleAlarmSerializer::deserialize(std::string const& text) {
     retVal.snoozeTime = Clock::convertToTimePoint(static_cast<time_t>(std::stoi(fields.at(2))));
     retVal.weekRepeat = std::bitset<7>(std::stoi(fields.at(3)));
     retVal.singleShot = std::stoi(fields.at(4));
-    } catch(std::exception e) {}
+    } catch(std::exception& e) {}
     }
     return retVal;
 }
