@@ -17,7 +17,7 @@ void EspButton::buttonTask(void *pvParameters) {
         } else {
             //events should be ordered by long->short presses
             //so that only one event gets fired
-            if(button->extraLongPress() && button->longPressCb_)
+            if(button->extraLongPress() && button->extraLongPressCb_)
                 button->extraLongPressCb_();
             else if(button->longPress() && button->longPressCb_)
                 button->longPressCb_();
@@ -75,5 +75,5 @@ void EspButton::setLongPressCb(std::function<void()> function) {
 }
 
 void EspButton::setExtraLongPressCb(std::function<void()> function) {
-    longPressCb_ = function;
+    extraLongPressCb_ = function;
 }
