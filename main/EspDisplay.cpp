@@ -2,7 +2,11 @@
 #include "EspDisplay.h"
 #include "Clock.h"
 #include "Alarm.h"
+#ifdef RED_DISPLAY
 #include <epd2in9b.h>
+#else
+#include <epd1in54.h>
+#endif
 #include <epdpaint.h>
 #include "esp_log.h"
 #include "EspSntpClient.h"
@@ -43,8 +47,11 @@ EspDisplay::EspDisplay() : paint_(image_, 0, 0)
 
 void EspDisplay::setImage(const unsigned char* image, unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
     std::lock_guard<std::mutex> lock(displayMutex);
-    //paint_.SetFrameMemory(image, x, y, width, height);
+#ifdef RED_DISPLAY
     epd_.SetPartialWindowBlack(image, x, y, width, height);
+#else
+    epd_.SetFrameMemory(image, x, y, width, height);
+#endif
     //epd_.DisplayFrame();
     //epd_.SetFrameMemory(image, x, y, width, height);
     //epd_.DisplayFrame();
@@ -106,8 +113,12 @@ void EspDisplay::showNextAlarmInfo(alarms_t alarm) {
 void EspDisplay::init() {
     std::lock_guard<std::mutex> lock(displayMutex);
     if(!display_initialized) {
+#ifdef RED_DISPLAY
         epd_.Init();
-        //epd_.Init(lut_full_update);
+#else
+        epd_.SpiInit();
+        epd_.Init(lut_full_update);
+#endif
         display_initialized = true;
     }
   /**
@@ -116,26 +127,36 @@ void EspDisplay::init() {
    *  i.e. the next action of SetFrameMemory will set the other memory area
    *  therefore you have to clear the frame memory twice.
    */
-  epd_.ClearFrame();   // bit set = white, bit reset = black
-  epd_.DisplayFrame();
-  epd_.ClearFrame();   // bit set = white, bit reset = black
-  epd_.DisplayFrame();
+#ifdef RED_DISPLAY
+    epd_.ClearFrame();   // bit set = white, bit reset = black
+    epd_.DisplayFrame();
+    epd_.ClearFrame();   // bit set = white, bit reset = black
+#else
+    epd_.ClearFrameMemory(0xFF);   // bit set = white, bit reset = black
+    epd_.DisplayFrame();
+    epd_.ClearFrameMemory(0xFF);   // bit set = white, bit reset = black
+#endif
+    epd_.DisplayFrame();
   paint_.SetRotate(ROTATE_0);
 }
 
 void EspDisplay::partialUpdate(){
     std::lock_guard<std::mutex> lock(displayMutex);
-/*if(epd_.Init() != 0) {*/
-  /*if (epd_.Init(lut_partial_update) != 0) {
+#ifndef RED_DISPLAY
+  if (epd_.Init(lut_partial_update) != 0) {
       printf("e-Paper init failed");
       return;
-  }*/
+  }
+#endif
 }
 
 void EspDisplay::fullUpdate(){
     std::lock_guard<std::mutex> lock(displayMutex);
-  //if (epd_.Init(lut_full_update) != 0) {
+#ifdef RED_DISPLAY
 if(epd_.Init() != 0) {
+#else
+  if (epd_.Init(lut_full_update) != 0) {
+#endif
       printf("e-Paper init failed");
       return;
   }
@@ -150,10 +171,11 @@ void EspDisplay::write(const std::string& text, unsigned int x, unsigned int y, 
     paint_.SetHeight(text.length()*font.Width);
     paint_.SetRotate(ROTATE_270);
     paint_.DrawStringAt(0, font.Height/8, text.c_str(), &font, COLORED);
-    //epd_.SetFrameMemory(paint_.GetImage(), x-font.Height, y, paint_.GetWidth(), paint_.GetHeight());
+#ifdef RED_DISPLAY
     epd_.SetPartialWindowBlack(paint_.GetImage(), x-font.Height, y, paint_.GetWidth(), paint_.GetHeight());
-    //epd_.DisplayFrame();
-    //epd_.SetPartialWindowBlack(paint_.GetImage(), x-font.Height, y, paint_.GetWidth(), paint_.GetHeight());
+#else
+    epd_.SetFrameMemory(paint_.GetImage(), x-font.Height, y, paint_.GetWidth(), paint_.GetHeight());
+#endif
     //epd_.DisplayFrame();
 }
 

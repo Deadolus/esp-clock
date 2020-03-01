@@ -2,7 +2,11 @@
 #include "Display.h"
 #include "Alarm.h"
 
+#ifdef RED_DISPLAY
 #include <epd2in9b.h>
+#else
+#include <epd1in54.h>
+#endif
 #include <epdpaint.h>
 
 #include <mutex>

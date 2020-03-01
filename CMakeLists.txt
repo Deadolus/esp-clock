@@ -10,6 +10,9 @@ set (CMAKE_CXX_STANDARD 11)
 #add_definitions(-D_GLIBCXX_USE_C99)
 add_definitions(-Werror)
 
+#Uncomment to use Display with red color
+#add_definitions(-DRED_DISPLAY)
+
 #add_definitions(-DLWIP_HTTPD_SSI)
 #add_definitions(-DLWIP_HTTPD_CGI)
 project(esp-alarm-clock)

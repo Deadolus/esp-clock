@@ -40,7 +40,7 @@ void EspDisplayService::displayServiceTask(unsigned int delay, EspDisplay& displ
         espsign.setClock(sntp.timeSet());
         display.setTime(sntp);
         display.send();
-        //display.sleep();
+        display.sleep();
         std::this_thread::sleep_for(std::chrono::milliseconds(delay));
     }
 }
