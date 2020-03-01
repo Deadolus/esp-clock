@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#ifdef RED_DISPLAY
 #include <stdlib.h>
 #include <epd2in9b.h>
 #define LOW 0
@@ -286,3 +287,4 @@ const unsigned char lut_partial_update[] =
 /* END OF FILE */
 
 
+#endif
